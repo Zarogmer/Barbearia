@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>Studio — Sistema de Agendamento</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    // Init theme + palette antes de render para evitar flash
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (stored === "dark" || (!stored && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      }
+      const palette = localStorage.getItem("palette") || "violet";
+      document.documentElement.setAttribute("data-palette", palette);
+    })();
+
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            border: "hsl(var(--border))",
+            input: "hsl(var(--input))",
+            ring: "hsl(var(--ring))",
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: {
+              DEFAULT: "hsl(var(--primary))",
+              foreground: "hsl(var(--primary-foreground))",
+            },
+            secondary: {
+              DEFAULT: "hsl(var(--secondary))",
+              foreground: "hsl(var(--secondary-foreground))",
+            },
+            destructive: {
+              DEFAULT: "hsl(var(--destructive))",
+              foreground: "hsl(var(--destructive-foreground))",
+            },
+            muted: {
+              DEFAULT: "hsl(var(--muted))",
+              foreground: "hsl(var(--muted-foreground))",
+            },
+            accent: {
+              DEFAULT: "hsl(var(--accent))",
+              foreground: "hsl(var(--accent-foreground))",
+            },
+            card: {
+              DEFAULT: "hsl(var(--card))",
+              foreground: "hsl(var(--card-foreground))",
+            },
+            success: {
+              DEFAULT: "hsl(var(--success))",
+              foreground: "hsl(var(--success-foreground))",
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Paleta clara — neutral slate + violet primary */
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 240 10% 4%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 4%;
+      --muted: 240 5% 96%;
+      --muted-foreground: 240 4% 46%;
+      --border: 240 6% 90%;
+      --input: 240 6% 90%;
+      --ring: 263 70% 50%;
+      --primary: 263 70% 50%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 240 5% 96%;
+      --secondary-foreground: 240 10% 4%;
+      --accent: 263 70% 96%;
+      --accent-foreground: 263 60% 30%;
+      --destructive: 0 72% 51%;
+      --destructive-foreground: 0 0% 100%;
+      --success: 142 71% 45%;
+      --success-foreground: 0 0% 100%;
+      --radius: 0.75rem;
+    }
+    .dark {
+      --background: 240 10% 4%;
+      --foreground: 0 0% 98%;
+      --card: 240 6% 10%;
+      --card-foreground: 0 0% 98%;
+      --muted: 240 5% 14%;
+      --muted-foreground: 240 5% 65%;
+      --border: 240 5% 18%;
+      --input: 240 5% 18%;
+      --ring: 263 70% 65%;
+      --primary: 263 70% 65%;
+      --primary-foreground: 240 10% 4%;
+      --secondary: 240 5% 14%;
+      --secondary-foreground: 0 0% 98%;
+      --accent: 263 50% 20%;
+      --accent-foreground: 263 70% 80%;
+      --destructive: 0 72% 51%;
+      --destructive-foreground: 0 0% 98%;
+      --success: 142 71% 45%;
+      --success-foreground: 0 0% 100%;
+    }
+
+    /* ── Palette overrides ─────────────────────────────────
+       Default = violet (já definido em :root / .dark).
+       Sobrescreve só o que muda: primary, ring, accent. */
+    :root[data-palette="amber"] {
+      --primary: 38 92% 50%;
+      --primary-foreground: 0 0% 100%;
+      --ring: 38 92% 50%;
+      --accent: 38 92% 95%;
+      --accent-foreground: 38 75% 25%;
+    }
+    .dark[data-palette="amber"] {
+      --primary: 38 92% 55%;
+      --primary-foreground: 240 10% 4%;
+      --ring: 38 92% 55%;
+      --accent: 38 60% 18%;
+      --accent-foreground: 38 92% 80%;
+    }
+    :root[data-palette="stone"] {
+      --primary: 25 5% 35%;
+      --primary-foreground: 0 0% 100%;
+      --ring: 25 5% 35%;
+      --accent: 25 5% 92%;
+      --accent-foreground: 25 8% 18%;
+    }
+    .dark[data-palette="stone"] {
+      --primary: 25 5% 75%;
+      --primary-foreground: 240 10% 4%;
+      --ring: 25 5% 75%;
+      --accent: 25 5% 18%;
+      --accent-foreground: 25 8% 85%;
+    }
+
+    /* Botões da seção "Aparência do app" — estado ativo declarativo */
+    .palette-btn {
+      border: 1px solid hsl(var(--border));
+      opacity: 0.55;
+    }
+    .palette-btn:hover { opacity: 0.85; }
+    :root[data-palette="violet"] .palette-btn[data-palette-btn="violet"],
+    :root[data-palette="amber"]  .palette-btn[data-palette-btn="amber"],
+    :root[data-palette="stone"]  .palette-btn[data-palette-btn="stone"] {
+      border: 2px solid hsl(var(--primary));
+      opacity: 1;
+      box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+    }
+
+    /* Base — garante visual mesmo se o Tailwind config demorar */
+    html, body {
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: "rlig" 1, "calt" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1;
+    }
+    *, *::before, *::after { border-color: hsl(var(--border)); }
+
+    /* SPA view system */
+    .view { display: none; }
+    .view.active { display: block; animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll horizontal sem barra */
+    .scroll-x { scrollbar-width: none; -ms-overflow-style: none; }
+    .scroll-x::-webkit-scrollbar { display: none; }
+
+    /* Numéricos tabulares */
+    .tabular { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+
+<body class="font-sans">
+
+  <!-- ═══════════════════ DEMO NAV (fixed) ═══════════════════ -->
+  <div class="fixed top-3 right-3 z-[100] flex gap-2">
+    <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-muted transition" title="Alternar tema">
+      <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+      <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+    </button>
+    <button onclick="toggleNav()" class="w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:opacity-90 transition" title="Menu de telas">
+      <i data-lucide="layout-grid" class="w-4 h-4"></i>
+    </button>
+  </div>
+
+  <!-- Offcanvas nav: lista de todas as telas do protótipo -->
+  <div id="nav-backdrop" class="fixed inset-0 bg-black/50 z-[90] hidden" onclick="toggleNav()"></div>
+  <aside id="demo-nav" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-card border-l border-border z-[95] transform translate-x-full transition-transform overflow-y-auto">
+    <div class="sticky top-0 bg-card border-b border-border px-5 py-4 flex items-center justify-between">
+      <div>
+        <div class="font-bold">Navegar telas</div>
+        <div class="text-xs text-muted-foreground">Protótipo do sistema</div>
+      </div>
+      <button onclick="toggleNav()" class="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="p-3 space-y-1">
+      <div class="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Auth</div>
+      <button onclick="showView('view-login')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="log-in" class="w-4 h-4"></i> Login / cadastro</button>
+
+      <div class="px-2 py-1.5 mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cliente</div>
+      <button onclick="showView('view-home')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="store" class="w-4 h-4"></i> Vitrine da barbearia</button>
+      <button onclick="showView('view-book-1')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Agendar · 1. Serviço</button>
+      <button onclick="showView('view-book-2')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="user-round" class="w-4 h-4"></i> Agendar · 2. Profissional</button>
+      <button onclick="showView('view-book-3')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4"></i> Agendar · 3. Horário</button>
+      <button onclick="showView('view-book-4')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Agendar · 4. Confirmar</button>
+      <button onclick="showView('view-success')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="party-popper" class="w-4 h-4"></i> Confirmação</button>
+      <button onclick="showView('view-my-bookings')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="list-checks" class="w-4 h-4"></i> Meus agendamentos</button>
+      <button onclick="showView('view-my-profile')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu perfil</button>
+
+      <div class="px-2 py-1.5 mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admin</div>
+      <button onclick="showView('view-admin-dashboard')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+      <button onclick="showView('view-admin-agenda')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Agenda do dia</button>
+      <button onclick="showView('view-admin-services')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Serviços</button>
+      <button onclick="showView('view-admin-pros')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Profissionais</button>
+      <button onclick="showView('view-admin-settings')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Configurações</button>
+    </div>
+    <div class="border-t border-border p-4 mt-2 space-y-2 text-xs text-muted-foreground">
+      <div><span class="font-semibold text-foreground">Stack alvo:</span> Next.js 15 · Tailwind · shadcn/ui</div>
+      <div><span class="font-semibold text-foreground">Paleta:</span> Violet 600 (claro) / Violet 400 (escuro) sobre Slate neutral</div>
+      <div class="pt-2">Toda navegação é mock; estados acumulam no fluxo de agendamento.</div>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- VIEWS                                                       -->
+  <!-- ════════════════════════════════════════════════════════ -->
+
+  <!-- ─── LOGIN / CADASTRO ─────────────────────────────────── -->
+  <section id="view-login" class="view active min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-accent/30">
+    <div class="flex-1 flex items-center justify-center px-5 py-12">
+      <div class="w-full max-w-sm">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-primary-foreground mb-4">
+            <i data-lucide="scissors" class="w-7 h-7"></i>
+          </div>
+          <h1 class="text-2xl font-bold">Studio</h1>
+          <p class="text-sm text-muted-foreground mt-1">Sistema de agendamento</p>
+        </div>
+
+        <div class="bg-card rounded-2xl border border-border shadow-sm p-6">
+          <div class="flex bg-muted rounded-lg p-1 mb-6 text-sm font-medium">
+            <button id="tab-login" class="flex-1 py-2 rounded-md bg-card shadow-sm transition" onclick="setAuthTab('login')">Entrar</button>
+            <button id="tab-signup" class="flex-1 py-2 rounded-md text-muted-foreground transition" onclick="setAuthTab('signup')">Cadastrar</button>
+          </div>
+
+          <form class="space-y-4" onsubmit="event.preventDefault(); showView('view-home');">
+            <div id="field-name" class="hidden">
+              <label class="text-sm font-medium mb-1.5 block">Nome</label>
+              <input type="text" class="w-full h-11 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="Seu nome" />
+            </div>
+            <div>
+              <label class="text-sm font-medium mb-1.5 block">Email</label>
+              <input type="email" class="w-full h-11 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="voce@email.com" />
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="text-sm font-medium">Senha</label>
+                <a id="forgot" class="text-xs text-primary font-medium cursor-pointer hover:underline">Esqueci</a>
+              </div>
+              <input type="password" class="w-full h-11 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="••••••••" />
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
+              <span id="submit-text">Entrar</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+
+            <div class="relative my-5">
+              <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-border"></div></div>
+              <div class="relative flex justify-center text-xs"><span class="bg-card px-3 text-muted-foreground">ou</span></div>
+            </div>
+
+            <button type="button" class="w-full h-11 rounded-lg bg-card border border-border font-medium text-sm hover:bg-muted transition flex items-center justify-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continuar com Google
+            </button>
+
+            <p id="terms" class="hidden text-xs text-muted-foreground text-center">
+              Ao cadastrar, você concorda com os <a class="text-primary underline">termos</a> e a <a class="text-primary underline">privacidade</a>.
+            </p>
+          </form>
+        </div>
+
+        <p class="text-center text-xs text-muted-foreground mt-6">
+          Quer entrar como dono de barbearia?
+          <a onclick="showView('view-admin-dashboard')" class="text-primary font-medium cursor-pointer hover:underline">Acesso admin →</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CLIENTE — HOME / VITRINE ─────────────────────────── -->
+  <section id="view-home" class="view min-h-screen pb-24">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div class="px-5 h-14 flex items-center justify-between max-w-5xl mx-auto">
+        <button onclick="showView('view-login')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div class="text-sm font-medium">Studio Demo</div>
+        <button class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -mr-2">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="max-w-5xl mx-auto px-5 py-5">
+      <!-- Hero -->
+      <div class="rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground p-6 mb-6 relative overflow-hidden">
+        <div class="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-white/10"></div>
+        <div class="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/10"></div>
+        <div class="relative">
+          <div class="inline-flex items-center gap-1.5 text-xs font-medium bg-white/20 backdrop-blur px-2.5 py-1 rounded-full mb-3">
+            <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+            Aberto · até 20h
+          </div>
+          <h1 class="text-2xl font-bold mb-1">Studio Demo</h1>
+          <p class="text-sm opacity-90 mb-1">Av. Paulista, 1000 — São Paulo</p>
+          <div class="flex items-center gap-1 text-sm opacity-90">
+            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+            <span class="font-medium">4.9</span>
+            <span class="opacity-70">· 234 avaliações</span>
+          </div>
+          <button onclick="showView('view-book-1')" class="mt-5 w-full sm:w-auto sm:px-8 h-12 rounded-xl bg-white text-primary font-semibold text-sm flex items-center justify-center gap-2 hover:bg-white/95 transition">
+            Agendar agora
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Próximos slots -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold">Próximos horários livres</h2>
+          <button onclick="showView('view-book-3')" class="text-xs text-primary font-medium">Ver todos</button>
+        </div>
+        <div class="flex gap-2 overflow-x-auto scroll-x -mx-5 px-5">
+          <button onclick="showView('view-book-1')" class="shrink-0 w-32 rounded-xl bg-card border border-border p-3 text-left hover:border-primary transition">
+            <div class="text-xs text-muted-foreground">Hoje</div>
+            <div class="font-bold text-lg">14:30</div>
+            <div class="text-xs text-muted-foreground mt-1">com Alex</div>
+          </button>
+          <button onclick="showView('view-book-1')" class="shrink-0 w-32 rounded-xl bg-card border border-border p-3 text-left hover:border-primary transition">
+            <div class="text-xs text-muted-foreground">Hoje</div>
+            <div class="font-bold text-lg">16:00</div>
+            <div class="text-xs text-muted-foreground mt-1">qualquer</div>
+          </button>
+          <button onclick="showView('view-book-1')" class="shrink-0 w-32 rounded-xl bg-card border border-border p-3 text-left hover:border-primary transition">
+            <div class="text-xs text-muted-foreground">Amanhã</div>
+            <div class="font-bold text-lg">09:00</div>
+            <div class="text-xs text-muted-foreground mt-1">com Bia</div>
+          </button>
+          <button onclick="showView('view-book-1')" class="shrink-0 w-32 rounded-xl bg-card border border-border p-3 text-left hover:border-primary transition">
+            <div class="text-xs text-muted-foreground">Amanhã</div>
+            <div class="font-bold text-lg">10:30</div>
+            <div class="text-xs text-muted-foreground mt-1">com Alex</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Serviços -->
+      <div class="mb-6">
+        <h2 class="font-semibold mb-3">Serviços</h2>
+        <div class="grid sm:grid-cols-2 gap-2">
+          <div onclick="showView('view-book-1')" class="rounded-xl bg-card border border-border p-4 flex items-center justify-between cursor-pointer hover:border-primary transition">
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold truncate">Corte</div>
+              <div class="text-xs text-muted-foreground mt-0.5">30 min · R$ 50</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+          </div>
+          <div onclick="showView('view-book-1')" class="rounded-xl bg-card border border-border p-4 flex items-center justify-between cursor-pointer hover:border-primary transition">
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold truncate">Barba</div>
+              <div class="text-xs text-muted-foreground mt-0.5">20 min · R$ 30</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+          </div>
+          <div onclick="showView('view-book-1')" class="rounded-xl bg-accent border border-primary/30 p-4 flex items-center justify-between cursor-pointer hover:border-primary transition">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-semibold truncate">Combo</span>
+                <span class="text-[10px] font-bold uppercase bg-primary text-primary-foreground px-1.5 py-0.5 rounded">popular</span>
+              </div>
+              <div class="text-xs text-accent-foreground mt-0.5">50 min · R$ 70</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-accent-foreground"></i>
+          </div>
+          <div onclick="showView('view-book-1')" class="rounded-xl bg-card border border-border p-4 flex items-center justify-between cursor-pointer hover:border-primary transition">
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold truncate">Coloração</div>
+              <div class="text-xs text-muted-foreground mt-0.5">90 min · R$ 150</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipe -->
+      <div class="mb-6">
+        <h2 class="font-semibold mb-3">Equipe</h2>
+        <div class="flex gap-3 overflow-x-auto scroll-x -mx-5 px-5">
+          <div class="shrink-0 w-24 text-center">
+            <div class="aspect-square rounded-2xl bg-muted mb-2 flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-muted-foreground"></i></div>
+            <div class="text-sm font-medium">Alex</div>
+            <div class="text-xs text-muted-foreground">Corte · Barba</div>
+          </div>
+          <div class="shrink-0 w-24 text-center">
+            <div class="aspect-square rounded-2xl bg-muted mb-2 flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-muted-foreground"></i></div>
+            <div class="text-sm font-medium">Bia</div>
+            <div class="text-xs text-muted-foreground">Coloração</div>
+          </div>
+          <div class="shrink-0 w-24 text-center">
+            <div class="aspect-square rounded-2xl bg-muted mb-2 flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-muted-foreground"></i></div>
+            <div class="text-sm font-medium">Jay</div>
+            <div class="text-xs text-muted-foreground">Combo</div>
+          </div>
+          <div class="shrink-0 w-24 text-center">
+            <div class="aspect-square rounded-2xl bg-muted mb-2 flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-muted-foreground"></i></div>
+            <div class="text-sm font-medium">Pê</div>
+            <div class="text-xs text-muted-foreground">Barba</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Localização / info -->
+      <div class="rounded-xl bg-card border border-border p-4 space-y-3 text-sm">
+        <div class="flex items-start gap-3">
+          <i data-lucide="map-pin" class="w-4 h-4 text-muted-foreground mt-0.5 shrink-0"></i>
+          <span>Av. Paulista, 1000 — São Paulo, SP</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <i data-lucide="clock" class="w-4 h-4 text-muted-foreground mt-0.5 shrink-0"></i>
+          <span>Ter-sex 09h-20h · Sáb 09h-18h</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <i data-lucide="phone" class="w-4 h-4 text-muted-foreground mt-0.5 shrink-0"></i>
+          <span>(11) 99999-9999</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom tab (mobile) -->
+    <nav class="fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border sm:hidden">
+      <div class="grid grid-cols-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button class="flex flex-col items-center gap-0.5 text-primary">
+          <i data-lucide="store" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Início</span>
+        </button>
+        <button onclick="showView('view-my-bookings')" class="flex flex-col items-center gap-0.5 text-muted-foreground">
+          <i data-lucide="list-checks" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Agendamentos</span>
+        </button>
+        <button onclick="showView('view-my-profile')" class="flex flex-col items-center gap-0.5 text-muted-foreground">
+          <i data-lucide="user" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium">Perfil</span>
+        </button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ─── BOOK STEP 1: SERVIÇO ─────────────────────────────── -->
+  <section id="view-book-1" class="view min-h-screen pb-24">
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3 max-w-3xl mx-auto">
+        <button onclick="showView('view-home')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex-1">
+          <div class="text-xs text-muted-foreground">Passo 1 de 4</div>
+          <div class="text-sm font-medium">Escolha o serviço</div>
+        </div>
+        <div class="flex gap-1">
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-muted rounded-full"></div>
+          <div class="w-6 h-1 bg-muted rounded-full"></div>
+          <div class="w-6 h-1 bg-muted rounded-full"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto px-5 py-5 space-y-2" id="services-list">
+      <!-- Cada button toggle .selected -->
+    </div>
+
+    <div class="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border z-30">
+      <div class="max-w-3xl mx-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-book-2')" id="btn-book1-next" class="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          Continuar
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BOOK STEP 2: PROFISSIONAL ────────────────────────── -->
+  <section id="view-book-2" class="view min-h-screen pb-24">
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3 max-w-3xl mx-auto">
+        <button onclick="showView('view-book-1')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex-1">
+          <div class="text-xs text-muted-foreground">Passo 2 de 4</div>
+          <div class="text-sm font-medium">Com quem?</div>
+        </div>
+        <div class="flex gap-1">
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-muted rounded-full"></div>
+          <div class="w-6 h-1 bg-muted rounded-full"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto px-5 py-5">
+      <button onclick="selectPro('any'); showView('view-book-3');" class="w-full rounded-2xl border-2 border-dashed border-border hover:border-primary p-4 flex items-center gap-4 transition mb-5">
+        <div class="w-12 h-12 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <div class="font-semibold">Qualquer profissional</div>
+          <div class="text-xs text-muted-foreground">Mais rápido — primeiro livre</div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+      </button>
+
+      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3 text-center">ou escolha</div>
+
+      <div class="grid grid-cols-2 gap-3" id="pros-list">
+        <!-- preenchido por JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BOOK STEP 3: DATA + HORÁRIO ──────────────────────── -->
+  <section id="view-book-3" class="view min-h-screen pb-32">
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3 max-w-3xl mx-auto">
+        <button onclick="showView('view-book-2')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex-1">
+          <div class="text-xs text-muted-foreground">Passo 3 de 4</div>
+          <div class="text-sm font-medium">Data e horário</div>
+        </div>
+        <div class="flex gap-1">
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-muted rounded-full"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto px-5 py-5">
+      <div class="text-sm font-semibold mb-3">Escolha o dia</div>
+      <div class="flex gap-2 overflow-x-auto scroll-x -mx-5 px-5 mb-6 pb-1" id="dates-list">
+        <!-- preenchido por JS -->
+      </div>
+
+      <div class="flex items-center gap-2 mb-3">
+        <div class="text-sm font-semibold">Horários disponíveis</div>
+        <div class="ml-auto flex gap-1" id="period-tabs">
+          <button data-period="morning" class="period-btn px-3 py-1 rounded-full text-xs font-medium bg-foreground text-background">Manhã</button>
+          <button data-period="afternoon" class="period-btn px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">Tarde</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-4 gap-2" id="slots-grid">
+        <!-- preenchido por JS -->
+      </div>
+    </div>
+
+    <div class="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border z-30">
+      <div class="max-w-3xl mx-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div class="flex items-center justify-between mb-3 text-sm">
+          <div>
+            <div class="text-xs text-muted-foreground">Selecionado</div>
+            <div class="font-semibold" id="selected-display">— · —</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-muted-foreground">Total</div>
+            <div class="font-semibold" id="selected-total">R$ 50</div>
+          </div>
+        </div>
+        <button onclick="showView('view-book-4')" class="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
+          Continuar
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BOOK STEP 4: CONFIRMAR ───────────────────────────── -->
+  <section id="view-book-4" class="view min-h-screen pb-24">
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3 max-w-3xl mx-auto">
+        <button onclick="showView('view-book-3')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex-1">
+          <div class="text-xs text-muted-foreground">Passo 4 de 4</div>
+          <div class="text-sm font-medium">Confirme</div>
+        </div>
+        <div class="flex gap-1">
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+          <div class="w-6 h-1 bg-primary rounded-full"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-2xl mx-auto px-5 py-5">
+      <div class="rounded-xl bg-accent border border-primary/20 p-4 mb-5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-accent-foreground mb-2">Resumo</div>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between"><dt class="text-muted-foreground">Serviço</dt><dd class="font-medium" id="r-service">Corte</dd></div>
+          <div class="flex justify-between"><dt class="text-muted-foreground">Profissional</dt><dd class="font-medium" id="r-pro">Alex</dd></div>
+          <div class="flex justify-between"><dt class="text-muted-foreground">Data</dt><dd class="font-medium" id="r-date">qui, 25 mai 2026</dd></div>
+          <div class="flex justify-between"><dt class="text-muted-foreground">Horário</dt><dd class="font-medium tabular" id="r-time">10:30</dd></div>
+          <div class="border-t border-primary/20 pt-2 mt-2 flex justify-between">
+            <dt class="text-muted-foreground">Total</dt>
+            <dd class="font-bold text-lg" id="r-total">R$ 50,00</dd>
+          </div>
+        </dl>
+      </div>
+
+      <form class="space-y-4" onsubmit="event.preventDefault(); showView('view-success');">
+        <div>
+          <label class="text-sm font-medium mb-1.5 block">Nome <span class="text-destructive">*</span></label>
+          <input type="text" required class="w-full h-11 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="Bruno Silva" />
+        </div>
+        <div>
+          <label class="text-sm font-medium mb-1.5 block">Email <span class="text-destructive">*</span></label>
+          <input type="email" required class="w-full h-11 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="bruno@email.com" />
+        </div>
+        <div>
+          <label class="text-sm font-medium mb-1.5 block">WhatsApp</label>
+          <input type="tel" class="w-full h-11 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="(11) 99999-9999" />
+          <p class="text-xs text-muted-foreground mt-1">Para receber lembrete 1h antes (opcional)</p>
+        </div>
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="checkbox" required class="mt-1 w-4 h-4 rounded border-input" />
+          <span class="text-xs text-muted-foreground">Concordo com os <a class="text-primary underline">termos</a> e a <a class="text-primary underline">política de privacidade</a>.</span>
+        </label>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
+          <i data-lucide="check" class="w-5 h-5"></i>
+          Confirmar agendamento
+        </button>
+        <p class="text-center text-xs text-muted-foreground">Pague na barbearia · cancele até 2h antes sem custo</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ─── CONFIRMAÇÃO ──────────────────────────────────────── -->
+  <section id="view-success" class="view min-h-screen flex flex-col">
+    <div class="flex-1 flex items-center justify-center px-5 py-12">
+      <div class="w-full max-w-sm text-center">
+        <div class="relative mb-6">
+          <div class="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center">
+            <i data-lucide="check" class="w-10 h-10 text-success"></i>
+          </div>
+          <div class="absolute inset-0 rounded-full bg-success/10 animate-ping"></div>
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Tudo certo!</h1>
+        <p class="text-muted-foreground text-sm mb-8">Você vai receber a confirmação no email em alguns minutos.</p>
+
+        <div class="bg-card rounded-2xl border border-border p-5 text-left space-y-3 mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex flex-col items-center justify-center shrink-0">
+              <div class="text-[10px] uppercase font-semibold leading-none">mai</div>
+              <div class="font-bold text-base leading-none mt-0.5">25</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate" id="s-time">Corte às 10:30</div>
+              <div class="text-xs text-muted-foreground">quinta-feira</div>
+            </div>
+          </div>
+          <div class="border-t border-border pt-3 space-y-2 text-sm">
+            <div class="flex items-center gap-2 text-muted-foreground"><i data-lucide="user-round" class="w-3.5 h-3.5"></i><span id="s-pro">com Alex</span></div>
+            <div class="flex items-center gap-2 text-muted-foreground"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i><span>Av. Paulista, 1000</span></div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <button class="w-full h-11 rounded-lg bg-card border border-border font-medium text-sm hover:bg-muted transition flex items-center justify-center gap-2">
+            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+            Adicionar à agenda
+          </button>
+          <button onclick="showView('view-my-bookings')" class="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition">
+            Ver meus agendamentos
+          </button>
+          <button onclick="showView('view-home')" class="w-full h-11 text-muted-foreground text-sm hover:text-foreground transition">
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MEUS AGENDAMENTOS ────────────────────────────────── -->
+  <section id="view-my-bookings" class="view min-h-screen pb-24">
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center max-w-3xl mx-auto">
+        <button onclick="showView('view-home')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <h1 class="text-base font-semibold ml-2">Meus agendamentos</h1>
+      </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto px-5 py-5">
+      <div class="flex gap-2 mb-5">
+        <button class="px-4 py-1.5 rounded-full bg-foreground text-background text-sm font-medium">Próximos · 2</button>
+        <button class="px-4 py-1.5 rounded-full bg-muted text-muted-foreground text-sm font-medium">Histórico · 12</button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="rounded-2xl bg-card border border-border overflow-hidden">
+          <div class="p-4 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex flex-col items-center justify-center shrink-0">
+              <div class="text-[10px] uppercase font-semibold leading-none">mai</div>
+              <div class="font-bold text-base leading-none mt-0.5">25</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">Corte às 10:30</div>
+              <div class="text-xs text-muted-foreground truncate">quinta · com Alex · Studio Demo</div>
+            </div>
+            <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-success/15 text-success">confirmado</span>
+          </div>
+          <div class="bg-muted/30 px-4 py-2 flex gap-2 text-xs">
+            <button class="flex-1 py-1.5 rounded-lg hover:bg-card transition flex items-center justify-center gap-1.5 font-medium"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Calendário</button>
+            <button class="flex-1 py-1.5 rounded-lg hover:bg-card transition flex items-center justify-center gap-1.5 font-medium"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Como chegar</button>
+            <button class="flex-1 py-1.5 rounded-lg hover:bg-card transition text-destructive flex items-center justify-center gap-1.5 font-medium"><i data-lucide="x" class="w-3.5 h-3.5"></i> Cancelar</button>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-card border border-border overflow-hidden">
+          <div class="p-4 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-muted text-foreground flex flex-col items-center justify-center shrink-0">
+              <div class="text-[10px] uppercase font-semibold leading-none">jun</div>
+              <div class="font-bold text-base leading-none mt-0.5">08</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">Combo às 14:00</div>
+              <div class="text-xs text-muted-foreground truncate">domingo · com Bia · Studio Demo</div>
+            </div>
+            <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground">em 16 dias</span>
+          </div>
+        </div>
+
+        <div class="text-center pt-6">
+          <button onclick="showView('view-home')" class="text-sm text-primary font-medium">+ Novo agendamento</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border sm:hidden">
+      <div class="grid grid-cols-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-home')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="store" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="list-checks" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agendamentos</span></button>
+        <button onclick="showView('view-my-profile')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="user" class="w-5 h-5"></i><span class="text-[10px] font-medium">Perfil</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ─── MEU PERFIL ───────────────────────────────────────── -->
+  <section id="view-my-profile" class="view min-h-screen pb-24">
+    <header class="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center max-w-3xl mx-auto">
+        <button onclick="showView('view-home')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <h1 class="text-base font-semibold ml-2">Perfil</h1>
+      </div>
+    </header>
+    <div class="max-w-3xl mx-auto px-5 py-5">
+      <div class="text-center mb-6">
+        <div class="w-20 h-20 rounded-full bg-primary/15 text-primary mx-auto flex items-center justify-center text-2xl font-bold">BS</div>
+        <div class="mt-3 font-semibold">Bruno Silva</div>
+        <div class="text-xs text-muted-foreground">bruno@email.com · membro desde mai/2026</div>
+      </div>
+
+      <div class="bg-card border border-border rounded-2xl divide-y divide-border">
+        <button class="w-full px-4 py-3.5 flex items-center gap-3 text-sm hover:bg-muted transition">
+          <i data-lucide="user-pen" class="w-4 h-4 text-muted-foreground"></i>
+          <span class="flex-1 text-left">Editar dados</span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+        <button class="w-full px-4 py-3.5 flex items-center gap-3 text-sm hover:bg-muted transition">
+          <i data-lucide="bell" class="w-4 h-4 text-muted-foreground"></i>
+          <span class="flex-1 text-left">Notificações</span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+        <button class="w-full px-4 py-3.5 flex items-center gap-3 text-sm hover:bg-muted transition">
+          <i data-lucide="lock" class="w-4 h-4 text-muted-foreground"></i>
+          <span class="flex-1 text-left">Senha</span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+        <button class="w-full px-4 py-3.5 flex items-center gap-3 text-sm hover:bg-muted transition">
+          <i data-lucide="shield" class="w-4 h-4 text-muted-foreground"></i>
+          <span class="flex-1 text-left">Privacidade e dados</span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+      </div>
+
+      <button onclick="showView('view-login')" class="w-full mt-6 h-11 rounded-lg border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/10 transition flex items-center justify-center gap-2">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+      </button>
+
+      <p class="text-center text-xs text-muted-foreground mt-6">v0.1.0 · termos · privacidade</p>
+    </div>
+
+    <nav class="fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border sm:hidden">
+      <div class="grid grid-cols-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-home')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="store" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button onclick="showView('view-my-bookings')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="list-checks" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agendamentos</span></button>
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="user" class="w-5 h-5"></i><span class="text-[10px] font-medium">Perfil</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ═══════════════════════ ADMIN ════════════════════════════ -->
+  <!-- Shell admin: sidebar desktop / bottom tab mobile -->
+
+  <!-- ─── ADMIN DASHBOARD ──────────────────────────────────── -->
+  <section id="view-admin-dashboard" class="view min-h-screen lg:pl-60 pb-20 lg:pb-0">
+    <div class="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+          <div><div class="text-sm font-semibold leading-none">Studio Demo</div><div class="text-[10px] text-muted-foreground">painel admin</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar desktop -->
+    <aside class="hidden lg:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r border-border flex-col z-20">
+      <div class="h-16 border-b border-border px-5 flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+        <div><div class="font-semibold leading-none">Studio Demo</div><div class="text-xs text-muted-foreground mt-0.5">painel admin</div></div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        <button class="w-full px-3 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+        <button onclick="showView('view-admin-agenda')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Agenda</button>
+        <button onclick="showView('view-admin-services')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Serviços</button>
+        <button onclick="showView('view-admin-pros')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Profissionais</button>
+        <button onclick="showView('view-admin-settings')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Configurações</button>
+      </nav>
+      <div class="p-3 border-t border-border">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold">CL</div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">Carla Lima</div><div class="text-xs text-muted-foreground truncate">owner</div></div>
+        </div>
+        <button onclick="showView('view-login')" class="w-full text-xs text-muted-foreground hover:text-foreground flex items-center gap-2 px-3 py-1.5"><i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair</button>
+      </div>
+    </aside>
+
+    <main class="max-w-5xl mx-auto p-5 lg:p-8">
+      <header class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight">Boa tarde, Carla 👋</h1>
+        <p class="text-sm text-muted-foreground mt-1">Aqui está o resumo do dia.</p>
+      </header>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <div class="rounded-xl bg-card border border-border p-4">
+          <div class="text-xs text-muted-foreground mb-1">Hoje</div>
+          <div class="text-2xl font-bold tabular">12</div>
+          <div class="text-[10px] text-muted-foreground mt-1">agendamentos</div>
+        </div>
+        <div class="rounded-xl bg-card border border-border p-4">
+          <div class="text-xs text-muted-foreground mb-1">Receita estimada</div>
+          <div class="text-2xl font-bold tabular">R$ 720</div>
+          <div class="text-[10px] text-success mt-1">+ 18% vs ontem</div>
+        </div>
+        <div class="rounded-xl bg-card border border-border p-4">
+          <div class="text-xs text-muted-foreground mb-1">Ocupação</div>
+          <div class="text-2xl font-bold tabular">85%</div>
+          <div class="text-[10px] text-muted-foreground mt-1">Tio Zé tem 4 livres</div>
+        </div>
+        <div class="rounded-xl bg-card border border-border p-4">
+          <div class="text-xs text-muted-foreground mb-1">No-show (7d)</div>
+          <div class="text-2xl font-bold tabular">2</div>
+          <div class="text-[10px] text-destructive mt-1">acima da média</div>
+        </div>
+      </div>
+
+      <!-- Próximos -->
+      <div class="rounded-xl bg-card border border-border overflow-hidden mb-6">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h2 class="font-semibold text-sm">Próximas 3h</h2>
+          <button onclick="showView('view-admin-agenda')" class="text-xs text-primary font-medium">Ver agenda →</button>
+        </div>
+        <div class="divide-y divide-border">
+          <div class="px-4 py-3 flex items-center gap-3">
+            <div class="font-bold text-sm tabular w-12 text-muted-foreground">14:30</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">Bruno Silva</div>
+              <div class="text-xs text-muted-foreground truncate">Corte · 30min · com Alex</div>
+            </div>
+            <span class="text-[10px] font-semibold uppercase tracking-wider bg-success/15 text-success px-2 py-0.5 rounded-full">confirmado</span>
+          </div>
+          <div class="px-4 py-3 flex items-center gap-3">
+            <div class="font-bold text-sm tabular w-12 text-muted-foreground">15:00</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">Ana Costa</div>
+              <div class="text-xs text-muted-foreground truncate">Barba · 20min · com Bia</div>
+            </div>
+            <span class="text-[10px] font-semibold uppercase tracking-wider bg-success/15 text-success px-2 py-0.5 rounded-full">confirmado</span>
+          </div>
+          <div class="px-4 py-3 flex items-center gap-3">
+            <div class="font-bold text-sm tabular w-12 text-muted-foreground">15:30</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">Pedro Lima</div>
+              <div class="text-xs text-muted-foreground truncate">Combo · 50min · com Alex</div>
+            </div>
+            <span class="text-[10px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">a caminho</span>
+          </div>
+          <div class="px-4 py-3 flex items-center gap-3">
+            <div class="font-bold text-sm tabular w-12 text-muted-foreground">16:30</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">Clara Souza</div>
+              <div class="text-xs text-muted-foreground truncate">Coloração · 90min · com Bia</div>
+            </div>
+            <span class="text-[10px] font-semibold uppercase tracking-wider bg-success/15 text-success px-2 py-0.5 rounded-full">confirmado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="showView('view-admin-agenda')" class="rounded-xl bg-card border border-border p-4 text-left hover:border-primary transition">
+          <div class="w-8 h-8 rounded-lg bg-accent text-accent-foreground flex items-center justify-center mb-3"><i data-lucide="plus" class="w-4 h-4"></i></div>
+          <div class="font-semibold text-sm">Novo agendamento manual</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Walk-in ou encaixe</div>
+        </button>
+        <button onclick="showView('view-admin-services')" class="rounded-xl bg-card border border-border p-4 text-left hover:border-primary transition">
+          <div class="w-8 h-8 rounded-lg bg-accent text-accent-foreground flex items-center justify-center mb-3"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+          <div class="font-semibold text-sm">Novo serviço</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Cadastrar oferta</div>
+        </button>
+      </div>
+    </main>
+
+    <!-- Bottom nav admin mobile -->
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border">
+      <div class="grid grid-cols-5 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button onclick="showView('view-admin-agenda')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agenda</span></button>
+        <button onclick="showView('view-admin-services')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="scissors" class="w-5 h-5"></i><span class="text-[10px] font-medium">Serviços</span></button>
+        <button onclick="showView('view-admin-pros')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="users" class="w-5 h-5"></i><span class="text-[10px] font-medium">Equipe</span></button>
+        <button onclick="showView('view-admin-settings')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-medium">Config</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ─── ADMIN AGENDA ─────────────────────────────────────── -->
+  <section id="view-admin-agenda" class="view min-h-screen lg:pl-60 pb-20 lg:pb-0">
+    <!-- Topo mobile -->
+    <div class="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3">
+        <button onclick="showView('view-admin-dashboard')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+        <h1 class="text-base font-semibold flex-1">Agenda</h1>
+        <button class="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+    <!-- Sidebar igual -->
+    <aside class="hidden lg:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r border-border flex-col z-20">
+      <div class="h-16 border-b border-border px-5 flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+        <div><div class="font-semibold leading-none">Studio Demo</div><div class="text-xs text-muted-foreground mt-0.5">painel admin</div></div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        <button onclick="showView('view-admin-dashboard')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+        <button class="w-full px-3 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Agenda</button>
+        <button onclick="showView('view-admin-services')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Serviços</button>
+        <button onclick="showView('view-admin-pros')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Profissionais</button>
+        <button onclick="showView('view-admin-settings')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Configurações</button>
+      </nav>
+    </aside>
+
+    <main class="p-5 lg:p-8">
+      <!-- Header / toolbar -->
+      <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-between mb-5">
+        <div>
+          <h1 class="hidden lg:block text-2xl font-bold tracking-tight">Agenda</h1>
+          <p class="hidden lg:block text-sm text-muted-foreground mt-1">Visualize e gerencie todos os agendamentos</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="w-9 h-9 rounded-lg border border-border bg-card hover:bg-muted flex items-center justify-center"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+          <div class="px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium tabular">Qui, 25 mai</div>
+          <button class="w-9 h-9 rounded-lg border border-border bg-card hover:bg-muted flex items-center justify-center"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+          <button class="hidden lg:flex px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium hover:bg-muted ml-1">Hoje</button>
+          <button class="hidden lg:flex ml-auto px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Novo</button>
+        </div>
+      </div>
+
+      <!-- Filtro profissional (mobile = chips, desktop = colunas mostradas) -->
+      <div class="flex gap-2 overflow-x-auto scroll-x mb-4 lg:hidden">
+        <button class="shrink-0 px-3 py-1.5 rounded-full bg-foreground text-background text-xs font-medium">Todos</button>
+        <button class="shrink-0 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">Alex (5)</button>
+        <button class="shrink-0 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">Bia (4)</button>
+        <button class="shrink-0 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">Jay (3)</button>
+      </div>
+
+      <!-- Mobile: list view -->
+      <div class="lg:hidden space-y-2">
+        <div class="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+          <div class="font-bold tabular text-sm w-12 text-muted-foreground">09:00</div>
+          <div class="w-1 h-10 rounded-full bg-primary shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-sm truncate">Bruno · Corte</div>
+            <div class="text-xs text-muted-foreground truncate">Alex · 30min</div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </div>
+        <div class="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+          <div class="font-bold tabular text-sm w-12 text-muted-foreground">09:30</div>
+          <div class="w-1 h-10 rounded-full bg-amber-500 shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-sm truncate">Ana · Barba</div>
+            <div class="text-xs text-muted-foreground truncate">Bia · 20min</div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </div>
+        <div class="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+          <div class="font-bold tabular text-sm w-12 text-muted-foreground">10:30</div>
+          <div class="w-1 h-10 rounded-full bg-primary shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-sm truncate">Pedro · Combo</div>
+            <div class="text-xs text-muted-foreground truncate">Alex · 50min</div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </div>
+        <div class="rounded-xl bg-muted/30 border border-dashed border-border p-3 flex items-center gap-3 text-muted-foreground">
+          <div class="font-bold tabular text-sm w-12">11:30</div>
+          <div class="flex-1 text-sm italic">livre — toque para encaixe</div>
+        </div>
+        <div class="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+          <div class="font-bold tabular text-sm w-12 text-muted-foreground">14:00</div>
+          <div class="w-1 h-10 rounded-full bg-primary shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-sm truncate">Clara · Coloração</div>
+            <div class="text-xs text-muted-foreground truncate">Bia · 90min</div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-muted-foreground"></i>
+        </div>
+      </div>
+
+      <!-- Desktop: grade timeline -->
+      <div class="hidden lg:block rounded-xl bg-card border border-border overflow-hidden">
+        <div class="grid grid-cols-[60px_repeat(3,1fr)] border-b border-border">
+          <div></div>
+          <div class="py-3 text-center text-sm font-semibold border-l border-border">Alex</div>
+          <div class="py-3 text-center text-sm font-semibold border-l border-border">Bia</div>
+          <div class="py-3 text-center text-sm font-semibold border-l border-border">Jay</div>
+        </div>
+        <div class="grid grid-cols-[60px_repeat(3,1fr)] relative" style="grid-auto-rows: 32px;">
+          <!-- Horários -->
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 1;">09:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 3;">10:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 5;">11:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 7;">12:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 9;">13:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 11;">14:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 13;">15:00</div>
+          <div class="text-[10px] text-muted-foreground border-r border-border text-right pr-2 -translate-y-2" style="grid-row: 15;">16:00</div>
+
+          <!-- Background grid lines per column -->
+          <div class="col-start-2 col-end-5 row-start-1 row-end-17 grid grid-cols-3 pointer-events-none">
+            <div class="border-l border-border"></div>
+            <div class="border-l border-border"></div>
+            <div class="border-l border-border"></div>
+          </div>
+
+          <!-- Appointments Alex (col 2) -->
+          <div class="col-start-2 m-1 rounded-lg bg-primary/15 border border-primary/30 p-2 cursor-pointer hover:bg-primary/25 transition" style="grid-row: 1 / span 1;">
+            <div class="text-xs font-semibold truncate">Bruno · Corte</div>
+            <div class="text-[10px] text-muted-foreground">09:00–09:30</div>
+          </div>
+          <div class="col-start-2 m-1 rounded-lg bg-primary/15 border border-primary/30 p-2 cursor-pointer hover:bg-primary/25 transition" style="grid-row: 4 / span 2;">
+            <div class="text-xs font-semibold truncate">Pedro · Combo</div>
+            <div class="text-[10px] text-muted-foreground">10:30–11:20</div>
+          </div>
+          <div class="col-start-2 m-1 rounded-lg bg-muted/60 border border-dashed border-border p-2" style="grid-row: 6 / span 2;">
+            <div class="text-xs font-semibold truncate text-muted-foreground">Almoço</div>
+          </div>
+          <div class="col-start-2 m-1 rounded-lg bg-primary/15 border border-primary/30 p-2 cursor-pointer hover:bg-primary/25 transition" style="grid-row: 12 / span 1;">
+            <div class="text-xs font-semibold truncate">Rafa · Corte</div>
+            <div class="text-[10px] text-muted-foreground">14:30–15:00</div>
+          </div>
+
+          <!-- Appointments Bia (col 3) -->
+          <div class="col-start-3 m-1 rounded-lg bg-primary/15 border border-primary/30 p-2 cursor-pointer hover:bg-primary/25 transition" style="grid-row: 2 / span 1;">
+            <div class="text-xs font-semibold truncate">Ana · Barba</div>
+            <div class="text-[10px] text-muted-foreground">09:30–09:50</div>
+          </div>
+          <div class="col-start-3 m-1 rounded-lg bg-primary/15 border border-primary/30 p-2 cursor-pointer hover:bg-primary/25 transition" style="grid-row: 11 / span 3;">
+            <div class="text-xs font-semibold truncate">Clara · Coloração</div>
+            <div class="text-[10px] text-muted-foreground">14:00–15:30</div>
+          </div>
+
+          <!-- Appointments Jay (col 4) -->
+          <div class="col-start-4 m-1 rounded-lg bg-primary/15 border border-primary/30 p-2 cursor-pointer hover:bg-primary/25 transition" style="grid-row: 1 / span 1;">
+            <div class="text-xs font-semibold truncate">Marina · Corte</div>
+            <div class="text-[10px] text-muted-foreground">09:00–09:30</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border">
+      <div class="grid grid-cols-5 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-admin-dashboard')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agenda</span></button>
+        <button onclick="showView('view-admin-services')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="scissors" class="w-5 h-5"></i><span class="text-[10px] font-medium">Serviços</span></button>
+        <button onclick="showView('view-admin-pros')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="users" class="w-5 h-5"></i><span class="text-[10px] font-medium">Equipe</span></button>
+        <button onclick="showView('view-admin-settings')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-medium">Config</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ─── ADMIN SERVIÇOS ───────────────────────────────────── -->
+  <section id="view-admin-services" class="view min-h-screen lg:pl-60 pb-20 lg:pb-0">
+    <div class="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3">
+        <button onclick="showView('view-admin-dashboard')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+        <h1 class="text-base font-semibold flex-1">Serviços</h1>
+        <button onclick="toggleServiceForm()" class="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+    <aside class="hidden lg:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r border-border flex-col z-20">
+      <div class="h-16 border-b border-border px-5 flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+        <div><div class="font-semibold leading-none">Studio Demo</div><div class="text-xs text-muted-foreground mt-0.5">painel admin</div></div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        <button onclick="showView('view-admin-dashboard')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+        <button onclick="showView('view-admin-agenda')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Agenda</button>
+        <button class="w-full px-3 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Serviços</button>
+        <button onclick="showView('view-admin-pros')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Profissionais</button>
+        <button onclick="showView('view-admin-settings')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Configurações</button>
+      </nav>
+    </aside>
+
+    <main class="p-5 lg:p-8 max-w-5xl mx-auto">
+      <div class="hidden lg:flex items-center justify-between mb-6">
+        <div><h1 class="text-2xl font-bold tracking-tight">Serviços</h1><p class="text-sm text-muted-foreground mt-1">Catálogo de ofertas da barbearia</p></div>
+        <button onclick="toggleServiceForm()" class="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Novo serviço</button>
+      </div>
+
+      <!-- Form drawer (inline) -->
+      <div id="service-form" class="hidden mb-6 rounded-xl bg-card border border-primary/30 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">Novo serviço</h3>
+          <button onclick="toggleServiceForm()" class="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <form class="space-y-3" onsubmit="event.preventDefault(); toggleServiceForm();">
+          <div>
+            <label class="text-xs font-medium mb-1 block">Nome</label>
+            <input type="text" class="w-full h-10 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" placeholder="Ex: Corte degradê" />
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1 block">Descrição</label>
+            <textarea rows="2" class="w-full px-3 py-2 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition resize-none" placeholder="Detalhes do serviço (opcional)"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium mb-1 block">Duração (min)</label>
+              <input type="number" step="5" min="5" max="240" class="w-full h-10 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition tabular" value="30" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block">Preço (R$)</label>
+              <input type="number" step="5" class="w-full h-10 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition tabular" value="50" />
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1 block">Quem faz</label>
+            <div class="flex flex-wrap gap-1.5">
+              <label class="px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium cursor-pointer flex items-center gap-1.5"><input type="checkbox" checked class="w-3 h-3 rounded"> Alex</label>
+              <label class="px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-medium cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="w-3 h-3 rounded"> Bia</label>
+              <label class="px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium cursor-pointer flex items-center gap-1.5"><input type="checkbox" checked class="w-3 h-3 rounded"> Jay</label>
+              <label class="px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-medium cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="w-3 h-3 rounded"> Pê</label>
+            </div>
+          </div>
+          <label class="flex items-center gap-2 text-sm pt-2">
+            <input type="checkbox" checked class="w-4 h-4 rounded">
+            <span>Ativo · aparece no fluxo do cliente</span>
+          </label>
+          <div class="flex gap-2 pt-3">
+            <button type="button" onclick="toggleServiceForm()" class="flex-1 h-10 rounded-lg border border-border text-sm font-medium hover:bg-muted transition">Cancelar</button>
+            <button type="submit" class="flex-1 h-10 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition">Salvar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabela -->
+      <div class="rounded-xl bg-card border border-border overflow-hidden">
+        <div class="divide-y divide-border">
+          <div class="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_80px_100px_80px] gap-3 px-4 py-3 items-center hover:bg-muted/30 transition">
+            <div class="min-w-0">
+              <div class="font-semibold text-sm truncate">Corte</div>
+              <div class="text-xs text-muted-foreground sm:hidden">30min · R$ 50</div>
+            </div>
+            <div class="hidden sm:block text-sm text-muted-foreground tabular">30min</div>
+            <div class="hidden sm:block text-sm font-semibold tabular">R$ 50,00</div>
+            <div class="flex items-center gap-1 justify-end">
+              <span class="hidden sm:inline-block w-2 h-2 rounded-full bg-success"></span>
+              <button class="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+              <button class="w-8 h-8 rounded-md hover:bg-destructive/10 hover:text-destructive flex items-center justify-center text-muted-foreground"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_80px_100px_80px] gap-3 px-4 py-3 items-center hover:bg-muted/30 transition">
+            <div class="min-w-0">
+              <div class="font-semibold text-sm truncate">Barba</div>
+              <div class="text-xs text-muted-foreground sm:hidden">20min · R$ 30</div>
+            </div>
+            <div class="hidden sm:block text-sm text-muted-foreground tabular">20min</div>
+            <div class="hidden sm:block text-sm font-semibold tabular">R$ 30,00</div>
+            <div class="flex items-center gap-1 justify-end">
+              <span class="hidden sm:inline-block w-2 h-2 rounded-full bg-success"></span>
+              <button class="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+              <button class="w-8 h-8 rounded-md hover:bg-destructive/10 hover:text-destructive flex items-center justify-center text-muted-foreground"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_80px_100px_80px] gap-3 px-4 py-3 items-center hover:bg-muted/30 transition">
+            <div class="min-w-0">
+              <div class="font-semibold text-sm truncate flex items-center gap-1.5">Combo <span class="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-1.5 py-0.5 rounded">top</span></div>
+              <div class="text-xs text-muted-foreground sm:hidden">50min · R$ 70</div>
+            </div>
+            <div class="hidden sm:block text-sm text-muted-foreground tabular">50min</div>
+            <div class="hidden sm:block text-sm font-semibold tabular">R$ 70,00</div>
+            <div class="flex items-center gap-1 justify-end">
+              <span class="hidden sm:inline-block w-2 h-2 rounded-full bg-success"></span>
+              <button class="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+              <button class="w-8 h-8 rounded-md hover:bg-destructive/10 hover:text-destructive flex items-center justify-center text-muted-foreground"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_80px_100px_80px] gap-3 px-4 py-3 items-center hover:bg-muted/30 transition opacity-60">
+            <div class="min-w-0">
+              <div class="font-semibold text-sm truncate">Coloração</div>
+              <div class="text-xs text-muted-foreground sm:hidden">90min · R$ 150 · inativo</div>
+            </div>
+            <div class="hidden sm:block text-sm text-muted-foreground tabular">90min</div>
+            <div class="hidden sm:block text-sm font-semibold tabular">R$ 150,00</div>
+            <div class="flex items-center gap-1 justify-end">
+              <span class="hidden sm:inline-block w-2 h-2 rounded-full bg-muted-foreground/40"></span>
+              <button class="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+              <button class="w-8 h-8 rounded-md hover:bg-destructive/10 hover:text-destructive flex items-center justify-center text-muted-foreground"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-xs text-muted-foreground mt-4">4 serviços · 3 ativos · 1 inativo</p>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border">
+      <div class="grid grid-cols-5 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-admin-dashboard')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button onclick="showView('view-admin-agenda')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agenda</span></button>
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="scissors" class="w-5 h-5"></i><span class="text-[10px] font-medium">Serviços</span></button>
+        <button onclick="showView('view-admin-pros')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="users" class="w-5 h-5"></i><span class="text-[10px] font-medium">Equipe</span></button>
+        <button onclick="showView('view-admin-settings')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-medium">Config</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ─── ADMIN PROFISSIONAIS ──────────────────────────────── -->
+  <section id="view-admin-pros" class="view min-h-screen lg:pl-60 pb-20 lg:pb-0">
+    <div class="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3">
+        <button onclick="showView('view-admin-dashboard')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+        <h1 class="text-base font-semibold flex-1">Profissionais</h1>
+        <button class="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+    <aside class="hidden lg:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r border-border flex-col z-20">
+      <div class="h-16 border-b border-border px-5 flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+        <div><div class="font-semibold leading-none">Studio Demo</div><div class="text-xs text-muted-foreground mt-0.5">painel admin</div></div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        <button onclick="showView('view-admin-dashboard')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+        <button onclick="showView('view-admin-agenda')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Agenda</button>
+        <button onclick="showView('view-admin-services')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Serviços</button>
+        <button class="w-full px-3 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Profissionais</button>
+        <button onclick="showView('view-admin-settings')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Configurações</button>
+      </nav>
+    </aside>
+
+    <main class="p-5 lg:p-8 max-w-5xl mx-auto">
+      <div class="hidden lg:flex items-center justify-between mb-6">
+        <div><h1 class="text-2xl font-bold tracking-tight">Profissionais</h1><p class="text-sm text-muted-foreground mt-1">Equipe e horários de trabalho</p></div>
+        <button class="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Novo</button>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Card profissional -->
+        <div class="rounded-xl bg-card border border-border p-5">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold">AL</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">Alex Lima</div>
+              <div class="text-xs text-muted-foreground truncate">alex@studio.com · STAFF</div>
+              <div class="text-[10px] font-semibold uppercase tracking-wider text-success mt-1">● ativo</div>
+            </div>
+          </div>
+          <div class="text-xs text-muted-foreground mb-2">Faz</div>
+          <div class="flex flex-wrap gap-1 mb-4">
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Corte</span>
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Barba</span>
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Combo</span>
+          </div>
+          <div class="text-xs text-muted-foreground mb-2">Horários</div>
+          <div class="space-y-1 text-xs mb-4">
+            <div class="flex justify-between"><span>Seg-Sex</span><span class="tabular text-muted-foreground">09:00–12:00 · 14:00–19:00</span></div>
+            <div class="flex justify-between"><span>Sáb</span><span class="tabular text-muted-foreground">09:00–17:00</span></div>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 h-9 rounded-lg border border-border text-xs font-medium hover:bg-muted transition">Editar</button>
+            <button class="flex-1 h-9 rounded-lg border border-border text-xs font-medium hover:bg-muted transition">Horários</button>
+          </div>
+        </div>
+
+        <div class="rounded-xl bg-card border border-border p-5">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-pink-200 dark:bg-pink-500/30 text-pink-700 dark:text-pink-200 flex items-center justify-center font-bold">BR</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">Bia Rocha</div>
+              <div class="text-xs text-muted-foreground truncate">bia@studio.com · STAFF</div>
+              <div class="text-[10px] font-semibold uppercase tracking-wider text-success mt-1">● ativo</div>
+            </div>
+          </div>
+          <div class="text-xs text-muted-foreground mb-2">Faz</div>
+          <div class="flex flex-wrap gap-1 mb-4">
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Coloração</span>
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Corte</span>
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Hidratação</span>
+          </div>
+          <div class="text-xs text-muted-foreground mb-2">Horários</div>
+          <div class="space-y-1 text-xs mb-4">
+            <div class="flex justify-between"><span>Ter-Sáb</span><span class="tabular text-muted-foreground">10:00–20:00</span></div>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 h-9 rounded-lg border border-border text-xs font-medium hover:bg-muted transition">Editar</button>
+            <button class="flex-1 h-9 rounded-lg border border-border text-xs font-medium hover:bg-muted transition">Horários</button>
+          </div>
+        </div>
+
+        <div class="rounded-xl bg-card border border-border p-5">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-amber-200 dark:bg-amber-500/30 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">JS</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">Jay Souza</div>
+              <div class="text-xs text-muted-foreground truncate">jay@studio.com · STAFF</div>
+              <div class="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mt-1">● em férias</div>
+            </div>
+          </div>
+          <div class="text-xs text-muted-foreground mb-2">Faz</div>
+          <div class="flex flex-wrap gap-1 mb-4">
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Combo</span>
+            <span class="px-2 py-0.5 rounded-md bg-muted text-xs font-medium">Barba</span>
+          </div>
+          <div class="text-xs text-muted-foreground mb-2">Bloqueio ativo</div>
+          <div class="rounded-lg bg-amber-500/10 px-3 py-2 text-xs mb-4">
+            <div class="font-medium text-amber-700 dark:text-amber-400">23/05 → 30/05</div>
+            <div class="text-muted-foreground">Férias</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 h-9 rounded-lg border border-border text-xs font-medium hover:bg-muted transition">Editar</button>
+            <button class="flex-1 h-9 rounded-lg border border-border text-xs font-medium hover:bg-muted transition">Horários</button>
+          </div>
+        </div>
+
+        <button class="rounded-xl border-2 border-dashed border-border hover:border-primary p-5 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary transition min-h-[200px]">
+          <i data-lucide="user-plus" class="w-6 h-6"></i>
+          <div class="text-sm font-medium">Adicionar profissional</div>
+        </button>
+      </div>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border">
+      <div class="grid grid-cols-5 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-admin-dashboard')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button onclick="showView('view-admin-agenda')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agenda</span></button>
+        <button onclick="showView('view-admin-services')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="scissors" class="w-5 h-5"></i><span class="text-[10px] font-medium">Serviços</span></button>
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="users" class="w-5 h-5"></i><span class="text-[10px] font-medium">Equipe</span></button>
+        <button onclick="showView('view-admin-settings')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-medium">Config</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ─── ADMIN CONFIGURAÇÕES ──────────────────────────────── -->
+  <section id="view-admin-settings" class="view min-h-screen lg:pl-60 pb-20 lg:pb-0">
+    <div class="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border">
+      <div class="px-5 h-14 flex items-center gap-3">
+        <button onclick="showView('view-admin-dashboard')" class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center -ml-2"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+        <h1 class="text-base font-semibold flex-1">Configurações</h1>
+      </div>
+    </div>
+    <aside class="hidden lg:flex fixed top-0 left-0 bottom-0 w-60 bg-card border-r border-border flex-col z-20">
+      <div class="h-16 border-b border-border px-5 flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center"><i data-lucide="scissors" class="w-4 h-4"></i></div>
+        <div><div class="font-semibold leading-none">Studio Demo</div><div class="text-xs text-muted-foreground mt-0.5">painel admin</div></div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        <button onclick="showView('view-admin-dashboard')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+        <button onclick="showView('view-admin-agenda')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> Agenda</button>
+        <button onclick="showView('view-admin-services')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4"></i> Serviços</button>
+        <button onclick="showView('view-admin-pros')" class="w-full px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium text-muted-foreground flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> Profissionais</button>
+        <button class="w-full px-3 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Configurações</button>
+      </nav>
+    </aside>
+
+    <main class="p-5 lg:p-8 max-w-2xl mx-auto">
+      <header class="hidden lg:block mb-6">
+        <h1 class="text-2xl font-bold tracking-tight">Configurações</h1>
+        <p class="text-sm text-muted-foreground mt-1">Dados da barbearia e preferências</p>
+      </header>
+
+      <div class="space-y-4">
+        <div class="rounded-xl bg-card border border-border p-5">
+          <h3 class="font-semibold mb-4">Dados da barbearia</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs font-medium mb-1 block">Nome</label>
+              <input type="text" value="Studio Demo" class="w-full h-10 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block">URL pública</label>
+              <div class="flex h-10 rounded-lg border border-input bg-background overflow-hidden">
+                <span class="px-3 flex items-center text-xs text-muted-foreground bg-muted">barbearia.app/</span>
+                <input type="text" value="studio-demo" class="flex-1 px-2 bg-background outline-none text-sm" />
+              </div>
+              <p class="text-xs text-muted-foreground mt-1">Mudar isso muda o link que você compartilha.</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block">Endereço</label>
+              <input type="text" value="Av. Paulista, 1000 — São Paulo, SP" class="w-full h-10 px-3 rounded-lg bg-background border border-input focus:border-primary focus:ring-2 focus:ring-ring/30 outline-none text-sm transition" />
+            </div>
+            <div>
+              <label class="text-xs font-medium mb-1 block">Fuso horário</label>
+              <input type="text" value="America/Sao_Paulo" disabled class="w-full h-10 px-3 rounded-lg bg-muted border border-input text-sm text-muted-foreground" />
+              <p class="text-xs text-muted-foreground mt-1">Configurável em v2.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-xl bg-card border border-border p-5">
+          <h3 class="font-semibold mb-4">Política de agendamento</h3>
+          <div class="space-y-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" checked class="mt-1 w-4 h-4 rounded">
+              <div class="flex-1">
+                <div class="text-sm font-medium">Permitir cliente sem cadastro</div>
+                <div class="text-xs text-muted-foreground">Nome + email bastam, não precisa criar senha.</div>
+              </div>
+            </label>
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" checked class="mt-1 w-4 h-4 rounded">
+              <div class="flex-1">
+                <div class="text-sm font-medium">Lembrete por email 1h antes</div>
+                <div class="text-xs text-muted-foreground">Reduz no-show em ~30%.</div>
+              </div>
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-medium mb-1 block">Antecedência mínima</label>
+                <select class="w-full h-10 px-3 rounded-lg bg-background border border-input text-sm">
+                  <option>30 min</option><option>1h</option><option>2h</option><option>3h</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium mb-1 block">Janela futura</label>
+                <select class="w-full h-10 px-3 rounded-lg bg-background border border-input text-sm">
+                  <option>30 dias</option><option selected>60 dias</option><option>90 dias</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-xl bg-card border border-border p-5">
+          <h3 class="font-semibold mb-1">Aparência do app</h3>
+          <p class="text-xs text-muted-foreground mb-4">Como o cliente vê seu link público.</p>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="setPalette('violet')" data-palette-btn="violet" class="palette-btn aspect-video rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-xs font-medium text-white transition">Violeta</button>
+            <button type="button" onclick="setPalette('amber')" data-palette-btn="amber" class="palette-btn aspect-video rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-xs font-medium text-white transition">Dourado</button>
+            <button type="button" onclick="setPalette('stone')" data-palette-btn="stone" class="palette-btn aspect-video rounded-lg bg-gradient-to-br from-stone-400 to-stone-700 flex items-center justify-center text-xs font-medium text-white transition">Neutro</button>
+          </div>
+          <p class="text-xs text-muted-foreground mt-3">Aplicado imediatamente em todo o app. Mais opções em v2.</p>
+        </div>
+
+        <div class="rounded-xl bg-destructive/5 border border-destructive/20 p-5">
+          <h3 class="font-semibold mb-1 text-destructive">Zona de perigo</h3>
+          <p class="text-xs text-muted-foreground mb-4">Ações irreversíveis. Pense duas vezes.</p>
+          <div class="space-y-2">
+            <button class="w-full text-left h-10 px-3 rounded-lg border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/10 transition">Exportar todos os dados</button>
+            <button class="w-full text-left h-10 px-3 rounded-lg border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/10 transition">Excluir conta da barbearia</button>
+          </div>
+        </div>
+
+        <button class="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition sticky bottom-20 lg:bottom-5 shadow-lg shadow-primary/20">Salvar alterações</button>
+      </div>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border">
+      <div class="grid grid-cols-5 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <button onclick="showView('view-admin-dashboard')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-[10px] font-medium">Início</span></button>
+        <button onclick="showView('view-admin-agenda')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="calendar-days" class="w-5 h-5"></i><span class="text-[10px] font-medium">Agenda</span></button>
+        <button onclick="showView('view-admin-services')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="scissors" class="w-5 h-5"></i><span class="text-[10px] font-medium">Serviços</span></button>
+        <button onclick="showView('view-admin-pros')" class="flex flex-col items-center gap-0.5 text-muted-foreground"><i data-lucide="users" class="w-5 h-5"></i><span class="text-[10px] font-medium">Equipe</span></button>
+        <button class="flex flex-col items-center gap-0.5 text-primary"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-medium">Config</span></button>
+      </div>
+    </nav>
+  </section>
+
+  <!-- ════════════════════════ SCRIPTS ═══════════════════════ -->
+  <script>
+    // ─── Theme ─────────────────────────────────────────────
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+      lucide.createIcons();
+    }
+
+    // ─── Palette ───────────────────────────────────────────
+    // Estado visual dos botões é puramente CSS (regra .palette-btn
+    // + seletor :root[data-palette="..."]) — aqui só trocamos o atributo.
+    function setPalette(name) {
+      document.documentElement.setAttribute("data-palette", name);
+      localStorage.setItem("palette", name);
+    }
+
+    // ─── Navigation entre views ────────────────────────────
+    function showView(id) {
+      document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+      const target = document.getElementById(id);
+      if (target) target.classList.add("active");
+      document.getElementById("demo-nav").classList.add("translate-x-full");
+      document.getElementById("nav-backdrop").classList.add("hidden");
+      window.scrollTo(0, 0);
+      // Re-render icons em qualquer conteúdo novo
+      lucide.createIcons();
+    }
+
+    function toggleNav() {
+      const nav = document.getElementById("demo-nav");
+      const bd = document.getElementById("nav-backdrop");
+      nav.classList.toggle("translate-x-full");
+      bd.classList.toggle("hidden");
+    }
+
+    // ─── Auth tab ──────────────────────────────────────────
+    function setAuthTab(tab) {
+      const isLogin = tab === "login";
+      document.getElementById("tab-login").classList.toggle("bg-card", isLogin);
+      document.getElementById("tab-login").classList.toggle("shadow-sm", isLogin);
+      document.getElementById("tab-login").classList.toggle("text-muted-foreground", !isLogin);
+      document.getElementById("tab-signup").classList.toggle("bg-card", !isLogin);
+      document.getElementById("tab-signup").classList.toggle("shadow-sm", !isLogin);
+      document.getElementById("tab-signup").classList.toggle("text-muted-foreground", isLogin);
+      document.getElementById("field-name").classList.toggle("hidden", isLogin);
+      document.getElementById("forgot").classList.toggle("hidden", !isLogin);
+      document.getElementById("submit-text").textContent = isLogin ? "Entrar" : "Criar conta";
+      document.getElementById("terms").classList.toggle("hidden", isLogin);
+    }
+
+    // ─── Booking state ─────────────────────────────────────
+    const SERVICES = [
+      { id: "s1", name: "Corte", duration: 30, price: 5000, desc: "Corte de cabelo" },
+      { id: "s2", name: "Barba", duration: 20, price: 3000, desc: "Acabamento com navalha" },
+      { id: "s3", name: "Combo", duration: 50, price: 7000, desc: "Corte + barba", badge: "popular" },
+      { id: "s4", name: "Coloração", duration: 90, price: 15000, desc: "Coloração completa" },
+    ];
+    const PROS = [
+      { id: "p1", name: "Alex", services: ["s1","s2","s3"], color: "bg-violet-200 text-violet-700 dark:bg-violet-500/30 dark:text-violet-100", initial: "AL" },
+      { id: "p2", name: "Bia", services: ["s1","s4"], color: "bg-pink-200 text-pink-700 dark:bg-pink-500/30 dark:text-pink-100", initial: "BR" },
+      { id: "p3", name: "Jay", services: ["s2","s3"], color: "bg-amber-200 text-amber-700 dark:bg-amber-500/30 dark:text-amber-100", initial: "JS" },
+      { id: "p4", name: "Pê", services: ["s2"], color: "bg-emerald-200 text-emerald-700 dark:bg-emerald-500/30 dark:text-emerald-100", initial: "PE" },
+    ];
+
+    const booking = {
+      service: SERVICES[0],
+      proId: "any",
+      date: null,
+      time: null,
+    };
+
+    function formatBRL(cents) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
+
+    function renderServices() {
+      const list = document.getElementById("services-list");
+      list.innerHTML = SERVICES.map((s) => {
+        const selected = booking.service?.id === s.id;
+        return `
+          <button onclick="selectService('${s.id}')" class="w-full text-left rounded-xl border ${selected ? "border-primary bg-accent ring-2 ring-ring/30" : "border-border bg-card hover:border-primary/40"} p-4 transition flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full ${selected ? "bg-primary text-primary-foreground" : "border-2 border-border"} flex items-center justify-center shrink-0">
+              ${selected ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ""}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold flex items-center gap-2">${s.name} ${s.badge ? `<span class="text-[9px] uppercase font-bold tracking-wider bg-primary text-primary-foreground px-1.5 py-0.5 rounded">${s.badge}</span>` : ""}</div>
+              <div class="text-xs text-muted-foreground mt-0.5">${s.desc}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="font-semibold tabular">${formatBRL(s.price)}</div>
+              <div class="text-xs text-muted-foreground tabular">${s.duration} min</div>
+            </div>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function selectService(id) {
+      booking.service = SERVICES.find((s) => s.id === id);
+      booking.proId = "any";
+      renderServices();
+    }
+
+    function renderPros() {
+      const list = document.getElementById("pros-list");
+      const filtered = PROS.filter((p) => p.services.includes(booking.service.id));
+      list.innerHTML = filtered.map((p) => `
+        <button onclick="selectPro('${p.id}'); showView('view-book-3');" class="rounded-xl border border-border hover:border-primary p-4 transition text-center bg-card">
+          <div class="w-14 h-14 rounded-full ${p.color} mx-auto flex items-center justify-center font-bold mb-2">${p.initial}</div>
+          <div class="font-semibold text-sm">${p.name}</div>
+          <div class="text-xs text-muted-foreground mt-0.5">${p.services.length} serviço${p.services.length>1?"s":""}</div>
+        </button>
+      `).join("");
+    }
+
+    function selectPro(id) {
+      booking.proId = id;
+    }
+
+    function renderDates() {
+      const list = document.getElementById("dates-list");
+      const today = new Date();
+      const labels = ["dom","seg","ter","qua","qui","sex","sáb"];
+      const days = [];
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(today); d.setDate(today.getDate() + i);
+        days.push(d);
+      }
+      if (!booking.date) booking.date = days[2];
+
+      list.innerHTML = days.map((d, i) => {
+        const isSel = booking.date && d.toDateString() === booking.date.toDateString();
+        const isSunday = d.getDay() === 0;
+        return `
+          <button ${isSunday ? "disabled" : ""} onclick='selectDate(${d.getTime()})' class="shrink-0 w-14 rounded-xl py-2.5 text-center transition ${isSel ? "bg-primary text-primary-foreground" : isSunday ? "bg-muted text-muted-foreground/40 cursor-not-allowed" : "border border-border bg-card hover:border-primary"}">
+            <div class="text-[10px] uppercase font-semibold ${isSel ? "opacity-80" : "text-muted-foreground"}">${i === 0 ? "hj" : labels[d.getDay()]}</div>
+            <div class="font-bold tabular text-lg">${String(d.getDate()).padStart(2,"0")}</div>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function selectDate(t) {
+      booking.date = new Date(t);
+      booking.time = null;
+      renderDates();
+      renderSlots();
+      updateBookingSummary();
+    }
+
+    function renderSlots() {
+      const grid = document.getElementById("slots-grid");
+      const period = document.querySelector(".period-btn.bg-foreground")?.dataset?.period || "morning";
+      const slotsMorning = ["09:00","09:30","10:00","10:30","11:00","11:30"];
+      const slotsAfternoon = ["14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"];
+      const slots = period === "morning" ? slotsMorning : slotsAfternoon;
+      const taken = ["10:00","14:30"]; // mock
+      grid.innerHTML = slots.map((t) => {
+        const isTaken = taken.includes(t);
+        const isSel = booking.time === t;
+        return `
+          <button ${isTaken ? "disabled" : ""} onclick="selectTime('${t}')" class="h-12 rounded-xl text-sm font-semibold tabular transition ${isTaken ? "bg-muted text-muted-foreground/40 line-through cursor-not-allowed" : isSel ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "border border-border bg-card hover:border-primary"}">${t}</button>
+        `;
+      }).join("");
+    }
+
+    function selectTime(t) {
+      booking.time = t;
+      renderSlots();
+      updateBookingSummary();
+    }
+
+    function updateBookingSummary() {
+      const fmtDate = booking.date ? booking.date.toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short" }) : "—";
+      const disp = document.getElementById("selected-display");
+      if (disp) disp.textContent = booking.time ? `${fmtDate} · ${booking.time}` : `${fmtDate} · escolha um horário`;
+      const total = document.getElementById("selected-total");
+      if (total) total.textContent = formatBRL(booking.service.price);
+
+      // Step 4 summary
+      const setIf = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setIf("r-service", booking.service.name);
+      const pro = booking.proId === "any" ? "Qualquer profissional" : PROS.find((p) => p.id === booking.proId)?.name || "—";
+      setIf("r-pro", pro);
+      setIf("r-date", booking.date ? booking.date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "—");
+      setIf("r-time", booking.time || "—");
+      setIf("r-total", formatBRL(booking.service.price));
+      setIf("s-time", `${booking.service.name} às ${booking.time || "10:30"}`);
+      setIf("s-pro", pro === "Qualquer profissional" ? "com qualquer profissional" : `com ${pro}`);
+    }
+
+    // Period tabs
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".period-btn");
+      if (!btn) return;
+      document.querySelectorAll(".period-btn").forEach((b) => {
+        b.classList.remove("bg-foreground", "text-background");
+        b.classList.add("bg-muted", "text-muted-foreground");
+      });
+      btn.classList.remove("bg-muted", "text-muted-foreground");
+      btn.classList.add("bg-foreground", "text-background");
+      renderSlots();
+    });
+
+    // ─── Service form drawer ───────────────────────────────
+    function toggleServiceForm() {
+      const f = document.getElementById("service-form");
+      f.classList.toggle("hidden");
+      if (!f.classList.contains("hidden")) {
+        f.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      lucide.createIcons();
+    }
+
+    // ─── Boot ──────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      renderServices();
+      renderPros();
+      renderDates();
+      renderSlots();
+      updateBookingSummary();
+      lucide.createIcons();
+    });
+
+    // First render anyway (no defer)
+    renderServices();
+    renderPros();
+    renderDates();
+    renderSlots();
+    updateBookingSummary();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

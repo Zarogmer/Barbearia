@@ -1,0 +1,698 @@
+{
+  "$schema": "https://barbearia.app/schemas/trello-import-v1.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-05-23",
+  "source": "docs/11-pbis-detalhado.md",
+  "instructions": {
+    "method-A-api": "PowerShell: $key='SUA_KEY'; $token='SEU_TOKEN'; ver scripts/trello-import.ps1 (a criar) que itera 'cards' e cria via POST https://api.trello.com/1/cards",
+    "method-B-butler": "Use Butler 'Create cards from JSON' apontando para a chave 'cards'.",
+    "method-C-manual": "Crie o board com as 4 listas e cole o markdown de cada item 'cards[].desc' como descrição."
+  },
+  "board": {
+    "name": "Barbearia SaaS — MVP Sprint (D1→D7)",
+    "desc": "MVP de SaaS de agendamento para barbearias/salões. Sprint 7 dias: 2026-05-23 → 2026-05-30. Cada card = 1 PBI autocontida com 4 frentes (back/front/regra/testes). Doc fonte: docs/11-pbis-detalhado.md.",
+    "prefs": {
+      "permissionLevel": "private",
+      "background": "blue",
+      "cardCovers": true
+    }
+  },
+  "labels": [
+    { "id": "backend",   "name": "backend",   "color": "blue" },
+    { "id": "frontend",  "name": "frontend",  "color": "purple" },
+    { "id": "infra",     "name": "infra",     "color": "sky" },
+    { "id": "seguranca", "name": "seguranca", "color": "red" },
+    { "id": "testes",    "name": "testes",    "color": "green" },
+    { "id": "docs",      "name": "docs",      "color": "lime" },
+    { "id": "p0",        "name": "p0 (bloqueia MVP)", "color": "red_dark" },
+    { "id": "p1",        "name": "p1 (deveria ter)",  "color": "orange" },
+    { "id": "p2",        "name": "p2 (nice to have)", "color": "yellow" }
+  ],
+  "lists": [
+    { "id": "backlog", "name": "📋 Backlog", "pos": 1 },
+    { "id": "doing",   "name": "🚧 Doing",   "pos": 2 },
+    { "id": "review",  "name": "👀 Review",  "pos": 3 },
+    { "id": "done",    "name": "✅ Done",    "pos": 4 }
+  ],
+  "cards": [
+    {
+      "id": "PBI-01",
+      "name": "PBI-01 — Postgres local + RLS + migration inicial",
+      "idList": "backlog",
+      "idLabels": ["infra", "backend", "seguranca", "p0"],
+      "pos": 1,
+      "estimateHours": 2,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 2h · **Depende:** scaffold\n**Refs:** [09-pbis.md#PBI-01](docs/09-pbis.md) · [03-modelo-dados.md](docs/03-modelo-dados.md) · [arquitetura-multi-tenant.svg](docs/diagramas/arquitetura-multi-tenant.svg)\n\n## 🎯 Objetivo\nSubir Postgres 16 local + aplicar schema Prisma + roles + RLS + EXCLUDE constraint. Base para tudo.\n\n## DoD (além do universal)\n- `psql` como `app_user` sem `SET app.current_org_id` em `SELECT * FROM appointments` → 0 linhas (cole output na PR).\n- `pnpm db:seed` é idempotente.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "docker-compose.yml: Postgres 16, volume persistente, porta 5432",
+            "prisma/schema.prisma com todos os models de 03-modelo-dados.md",
+            "pnpm prisma migrate dev --name init (tabelas + índices)",
+            "prisma/migrations/00000_rls_setup/migration.sql manual: roles, btree_gist, current_org_id(), policies tenant_isolation x7, FORCE RLS, EXCLUDE no_overlap_per_professional",
+            "prisma/seed.ts: Org demo + 2 profs + 4 serviços + admin + WorkingHours + 3 appts",
+            "src/lib/db.ts: withTenant(orgId, fn) conforme doc",
+            ".env.example com DATABASE_URL / DIRECT_URL / DATABASE_ADMIN_URL"
+          ]
+        },
+        { "name": "🎨 Frontend", "items": ["(nada — PBI puramente infra)"] },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-04: EXCLUDE constraint = defesa final contra 2 confirmados sobrepostos",
+            "RN-13: timezone default America/Sao_Paulo; banco em timestamptz UTC"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Manual: psql app_user sem SET org → SELECT appointments = 0 rows",
+            "Manual: pnpm db:seed 2x sem duplicar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-02",
+      "name": "PBI-02 — NextAuth v5 (Credentials + Prisma adapter)",
+      "idList": "backlog",
+      "idLabels": ["backend", "seguranca", "frontend", "p0"],
+      "pos": 2,
+      "estimateHours": 4,
+      "dependsOn": ["PBI-01"],
+      "desc": "**Estimativa:** 4h · **Depende:** PBI-01\n**Refs:** [09-pbis.md#PBI-02](docs/09-pbis.md) · [04-seguranca.md](docs/04-seguranca.md)\n\n## 🎯 Objetivo\nLogin/cadastro com Credentials (bcrypt 12) + DB sessions. Custom session com memberships (org + role). Middleware protege (admin)/*.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "pnpm add next-auth@beta @auth/prisma-adapter bcryptjs",
+            "src/lib/auth.ts: auth/signIn/signOut/handlers (estratégia DATABASE)",
+            "src/app/api/auth/[...nextauth]/route.ts: GET/POST",
+            "Callback session() enriquece user.memberships[]",
+            "src/lib/validators/auth.ts: loginSchema, signupSchema",
+            "src/middleware.ts: protege (admin)/*, redirect ?next=…",
+            "src/types/auth.d.ts: augment Session/User",
+            "bcrypt.hash(pwd, 12); pino redaction de senha"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Ligar /login (tela existe) ao SA signIn",
+            "Ligar /cadastro (tela existe) ao SA signup",
+            "Loading no submit, erro inline (mensagem genérica), redirect ?next",
+            "Logout button no header admin"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-14: OWNER/STAFF check em middleware + nas SAs",
+            "RN-CB-04: email duplicado → msg amigável 'use esqueci senha'",
+            "RN-17: onboarding via seed no MVP"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: loginSchema/signupSchema (válido / email malformado / senha curta)",
+            "Integration: signup cria User com hash (assert ≠ plain), emailVerifiedAt null",
+            "Integration: senha errada vs email errado → mesma mensagem",
+            "E2E: signup → login → dashboard"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-03",
+      "name": "PBI-03 — Google OAuth + verificação de email (Resend)",
+      "idList": "backlog",
+      "idLabels": ["backend", "seguranca", "p1"],
+      "pos": 3,
+      "estimateHours": 3,
+      "dependsOn": ["PBI-02"],
+      "desc": "**Estimativa:** 3h · **Depende:** PBI-02\n**Refs:** [09-pbis.md#PBI-03](docs/09-pbis.md)\n\n## 🎯 Objetivo\nGoogle como segundo provider (cliente) + email de verificação para signups Credentials (Resend; fallback console em dev).",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Provider Google em src/lib/auth.ts (envs)",
+            "Login Google → emailVerifiedAt = now()",
+            "src/lib/server/email/resend.ts (com fallback console.log se sem API key)",
+            "src/lib/server/auth/verification.ts: gera/verifica VerificationToken (24h)",
+            "Rota /verificar?token=… (server-side)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Botão 'Entrar com Google' na tela de login",
+            "Página /verificar: 'Verificado ✓ → login' ou 'Link expirado'",
+            "Idempotência: clicar 2x → 'já verificado' sem erro"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-15: emails via Resend; from agendamentos@barbearia.app em prod",
+            "Token 24h (verificação) / 1h (reset, v2)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: gerar token retorna identifier + expira em 24h ± 1s",
+            "Integration: token válido seta emailVerifiedAt; expirado → erro; usado → 'já verificado'",
+            "E2E (mock Resend): signup → captura URL no console → GET URL → verificado"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-04",
+      "name": "PBI-04 — CRUD serviços (admin)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "p0"],
+      "pos": 4,
+      "estimateHours": 5,
+      "dependsOn": ["PBI-02"],
+      "desc": "**Estimativa:** 5h · **Depende:** PBI-02\n**Tela existente:** src/app/admin/servicos/ (mock atual)\n**Refs:** [09-pbis.md#PBI-04](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg)\n\n## 🎯 Objetivo\nOwner cria/edita/desativa serviços. Hard delete bloqueado se há appointment referenciando.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/validators/service.ts: createServiceSchema/updateServiceSchema (name 2-80, desc ≤500, duration 5-240 x5, price 0-100000, active, professionalIds[])",
+            "src/lib/server/services.ts: listServices, createService, updateService, deactivateService (todos via withTenant)",
+            "src/app/admin/servicos/actions.ts: SAs com Zod parse + role check OWNER",
+            "Soft-disable: bloqueia hard delete se há Appointment.serviceId → active=false",
+            "STAFF tentando SA → throw 'Sem permissão' (403)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Trocar mock por loader real (RSC chama listServices)",
+            "ServiceForm.tsx: react-hook-form + zodResolver",
+            "ServicesTable.tsx: colunas nome/duração/preço (formatBRL)/ativo/ações",
+            "Multi-select profissionais (shadcn Command+Popover ou checkbox)",
+            "STAFF não vê botão 'Novo serviço'",
+            "Empty state com CTA"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-02: duração fixa múltipla de 5",
+            "RN-18: sem limite hard (sugerido ≤50)",
+            "RN-19: editar preço afeta novos; existentes sem snapshot no MVP"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: createServiceSchema rejeita duração 7/0/245, nome vazio/81 chars, preço negativo",
+            "Integration: createService com organizationId correto; com STAFF → erro role",
+            "Integration: deactivateService em serviço com Appointment → active=false (não deleta)",
+            "E2E: OWNER cria → aparece; STAFF acessa /admin/servicos → 403"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-05",
+      "name": "PBI-05 — CRUD profissionais + horários + bloqueios",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "p0"],
+      "pos": 5,
+      "estimateHours": 6,
+      "dependsOn": ["PBI-04"],
+      "desc": "**Estimativa:** 6h · **Depende:** PBI-04\n**Tela existente:** src/app/admin/profissionais/\n**Refs:** [09-pbis.md#PBI-05](docs/09-pbis.md)\n\n## 🎯 Objetivo\nCriar profissionais; editar WorkingHours por dia da semana (sem sobreposição); criar/listar TimeBlock; rejeitar bloqueio que cubra Appointment.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/validators/professional.ts: professionalSchema (name 2-80, bio ≤500, photoUrl?, serviceIds[], active)",
+            "workingHoursSchema: weekday, startMinute/endMinute 0-1440 x5, start<end, sem overlap entre faixas do mesmo weekday",
+            "timeBlockSchema: start<end; rejeita se sobrepõe Appointment CONFIRMED do prof",
+            "src/lib/server/professionals.ts: CRUD + setWorkingHours(profId, hours[]) atômico (delete+insert em transação)",
+            "SAs com role check OWNER"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Lista /admin/profissionais com loader real",
+            "Detalhe /admin/profissionais/[id]: ProfessionalForm + WorkingHoursEditor + TimeBlockManager",
+            "WorkingHoursEditor: 7 linhas (Dom→Sáb), '+ faixa', input HH:MM → minutos no submit",
+            "Validação client-side antes do submit, erro inline na faixa problemática",
+            "TimeBlockManager: lista futuros, criar (date range + reason), remover"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-01: sem WorkingHours num weekday → não atende nesse dia",
+            "RN-10: TimeBlock que cobre Appointment CONFIRMED → rejeitar (lista IDs)",
+            "RN-CB-03: desativar prof com appts futuros → alertar, não cancela auto"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: workingHoursSchema rejeita [9:00-12:00]+[11:00-13:00] mesmo weekday",
+            "Unit: timeBlockSchema rejeita start ≥ end",
+            "Integration: setWorkingHours é atômico (2ª faixa inválida → 1ª não fica)",
+            "Integration: criar TimeBlock cobrindo Appointment → erro com IDs",
+            "E2E: criar prof → 2 faixas seg → ver na lista → bloquear amanhã 12-13h"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-06",
+      "name": "PBI-06 — Slot calculator (algoritmo)",
+      "idList": "backlog",
+      "idLabels": ["backend", "testes", "p0"],
+      "pos": 6,
+      "estimateHours": 5,
+      "dependsOn": ["PBI-05"],
+      "desc": "**Estimativa:** 5h · **Depende:** PBI-05\n**Diagrama:** [algoritmo-slot-calculator.svg](docs/diagramas/algoritmo-slot-calculator.svg)\n**Refs:** [09-pbis.md#PBI-06](docs/09-pbis.md) · [07-regras-negocio.md#RN-03](docs/07-regras-negocio.md)\n\n## 🎯 Objetivo\nFunção pura que retorna slots disponíveis dado prof+serviço+data. Coração do produto. Implementa RN-03/04/05.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/server/slot-calculator.ts: calculateAvailableSlots({...}) → Array<{startMinute, startUtc}>",
+            "Função PURA — sem I/O; now injetável (default new Date())",
+            "Trabalha em min locais; toUtc só na saída (date-fns-tz)",
+            "src/lib/server/booking-service.ts#getAvailableSlots: carrega dados + chama função pura",
+            "Setup Vitest base (PBI-12 estende com coverage)"
+          ]
+        },
+        { "name": "🎨 Frontend", "items": ["(consumido em PBI-07)"] },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-03(1..5): horário, fim cabe, sem conflito appt, sem block, antecedência",
+            "RN-04: app-side dedupe (EXCLUDE é backstop)",
+            "RN-05: 30min default, 0 com force (admin)",
+            "RN-06: cap 60d (validar na borda, não dentro do calculator)",
+            "RN-CB-01: range [) — terminar 10:00 e começar 10:00 NÃO conflita"
+          ]
+        },
+        {
+          "name": "🧪 Testes — 15+ unit obrigatórios",
+          "items": [
+            "Dia normal 1 faixa → N slots a cada 15min",
+            "Sem WorkingHours no weekday → []",
+            "Faixa 9-12 duration 60 step 15 → slots 9:00..11:00",
+            "Faixa 9-12 duration 75 → último slot 10:45",
+            "Bloqueio 11:00-11:30 elimina slots que cruzam",
+            "Appointment 10:00-10:30 elimina 9:45, 10:00, 10:15 (duration 30)",
+            "Slot terminando 12:00 com fim faixa 12:00 → válido",
+            "Próximo após appt terminando 10:00 → 10:00 válido (range [))",
+            "Antecedência: now=09:30 minAdv=30 → 10:00 passa, 09:45 falha",
+            "Antecedência 31: 10:00 falha",
+            "Fuso SP: 2026-06-01 09:00 local = 12:00 UTC",
+            "Múltiplas faixas (9-12 + 14-18): pula 12-14",
+            "Step 30 com duration 30 → slots 9:00, 9:30…",
+            "Slots monotônicos crescentes (asserção sobre output)",
+            "Duration 0 ou negativa → throw com mensagem clara",
+            "Integration: booking-service carrega DB e bate com unit equivalente"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-07",
+      "name": "PBI-07 — Fluxo cliente (4 passos sem submit)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p0"],
+      "pos": 7,
+      "estimateHours": 5,
+      "dependsOn": ["PBI-06"],
+      "desc": "**Estimativa:** 5h · **Depende:** PBI-06\n**Diagrama:** [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n**Telas existentes:** src/app/(public)/[orgSlug]/...\n**Refs:** [09-pbis.md#PBI-07](docs/09-pbis.md) · [08-prototipo.md W-01..W-04](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nLigar 4 telas do cliente ao back. State 100% URL. Sem submit (vai em PBI-08).",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/server/orgs.ts: getOrgBySlug com unstable_cache",
+            "Reusar getAvailableSlots no loader de /agendar/horario"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/[orgSlug] W-01: hero + serviços + profs do banco",
+            "/[orgSlug]/agendar W-02: ServicePicker → ?serviceId=…&continue=1",
+            "/[orgSlug]/agendar/profissional W-03: profs que fazem o serviço + 'qualquer'",
+            "/[orgSlug]/agendar/horario W-04: shadcn Calendar (passados/+60d disabled) + SlotPicker",
+            "StepIndicator 'Passo N/4'",
+            "State via URL params — sem useState global/cookie/localStorage",
+            "Mobile-first; max-w-md mx-auto; skeleton enquanto slots carregam"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-06: janela 60d",
+            "RN-12: 'qualquer profissional' = primeiro disponível alfabético",
+            "RN-14: rotas públicas, sem login obrigatório"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Componente: SlotPicker renderiza grid a partir de mock",
+            "Componente: StepIndicator reflete passo correto",
+            "(E2E completo em PBI-08)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-08",
+      "name": "PBI-08 — Confirmação + criação do agendamento",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "seguranca", "p0"],
+      "pos": 8,
+      "estimateHours": 5,
+      "dependsOn": ["PBI-07", "PBI-03"],
+      "desc": "**Estimativa:** 5h · **Depende:** PBI-07, PBI-03\n**Refs:** [09-pbis.md#PBI-08](docs/09-pbis.md) · [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n\n## 🎯 Objetivo\nFechar fluxo: form W-05 → SA confirma → cria User se anônimo → INSERT Appointment com captura de EXCLUDE → email → redirect W-06.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/validators/booking.ts: bookingSchema (serviceId, profId, startsAt ISO, customerName 2-80, customerPhone?, email)",
+            "createBooking({orgId, input, sessionUserId?, force?}): Zod → withTenant → recalc slots (anti-race) → upsert User → INSERT → captura 23P01/P2002 → throw SLOT_UNAVAILABLE",
+            "Best-effort sendBookingConfirmation (Resend) — não bloqueia retorno",
+            "revalidatePath('/admin/agenda')",
+            "confirmBookingAction(formData) → service → redirect"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/[orgSlug]/agendar/confirmar?…&startsAt=Z: resumo (serviço, prof, data SP) + form nome/telefone/email",
+            "Pré-preencher de session.user se logado",
+            "useFormStatus spinner; debounce botão (idempotência client)",
+            "Erro SLOT_UNAVAILABLE: toast vermelho + CTA 'Voltar aos horários' (mesma query)",
+            "/[orgSlug]/agendamento/[id] W-06: confirmação com QR/link cancel"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-04: EXCLUDE no DB + recompute na SA (defesa em profundidade)",
+            "RN-15: email cliente + email curto owner",
+            "RN-16: customerName/customerPhone copy-on-write"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: bookingSchema (email malformado, nome 1 char)",
+            "Integration: createBooking happy path insere + envia (mock Resend)",
+            "Integration: 2 createBooking concorrentes (Promise.all) mesmo slot → 1 ok, 1 SLOT_UNAVAILABLE",
+            "E2E feliz: 4 passos → confirmar → página sucesso",
+            "E2E race: 2 abas mesmo slot → 2ª recebe msg amigável"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-09",
+      "name": "PBI-09 — Agenda do dia (admin)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "p0"],
+      "pos": 9,
+      "estimateHours": 6,
+      "dependsOn": ["PBI-08"],
+      "desc": "**Estimativa:** 6h · **Depende:** PBI-08\n**Tela existente:** src/app/admin/agenda/\n**Refs:** [09-pbis.md#PBI-09](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg) · [08-prototipo.md W-08](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nVisualização de agenda do dia por profissional. Bloco appt/bloco TimeBlock; ações de mudança de status; encaixe.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/server/agenda.ts: getDayAgenda({orgId, date, userRole, userProfId}) → {professionals[], appointments[], blocks[]} filtrado por role",
+            "SAs: cancelAppointment(id, reason?), markCompleted(id), markNoShow(id), quickCreateBooking(input, {force:true})",
+            "cancelAppointment exige cancelReason se now > startsAt-2h (Zod refine)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "AgendaDayView: CSS grid grid-template-columns: repeat(N, 1fr) — OWNER N cols, STAFF 1",
+            "Linha vermelha horizontal = hora atual (se data=hoje)",
+            "Bloco Appointment colorido por status; TimeBlock hachurado cinza",
+            "AppointmentDetailDialog: ações Completed/NoShow/Cancel (textarea razão se needed)",
+            "QuickBookingDialog: clica slot livre → wizard rápido → quickCreateBooking(force:true)",
+            "Nav ◀ Hoje ▶ muda ?date=",
+            "Toggle Dia/Semana — botão 'Semana' disabled (badge v2)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-07: cancelamento (quem/quando/razão)",
+            "RN-08/09: NoShow/Completed manual no MVP",
+            "RN-11: force pula RN-03/05/06 mas RN-04 (EXCLUDE) barra",
+            "RN-14: STAFF só vê próprios"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: cancelAppointment exige reason quando now > startsAt-2h",
+            "Integration: STAFF não cancela appt de outro prof (RLS + role)",
+            "Integration: quickCreateBooking(force:true) cria fora horário, conflito ainda barra",
+            "E2E: cancelar appt → some da grid + status atualizado"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-10",
+      "name": "PBI-10 — Configurações da organização",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "p2"],
+      "pos": 10,
+      "estimateHours": 3,
+      "dependsOn": ["PBI-02"],
+      "desc": "**Estimativa:** 3h · **Depende:** PBI-02\n**Tela existente:** src/app/admin/configuracoes/\n**Refs:** [09-pbis.md#PBI-10](docs/09-pbis.md)\n\n## 🎯 Objetivo\nOwner edita nome, slug (com confirma), timezone (read-only MVP), allowGuestBooking.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/validators/organization.ts: name 2-80, slug kebab 3-50 unique, allowGuestBooking bool",
+            "updateOrganization SA: OWNER only"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Form básico; timezone disabled mostrando 'America/Sao_Paulo (v2)'",
+            "Mudança slug: AlertDialog 'vai mudar URL pública, links antigos quebram'"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "RN-13: timezone fixo no MVP",
+            "RN-CB-02: horário verão n/a no Brasil"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: slug 'Hello World' falha; 'ab' falha; 'valid-slug' passa",
+            "Integration: slug duplicado → erro amigável"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-11",
+      "name": "PBI-11 — Testes de isolamento cross-tenant",
+      "idList": "backlog",
+      "idLabels": ["testes", "seguranca", "p0"],
+      "pos": 11,
+      "estimateHours": 4,
+      "dependsOn": ["PBI-09"],
+      "desc": "**Estimativa:** 4h · **Depende:** PBI-09\n**Refs:** [09-pbis.md#PBI-11](docs/09-pbis.md) · [arquitetura-multi-tenant.svg](docs/diagramas/arquitetura-multi-tenant.svg) · [04-seguranca.md](docs/04-seguranca.md)\n\n## 🎯 Objetivo\nProvar que vazamento cross-tenant é impossível. Sem isso, multi-tenant é teatro.",
+      "checklists": [
+        { "name": "🔧 Backend", "items": ["(só testes)"] },
+        { "name": "🎨 Frontend", "items": ["(nada)"] },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Defesa em profundidade — middleware fixa orgId, RLS barra query, EXCLUDE barra conflito",
+            "404 deliberado (não 403) para não vazar existência"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "tests/e2e/fixtures/two-orgs.ts: 2 orgs (alfa/beta), 1 owner + 1 appt cada",
+            "Integration: query tenant A não devolve B",
+            "Integration: INSERT em A com orgId de B → erro",
+            "Integration: UPDATE recurso B com ID conhecido → 0 affected",
+            "Integration: sem SET app.current_org_id → tudo []",
+            "E2E: owner alfa GET /admin/agenda?appointmentId=<beta> → 404",
+            "E2E: SA cancelAppointment(<beta>) com auth alfa → erro neutro",
+            "Rodam em TODA PR (não só main)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-12",
+      "name": "PBI-12 — Suite mínima + coverage gates",
+      "idList": "backlog",
+      "idLabels": ["testes", "p1"],
+      "pos": 12,
+      "estimateHours": 4,
+      "dependsOn": ["PBI-08"],
+      "desc": "**Estimativa:** 4h · **Depende:** PBI-08\n**Refs:** [09-pbis.md#PBI-12](docs/09-pbis.md) · [05-testes.md](docs/05-testes.md)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "vitest.config.ts coverage v8, reporter html+json+lcov",
+            "Threshold global 70% / src/lib/server 85% / src/lib/validators 95%",
+            "Falha threshold quebra CI"
+          ]
+        },
+        { "name": "🎨 Frontend", "items": ["(nada)"] },
+        {
+          "name": "📜 Regra de negócio",
+          "items": ["Cobertura mínima conforme 05-testes.md"]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit completo formatBRL, cn",
+            "Unit validators ≥8: auth, service, professional, workingHours, timeBlock, booking, organization, slot input",
+            "Integration booking-service ≥5 casos",
+            "pnpm test:coverage gera coverage/index.html"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-13",
+      "name": "PBI-13 — CI no GitHub Actions",
+      "idList": "backlog",
+      "idLabels": ["infra", "testes", "p1"],
+      "pos": 13,
+      "estimateHours": 3,
+      "dependsOn": ["PBI-12"],
+      "desc": "**Estimativa:** 3h · **Depende:** PBI-12\n**Refs:** [09-pbis.md#PBI-13](docs/09-pbis.md)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            ".github/workflows/ci.yml: jobs lint-typecheck / test-unit / test-integration (Postgres service) / test-e2e (Playwright)",
+            "Cache pnpm store + node_modules",
+            "Comentário coverage diff em PR",
+            "Branch protection main: require CI passing",
+            "docker-compose.test.yml para reprodução local"
+          ]
+        },
+        { "name": "🎨 Frontend", "items": ["(nada)"] },
+        {
+          "name": "📜 Regra de negócio",
+          "items": ["Sem CI verde não merge em main"]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Primeira execução verde end-to-end em PR de teste",
+            "docker-compose.test.yml roda fora do CI também"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-14",
+      "name": "PBI-14 — Deploy Vercel + Neon",
+      "idList": "backlog",
+      "idLabels": ["infra", "p1"],
+      "pos": 14,
+      "estimateHours": 3,
+      "dependsOn": ["PBI-13"],
+      "desc": "**Estimativa:** 3h · **Depende:** PBI-13\n**Refs:** [09-pbis.md#PBI-14](docs/09-pbis.md)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Projeto Vercel apontando main",
+            "Neon: branch main → prod, branch dev → preview",
+            "Env vars (prod + preview): DATABASE_URL, DIRECT_URL, NEXTAUTH_SECRET, GOOGLE_CLIENT_ID/SECRET, RESEND_API_KEY",
+            "pnpm db:migrate deploy no build step",
+            "src/app/api/health/route.ts → 200 + {db:'ok'}"
+          ]
+        },
+        { "name": "🎨 Frontend", "items": ["(smoke manual)"] },
+        {
+          "name": "📜 Regra de negócio",
+          "items": ["Domínio .vercel.app no MVP; customizado em v2"]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Smoke prod manual: seed org → fluxo público → ver na agenda admin",
+            "/api/health 200 em prod"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-15",
+      "name": "PBI-15 — PWA + polimento UX",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p2"],
+      "pos": 15,
+      "estimateHours": 3,
+      "dependsOn": ["PBI-08"],
+      "desc": "**Estimativa:** 3h · **Depende:** PBI-08\n**Refs:** [09-pbis.md#PBI-15](docs/09-pbis.md)",
+      "checklists": [
+        { "name": "🔧 Backend", "items": ["(nada)"] },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "public/manifest.json + ícones 192/512",
+            "metadata raiz com openGraph + twitter",
+            "Service worker (next-pwa ou manual); offline = 'sem internet'",
+            "Skeleton loaders nas listagens (substitui spinner)",
+            "Empty states com CTA",
+            "Mensagens de erro PT-BR sem stack trace"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": ["Lighthouse mobile: Perf ≥80, A11y ≥90, BP ≥90"]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Lighthouse CI bloqueia se score abaixo do threshold",
+            "E2E offline: SW responde com fallback"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "totalCards": 15,
+    "totalEstimatedHours": 62,
+    "criticalPath": "PBI-01 → PBI-02 → PBI-04 → PBI-05 → PBI-06 → PBI-07 → PBI-08 → PBI-09",
+    "parallelizable": ["PBI-03 (após 02)", "PBI-10 (após 02)", "PBI-15 (após 08)", "PBI-04 + PBI-06 (após 02 — se prof seedado)"],
+    "diagramRefs": [
+      "docs/diagramas/fluxo-cliente.svg",
+      "docs/diagramas/fluxo-admin.svg",
+      "docs/diagramas/arquitetura-multi-tenant.svg",
+      "docs/diagramas/algoritmo-slot-calculator.svg"
+    ]
+  }
+}

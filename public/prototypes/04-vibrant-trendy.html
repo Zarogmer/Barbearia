@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>glow ✨ agenda seu glow up</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .grad-main { background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%); }
+    .grad-bg { background: linear-gradient(180deg, #fdf4ff 0%, #fff7ed 100%); }
+    .grad-text { background: linear-gradient(135deg, #a855f7, #ec4899, #f97316); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .glass { backdrop-filter: blur(20px); background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.4); }
+    .blob { filter: blur(60px); opacity: 0.5; position: absolute; border-radius: 50%; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+    .float { animation: float 6s ease-in-out infinite; }
+    .float-delay { animation: float 6s ease-in-out infinite 2s; }
+  </style>
+</head>
+<body class="grad-bg text-neutral-900 antialiased overflow-x-hidden">
+
+  <!-- Background blobs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="blob bg-purple-400 w-[500px] h-[500px] top-20 -left-32"></div>
+    <div class="blob bg-pink-400 w-[400px] h-[400px] top-96 right-0"></div>
+    <div class="blob bg-orange-400 w-[450px] h-[450px] bottom-0 left-1/3"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 grad-main rounded-2xl rotate-6 flex items-center justify-center text-xl">✨</div>
+        <div class="font-display font-bold text-2xl tracking-tight">glow</div>
+      </div>
+      <nav class="hidden md:flex gap-6 text-sm font-semibold">
+        <a href="#servicos" class="hover:grad-text transition">serviços</a>
+        <a href="#equipe" class="hover:grad-text transition">equipe</a>
+        <a href="#vibes" class="hover:grad-text transition">vibes</a>
+      </nav>
+      <a href="#agendar" class="grad-main text-white font-bold px-5 py-2.5 rounded-full text-sm hover:scale-105 transition shadow-lg shadow-purple-500/30">
+        agendar 🚀
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="pt-20 pb-32 relative">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-1.5 rounded-full text-sm font-semibold mb-8 shadow-lg shadow-purple-500/10 border border-white">
+        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+        12 pessoas agendando agora 🔥
+      </div>
+      <h1 class="font-display font-bold text-6xl md:text-8xl leading-[1] mb-6 tracking-tight">
+        seu próximo<br>
+        <span class="grad-text">glow up</span><br>
+        começa aqui ✨
+      </h1>
+      <p class="text-xl md:text-2xl text-neutral-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+        cabelo, unha, sobrancelha, barba — tudo num lugar só.<br/>
+        <span class="font-semibold text-neutral-900">sem rolar 47 conversas no whats.</span>
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="#agendar" class="grad-main text-white font-bold px-8 py-4 rounded-full text-lg hover:scale-105 transition shadow-xl shadow-purple-500/30 inline-flex items-center justify-center gap-2">
+          quero meu horário
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </a>
+        <a href="#servicos" class="bg-white text-neutral-900 font-bold px-8 py-4 rounded-full text-lg hover:scale-105 transition border-2 border-neutral-900 inline-flex items-center justify-center gap-2">
+          ver preços
+        </a>
+      </div>
+    </div>
+
+    <!-- Floating cards preview -->
+    <div class="max-w-5xl mx-auto px-6 mt-20 hidden md:block relative h-64">
+      <div class="absolute left-0 top-0 float">
+        <div class="glass rounded-3xl p-5 w-64 rotate-[-4deg] shadow-2xl">
+          <div class="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">próximo livre</div>
+          <div class="font-display text-2xl font-bold mb-1">hoje, 14h ⚡</div>
+          <div class="text-sm text-neutral-600">corte + sobrancelha · com Lê</div>
+          <div class="mt-3 grad-main h-1 rounded-full"></div>
+        </div>
+      </div>
+      <div class="absolute right-0 top-12 float-delay">
+        <div class="glass rounded-3xl p-5 w-64 rotate-[3deg] shadow-2xl">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs font-semibold text-pink-600 uppercase tracking-wider">mais pedido</div>
+            <span class="text-2xl">🔥</span>
+          </div>
+          <div class="font-display text-2xl font-bold mb-1">combo glow</div>
+          <div class="text-sm text-neutral-600">corte + barba + sobrancelha</div>
+          <div class="mt-3 flex items-baseline gap-2"><span class="text-sm line-through text-neutral-400">R$180</span><span class="font-bold text-xl grad-text">R$129</span></div>
+        </div>
+      </div>
+      <div class="absolute left-1/2 -translate-x-1/2 top-32 float">
+        <div class="glass rounded-3xl p-5 w-64 shadow-2xl">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="flex -space-x-2">
+              <div class="w-7 h-7 rounded-full bg-purple-300 border-2 border-white"></div>
+              <div class="w-7 h-7 rounded-full bg-pink-300 border-2 border-white"></div>
+              <div class="w-7 h-7 rounded-full bg-orange-300 border-2 border-white"></div>
+            </div>
+            <div class="text-xs font-semibold text-neutral-600">+ 2.3k pessoas</div>
+          </div>
+          <div class="text-sm">agendaram esse mês 🚀</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vibes (highlights) -->
+  <section id="vibes" class="py-16">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-4">
+      <div class="grad-main p-8 rounded-3xl text-white relative overflow-hidden">
+        <div class="text-6xl mb-3">⚡</div>
+        <div class="font-display text-2xl font-bold mb-2">30 segundos</div>
+        <div class="text-white/90">pra agendar do zero. sério.</div>
+      </div>
+      <div class="bg-white p-8 rounded-3xl border-2 border-neutral-900 relative overflow-hidden">
+        <div class="text-6xl mb-3">🎨</div>
+        <div class="font-display text-2xl font-bold mb-2">pra todo mundo</div>
+        <div class="text-neutral-600">corte, cor, unha, sobrancelha — qualquer gênero, qualquer cabelo.</div>
+      </div>
+      <div class="bg-neutral-900 p-8 rounded-3xl text-white relative overflow-hidden">
+        <div class="text-6xl mb-3">💸</div>
+        <div class="font-display text-2xl font-bold mb-2">pague na hora</div>
+        <div class="text-neutral-300">pix, cartão, dinheiro. sem sinal, sem rolê.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Serviços -->
+  <section id="servicos" class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <div class="inline-block px-4 py-1.5 bg-white rounded-full text-sm font-bold mb-4 border-2 border-neutral-900">
+          ✨ nosso menu
+        </div>
+        <h2 class="font-display font-bold text-5xl md:text-6xl tracking-tight">o que rola por aqui</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-3xl p-6 border-2 border-neutral-900 hover:rotate-1 hover:scale-105 transition cursor-pointer">
+          <div class="flex justify-between items-start mb-4">
+            <span class="text-5xl">✂️</span>
+            <span class="text-xs font-bold uppercase tracking-wider bg-purple-100 text-purple-700 px-2 py-1 rounded-full">popular</span>
+          </div>
+          <h3 class="font-display text-2xl font-bold mb-1">Corte de cabelo</h3>
+          <p class="text-neutral-600 text-sm mb-5">qualquer textura, qualquer estilo. sem julgamento.</p>
+          <div class="flex justify-between items-end">
+            <div>
+              <div class="font-display font-black text-3xl grad-text">R$80</div>
+              <div class="text-xs text-neutral-500">a partir de</div>
+            </div>
+            <div class="text-sm font-mono text-neutral-500">45min</div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 rounded-3xl p-6 border-2 border-neutral-900 hover:-rotate-1 hover:scale-105 transition cursor-pointer">
+          <div class="flex justify-between items-start mb-4">
+            <span class="text-5xl">💅</span>
+          </div>
+          <h3 class="font-display text-2xl font-bold mb-1">Unhas em gel</h3>
+          <p class="text-neutral-600 text-sm mb-5">decoração, fibra, alongamento. dura 3 semanas no mínimo.</p>
+          <div class="flex justify-between items-end">
+            <div>
+              <div class="font-display font-black text-3xl grad-text">R$95</div>
+              <div class="text-xs text-neutral-500">com decoração</div>
+            </div>
+            <div class="text-sm font-mono text-neutral-500">60min</div>
+          </div>
+        </div>
+
+        <div class="bg-pink-50 rounded-3xl p-6 border-2 border-neutral-900 hover:rotate-1 hover:scale-105 transition cursor-pointer">
+          <div class="flex justify-between items-start mb-4">
+            <span class="text-5xl">🪒</span>
+          </div>
+          <h3 class="font-display text-2xl font-bold mb-1">Barba on point</h3>
+          <p class="text-neutral-600 text-sm mb-5">aparar, modelar, navalha. sai redondinho.</p>
+          <div class="flex justify-between items-end">
+            <div>
+              <div class="font-display font-black text-3xl grad-text">R$45</div>
+              <div class="text-xs text-neutral-500">qualquer densidade</div>
+            </div>
+            <div class="text-sm font-mono text-neutral-500">25min</div>
+          </div>
+        </div>
+
+        <div class="grad-main rounded-3xl p-6 border-2 border-neutral-900 hover:-rotate-1 hover:scale-105 transition cursor-pointer text-white">
+          <div class="flex justify-between items-start mb-4">
+            <span class="text-5xl">🔥</span>
+            <span class="text-xs font-bold uppercase tracking-wider bg-white text-purple-700 px-2 py-1 rounded-full">combo</span>
+          </div>
+          <h3 class="font-display text-2xl font-bold mb-1">Combo glow up</h3>
+          <p class="text-white/90 text-sm mb-5">corte + barba + sobrancelha. sai outro humano.</p>
+          <div class="flex justify-between items-end">
+            <div>
+              <div class="text-sm line-through opacity-60">R$180</div>
+              <div class="font-display font-black text-3xl">R$129</div>
+            </div>
+            <div class="text-sm font-mono opacity-80">90min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipe -->
+  <section id="equipe" class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <div class="inline-block px-4 py-1.5 bg-white rounded-full text-sm font-bold mb-4 border-2 border-neutral-900">
+          👋 a galera
+        </div>
+        <h2 class="font-display font-bold text-5xl md:text-6xl tracking-tight">quem te atende</h2>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-3xl border-2 border-neutral-900 p-4 hover:rotate-2 transition cursor-pointer">
+          <div class="aspect-square bg-purple-200 rounded-2xl mb-3 flex items-center justify-center text-6xl">😎</div>
+          <div class="font-display font-bold text-xl">Lê</div>
+          <div class="text-sm text-neutral-500">corte · degradê</div>
+          <div class="mt-2 text-xs font-bold text-green-600">🟢 livre hoje</div>
+        </div>
+        <div class="bg-white rounded-3xl border-2 border-neutral-900 p-4 hover:-rotate-2 transition cursor-pointer">
+          <div class="aspect-square bg-pink-200 rounded-2xl mb-3 flex items-center justify-center text-6xl">💖</div>
+          <div class="font-display font-bold text-xl">Bia</div>
+          <div class="text-sm text-neutral-500">unhas · nail art</div>
+          <div class="mt-2 text-xs font-bold text-amber-600">🟡 só amanhã</div>
+        </div>
+        <div class="bg-white rounded-3xl border-2 border-neutral-900 p-4 hover:rotate-2 transition cursor-pointer">
+          <div class="aspect-square bg-orange-200 rounded-2xl mb-3 flex items-center justify-center text-6xl">🤘</div>
+          <div class="font-display font-bold text-xl">Jay</div>
+          <div class="text-sm text-neutral-500">coloração · fantasia</div>
+          <div class="mt-2 text-xs font-bold text-green-600">🟢 livre hoje</div>
+        </div>
+        <div class="bg-white rounded-3xl border-2 border-neutral-900 p-4 hover:-rotate-2 transition cursor-pointer">
+          <div class="aspect-square bg-purple-200 rounded-2xl mb-3 flex items-center justify-center text-6xl">⚡</div>
+          <div class="font-display font-bold text-xl">Pê</div>
+          <div class="text-sm text-neutral-500">barba · sobrancelha</div>
+          <div class="mt-2 text-xs font-bold text-green-600">🟢 livre hoje</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agendar -->
+  <section id="agendar" class="py-20">
+    <div class="max-w-2xl mx-auto px-6">
+      <div class="text-center mb-10">
+        <div class="text-5xl mb-3">🚀</div>
+        <h2 class="font-display font-bold text-5xl md:text-6xl tracking-tight mb-3">vamos agendar?</h2>
+        <p class="text-lg text-neutral-600">três cliques e tá feito.</p>
+      </div>
+
+      <div class="grad-main p-1 rounded-3xl shadow-2xl shadow-purple-500/30">
+        <div class="bg-white rounded-[1.4rem] p-8">
+          <div class="flex flex-wrap gap-2 mb-6 pb-6 border-b-2 border-dashed border-neutral-200">
+            <span class="px-3 py-1.5 grad-main text-white text-sm rounded-full font-bold">corte</span>
+            <span class="px-3 py-1.5 bg-purple-100 text-purple-700 text-sm rounded-full font-bold">com Lê</span>
+            <span class="ml-auto font-display font-bold">R$80 · 45min</span>
+          </div>
+
+          <div class="mb-6">
+            <div class="font-bold mb-3">pra quando?</div>
+            <div class="flex gap-2 overflow-x-auto">
+              <button class="shrink-0 px-4 py-3 rounded-2xl border-2 border-neutral-900 text-center font-bold hover:bg-purple-100 transition">
+                <div class="text-xs text-neutral-500">hj</div>
+                <div class="text-lg">23</div>
+              </button>
+              <button class="shrink-0 px-4 py-3 rounded-2xl border-2 border-neutral-900 text-center font-bold hover:bg-purple-100 transition">
+                <div class="text-xs text-neutral-500">qua</div>
+                <div class="text-lg">24</div>
+              </button>
+              <button class="shrink-0 px-4 py-3 rounded-2xl grad-main text-white text-center font-bold">
+                <div class="text-xs opacity-80">qui</div>
+                <div class="text-lg">25</div>
+              </button>
+              <button class="shrink-0 px-4 py-3 rounded-2xl border-2 border-neutral-900 text-center font-bold hover:bg-purple-100 transition">
+                <div class="text-xs text-neutral-500">sex</div>
+                <div class="text-lg">26</div>
+              </button>
+              <button class="shrink-0 px-4 py-3 rounded-2xl border-2 border-neutral-900 text-center font-bold hover:bg-purple-100 transition">
+                <div class="text-xs text-neutral-500">sáb</div>
+                <div class="text-lg">27</div>
+              </button>
+              <button class="shrink-0 px-4 py-3 rounded-2xl border-2 border-neutral-900 text-center font-bold hover:bg-purple-100 transition">
+                <div class="text-xs text-neutral-500">seg</div>
+                <div class="text-lg">29</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <div class="font-bold mb-3">que horas? · qui 25</div>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="py-3 rounded-2xl border-2 border-neutral-900 font-bold hover:bg-purple-100 transition">09:00</button>
+              <button class="py-3 rounded-2xl border-2 border-neutral-900 font-bold hover:bg-purple-100 transition">09:30</button>
+              <button class="py-3 rounded-2xl bg-neutral-100 text-neutral-300 font-bold line-through cursor-not-allowed">10:00</button>
+              <button class="py-3 rounded-2xl grad-main text-white font-bold">10:30</button>
+              <button class="py-3 rounded-2xl border-2 border-neutral-900 font-bold hover:bg-purple-100 transition">11:00</button>
+              <button class="py-3 rounded-2xl border-2 border-neutral-900 font-bold hover:bg-purple-100 transition">14:00</button>
+              <button class="py-3 rounded-2xl bg-neutral-100 text-neutral-300 font-bold line-through cursor-not-allowed">14:30</button>
+              <button class="py-3 rounded-2xl border-2 border-neutral-900 font-bold hover:bg-purple-100 transition">15:00</button>
+            </div>
+          </div>
+
+          <button class="w-full grad-main text-white font-bold py-5 rounded-2xl text-lg hover:scale-105 transition shadow-xl shadow-purple-500/40 flex items-center justify-center gap-2">
+            tá feito! confirmar qui 25 às 10:30
+            <span>✨</span>
+          </button>
+          <p class="text-center text-sm text-neutral-500 mt-4 font-medium">
+            paga na hora · cancela quando quiser · zero papel
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 mt-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="bg-neutral-900 rounded-3xl p-10 text-white">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-9 h-9 grad-main rounded-2xl rotate-6 flex items-center justify-center text-xl">✨</div>
+              <span class="font-display font-bold text-2xl">glow</span>
+            </div>
+            <p class="text-neutral-400 text-sm">seu próximo glow up · São Paulo</p>
+          </div>
+          <div>
+            <div class="font-bold mb-3">vem com a gente</div>
+            <div class="space-y-1 text-sm text-neutral-400">
+              <div>📍 R. Aspicuelta, 250 — Vila Madalena</div>
+              <div>📱 (11) 99999-9999</div>
+              <div>🕐 ter-sáb 10h-22h</div>
+            </div>
+          </div>
+          <div>
+            <div class="font-bold mb-3">acompanha aí</div>
+            <div class="flex gap-3 text-2xl">
+              <a class="hover:scale-110 transition">📷</a>
+              <a class="hover:scale-110 transition">🎵</a>
+              <a class="hover:scale-110 transition">▶️</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center text-xs text-neutral-500 mt-6">© 2026 glow ✨ feito com amor e tailwind</div>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

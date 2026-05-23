@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbearia do Tio Zé — Tradição em Cortes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    .font-bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+    .gold-grad { background: linear-gradient(135deg, #d4a437 0%, #f4d166 50%, #b8821f 100%); }
+    .gold-text { background: linear-gradient(135deg, #f4d166, #d4a437); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .vintage-border { border-image: repeating-linear-gradient(90deg, #d4a437, #d4a437 10px, transparent 10px, transparent 12px) 1; }
+    .razor-pattern { background-image: radial-gradient(#d4a437 1px, transparent 1px); background-size: 24px 24px; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 antialiased">
+
+  <!-- Header -->
+  <header class="border-b border-zinc-800/60 bg-zinc-950/95 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full gold-grad flex items-center justify-center">
+          <i data-lucide="scissors" class="w-5 h-5 text-zinc-900"></i>
+        </div>
+        <div>
+          <div class="font-display font-bold text-lg leading-none">Tio Zé</div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-amber-400">Barbearia · est. 1987</div>
+        </div>
+      </div>
+      <nav class="hidden md:flex gap-8 text-sm font-medium text-zinc-400">
+        <a href="#servicos" class="hover:text-amber-400 transition">Serviços</a>
+        <a href="#equipe" class="hover:text-amber-400 transition">Equipe</a>
+        <a href="#contato" class="hover:text-amber-400 transition">Contato</a>
+      </nav>
+      <a href="#agendar" class="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold px-5 py-2.5 rounded-md text-sm transition">Agendar →</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 razor-pattern opacity-5"></div>
+    <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-amber-900/20 to-transparent"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-32 grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 border border-amber-500/30 rounded-full text-xs uppercase tracking-widest text-amber-400 mb-6">
+          <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
+          Aberto · até 20h hoje
+        </div>
+        <h1 class="font-display text-5xl md:text-7xl font-black leading-[1.05] mb-6">
+          O corte<br>
+          <span class="gold-text">de verdade.</span><br>
+          Como antigamente.
+        </h1>
+        <p class="text-zinc-400 text-lg mb-8 max-w-md">
+          37 anos cortando cabelo na rua da matriz. Navalhada quente, conversa fiada e o copo de aguardente por conta da casa.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="#agendar" class="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-7 py-3.5 rounded-md inline-flex items-center justify-center gap-2 transition">
+            Agendar meu horário
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="#equipe" class="border border-zinc-700 hover:border-amber-500 text-zinc-300 hover:text-amber-400 px-7 py-3.5 rounded-md inline-flex items-center justify-center gap-2 transition">
+            Conheça os barbeiros
+          </a>
+        </div>
+        <div class="mt-10 grid grid-cols-3 gap-6 max-w-md">
+          <div><div class="font-display text-3xl font-bold gold-text">37</div><div class="text-xs uppercase tracking-wider text-zinc-500">anos de casa</div></div>
+          <div><div class="font-display text-3xl font-bold gold-text">5</div><div class="text-xs uppercase tracking-wider text-zinc-500">barbeiros</div></div>
+          <div><div class="font-display text-3xl font-bold gold-text">4.9</div><div class="text-xs uppercase tracking-wider text-zinc-500">★ no Google</div></div>
+        </div>
+      </div>
+      <div class="hidden md:block">
+        <div class="relative">
+          <div class="absolute -inset-4 bg-gradient-to-br from-amber-500/30 to-transparent blur-2xl"></div>
+          <div class="relative aspect-[4/5] rounded-lg overflow-hidden border-2 border-amber-500/40 bg-zinc-900">
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10"></div>
+            <svg viewBox="0 0 400 500" class="w-full h-full">
+              <defs>
+                <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1c1917"/>
+                  <stop offset="100%" stop-color="#451a03"/>
+                </linearGradient>
+              </defs>
+              <rect width="400" height="500" fill="url(#bg1)"/>
+              <!-- Chair silhouette -->
+              <ellipse cx="200" cy="350" rx="100" ry="20" fill="#d4a437" opacity="0.15"/>
+              <rect x="150" y="180" width="100" height="180" rx="10" fill="#1c1917" stroke="#d4a437" stroke-width="2"/>
+              <rect x="155" y="190" width="90" height="60" rx="6" fill="#292524"/>
+              <circle cx="200" cy="120" r="50" fill="#292524" stroke="#d4a437" stroke-width="2"/>
+              <text x="200" y="430" text-anchor="middle" fill="#d4a437" font-family="Bebas Neue" font-size="42" letter-spacing="3">CADEIRA #1</text>
+              <text x="200" y="455" text-anchor="middle" fill="#78716c" font-family="Inter" font-size="14">desde 1987</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Serviços -->
+  <section id="servicos" class="border-t border-zinc-800/60 bg-zinc-900/30 py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14">
+        <div class="text-xs uppercase tracking-[0.3em] text-amber-400 mb-3">Cardápio</div>
+        <h2 class="font-display text-4xl md:text-5xl font-bold">Nossos serviços</h2>
+        <div class="w-16 h-px bg-amber-500 mx-auto mt-4"></div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <!-- Card -->
+        <div class="group border border-zinc-800 hover:border-amber-500/50 rounded-lg p-6 bg-zinc-950 transition cursor-pointer">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-display text-2xl font-bold mb-1">Corte clássico</h3>
+              <p class="text-zinc-500 text-sm">Máquina, tesoura e finalização com pomada.</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+              <div class="font-bebas text-3xl text-amber-400 leading-none">R$50</div>
+              <div class="text-xs text-zinc-500 mt-1">30 min</div>
+            </div>
+          </div>
+          <div class="border-t border-dashed border-zinc-800 pt-3 flex items-center gap-2 text-xs text-zinc-500">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-amber-400"></i>
+            mais pedido
+          </div>
+        </div>
+        <div class="group border border-zinc-800 hover:border-amber-500/50 rounded-lg p-6 bg-zinc-950 transition cursor-pointer">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-display text-2xl font-bold mb-1">Barba completa</h3>
+              <p class="text-zinc-500 text-sm">Toalha quente, navalha e óleo finalizador.</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+              <div class="font-bebas text-3xl text-amber-400 leading-none">R$35</div>
+              <div class="text-xs text-zinc-500 mt-1">25 min</div>
+            </div>
+          </div>
+          <div class="border-t border-dashed border-zinc-800 pt-3 text-xs text-zinc-500">tradicional · à navalha</div>
+        </div>
+        <div class="group border-2 border-amber-500/50 hover:border-amber-500 rounded-lg p-6 bg-gradient-to-br from-amber-950/40 to-zinc-950 transition cursor-pointer relative">
+          <div class="absolute -top-2.5 left-6 bg-amber-500 text-zinc-900 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Combo</div>
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-display text-2xl font-bold mb-1">Corte + Barba</h3>
+              <p class="text-zinc-500 text-sm">O combo do Tio Zé. Aguardente inclusa.</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+              <div class="font-bebas text-3xl text-amber-400 leading-none">R$75</div>
+              <div class="text-xs text-zinc-500 mt-1 line-through">R$85</div>
+            </div>
+          </div>
+          <div class="border-t border-dashed border-amber-500/30 pt-3 text-xs text-amber-400">economize R$10 · 50 min</div>
+        </div>
+        <div class="group border border-zinc-800 hover:border-amber-500/50 rounded-lg p-6 bg-zinc-950 transition cursor-pointer">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-display text-2xl font-bold mb-1">Pézinho</h3>
+              <p class="text-zinc-500 text-sm">Acerto rápido entre cortes.</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+              <div class="font-bebas text-3xl text-amber-400 leading-none">R$15</div>
+              <div class="text-xs text-zinc-500 mt-1">10 min</div>
+            </div>
+          </div>
+          <div class="border-t border-dashed border-zinc-800 pt-3 text-xs text-zinc-500">manutenção</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipe -->
+  <section id="equipe" class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14">
+        <div class="text-xs uppercase tracking-[0.3em] text-amber-400 mb-3">Quem corta</div>
+        <h2 class="font-display text-4xl md:text-5xl font-bold">A turma da navalha</h2>
+        <div class="w-16 h-px bg-amber-500 mx-auto mt-4"></div>
+      </div>
+      <div class="grid md:grid-cols-4 gap-5">
+        <!-- Barbeiro card -->
+        <div class="group">
+          <div class="aspect-[3/4] bg-gradient-to-br from-zinc-800 to-zinc-950 rounded-lg overflow-hidden border border-zinc-800 group-hover:border-amber-500/50 transition relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <i data-lucide="user" class="w-20 h-20 text-zinc-700"></i>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 to-transparent">
+              <div class="font-display font-bold text-xl">Tio Zé</div>
+              <div class="text-xs text-amber-400 uppercase tracking-wider">Fundador · 37 anos</div>
+            </div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="aspect-[3/4] bg-gradient-to-br from-zinc-800 to-zinc-950 rounded-lg overflow-hidden border border-zinc-800 group-hover:border-amber-500/50 transition relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <i data-lucide="user" class="w-20 h-20 text-zinc-700"></i>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 to-transparent">
+              <div class="font-display font-bold text-xl">Marcão</div>
+              <div class="text-xs text-amber-400 uppercase tracking-wider">degradê</div>
+            </div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="aspect-[3/4] bg-gradient-to-br from-zinc-800 to-zinc-950 rounded-lg overflow-hidden border border-zinc-800 group-hover:border-amber-500/50 transition relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <i data-lucide="user" class="w-20 h-20 text-zinc-700"></i>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 to-transparent">
+              <div class="font-display font-bold text-xl">Beto</div>
+              <div class="text-xs text-amber-400 uppercase tracking-wider">navalha</div>
+            </div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="aspect-[3/4] bg-gradient-to-br from-zinc-800 to-zinc-950 rounded-lg overflow-hidden border border-zinc-800 group-hover:border-amber-500/50 transition relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <i data-lucide="user" class="w-20 h-20 text-zinc-700"></i>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 to-transparent">
+              <div class="font-display font-bold text-xl">Caio</div>
+              <div class="text-xs text-amber-400 uppercase tracking-wider">novo · social</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agendar -->
+  <section id="agendar" class="border-t border-zinc-800/60 bg-zinc-900/30 py-20">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="text-center mb-10">
+        <div class="text-xs uppercase tracking-[0.3em] text-amber-400 mb-3">Reservar cadeira</div>
+        <h2 class="font-display text-4xl md:text-5xl font-bold">Quando vai vir?</h2>
+      </div>
+      <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-8">
+        <!-- Step indicator -->
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex-1 flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-amber-500 text-zinc-900 font-bold text-sm flex items-center justify-center">1</div>
+            <div class="text-sm font-medium">Corte+Barba</div>
+          </div>
+          <div class="flex-1 h-px bg-amber-500"></div>
+          <div class="flex-1 flex items-center gap-2 justify-center">
+            <div class="w-7 h-7 rounded-full bg-amber-500 text-zinc-900 font-bold text-sm flex items-center justify-center">2</div>
+            <div class="text-sm font-medium">Tio Zé</div>
+          </div>
+          <div class="flex-1 h-px bg-zinc-700"></div>
+          <div class="flex-1 flex items-center gap-2 justify-end">
+            <div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-500 font-bold text-sm flex items-center justify-center">3</div>
+            <div class="text-sm text-zinc-500">Horário</div>
+          </div>
+        </div>
+
+        <div class="text-xs uppercase tracking-widest text-zinc-500 mb-3">Selecione um dia</div>
+        <div class="grid grid-cols-7 gap-2 mb-8">
+          <button class="aspect-square rounded border border-zinc-800 text-zinc-600 cursor-not-allowed text-xs">
+            <div>ter</div><div class="font-bold text-base">23</div>
+          </button>
+          <button class="aspect-square rounded border border-zinc-800 hover:border-amber-500 text-xs transition">
+            <div>qua</div><div class="font-bold text-base">24</div>
+          </button>
+          <button class="aspect-square rounded bg-amber-500 text-zinc-900 text-xs font-medium">
+            <div>qui</div><div class="font-bold text-base">25</div>
+          </button>
+          <button class="aspect-square rounded border border-zinc-800 hover:border-amber-500 text-xs transition">
+            <div>sex</div><div class="font-bold text-base">26</div>
+          </button>
+          <button class="aspect-square rounded border border-zinc-800 hover:border-amber-500 text-xs transition">
+            <div>sáb</div><div class="font-bold text-base">27</div>
+          </button>
+          <button class="aspect-square rounded border border-zinc-800 text-zinc-700 cursor-not-allowed text-xs">
+            <div>dom</div><div class="font-bold text-base">28</div>
+          </button>
+          <button class="aspect-square rounded border border-zinc-800 hover:border-amber-500 text-xs transition">
+            <div>seg</div><div class="font-bold text-base">29</div>
+          </button>
+        </div>
+
+        <div class="text-xs uppercase tracking-widest text-zinc-500 mb-3">Horário disponível</div>
+        <div class="grid grid-cols-4 gap-2 mb-8">
+          <button class="py-3 rounded border border-zinc-800 hover:border-amber-500 font-bebas text-lg transition">09:00</button>
+          <button class="py-3 rounded border border-zinc-800 hover:border-amber-500 font-bebas text-lg transition">09:30</button>
+          <button class="py-3 rounded border border-zinc-800 text-zinc-700 line-through font-bebas text-lg cursor-not-allowed">10:00</button>
+          <button class="py-3 rounded bg-amber-500 text-zinc-900 font-bebas text-lg">10:30</button>
+          <button class="py-3 rounded border border-zinc-800 hover:border-amber-500 font-bebas text-lg transition">11:00</button>
+          <button class="py-3 rounded border border-zinc-800 hover:border-amber-500 font-bebas text-lg transition">14:00</button>
+          <button class="py-3 rounded border border-zinc-800 hover:border-amber-500 font-bebas text-lg transition">14:30</button>
+          <button class="py-3 rounded border border-zinc-800 text-zinc-700 line-through font-bebas text-lg cursor-not-allowed">15:00</button>
+        </div>
+
+        <button class="w-full bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold py-4 rounded-md text-lg transition flex items-center justify-center gap-2">
+          Confirmar quinta, 25 às 10:30
+          <i data-lucide="check" class="w-5 h-5"></i>
+        </button>
+        <p class="text-center text-xs text-zinc-500 mt-3">Você só paga na barbearia · cancele até 2h antes sem custo</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contato" class="border-t border-zinc-800/60 py-12">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8 text-sm">
+      <div>
+        <div class="font-display font-bold text-xl mb-2">Tio Zé</div>
+        <p class="text-zinc-500">Rua da Matriz, 87 — Centro<br>São Paulo, SP</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-amber-400 mb-3">Horário</div>
+        <div class="text-zinc-400 space-y-1">
+          <div>Terça a sexta · 09h - 20h</div>
+          <div>Sábado · 09h - 18h</div>
+          <div>Domingo e segunda · fechado</div>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-amber-400 mb-3">Fale com a gente</div>
+        <div class="space-y-1 text-zinc-400">
+          <div class="flex items-center gap-2"><i data-lucide="phone" class="w-3.5 h-3.5"></i> (11) 99999-9999</div>
+          <div class="flex items-center gap-2"><i data-lucide="instagram" class="w-3.5 h-3.5"></i> @barbeariadotioze</div>
+        </div>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-6 mt-10 pt-6 border-t border-zinc-800/60 text-center text-xs text-zinc-600">
+      © 2026 Barbearia Tio Zé · est. 1987 · feito com navalha e Tailwind
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

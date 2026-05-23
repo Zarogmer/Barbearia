@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maison Élise — Salão de Beleza</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; font-weight: 300; }
+    .font-serif { font-family: 'Cormorant Garamond', serif; }
+    .champagne-grad { background: linear-gradient(135deg, #f4ead5 0%, #e8d5b7 100%); }
+    .gold-accent { color: #b8956a; }
+    .gold-bg { background-color: #b8956a; }
+    .gold-border { border-color: #b8956a; }
+    .blush-bg { background-color: #f9e4dc; }
+    .marble-bg { background: linear-gradient(135deg, #fafaf9 0%, #f5f3ed 50%, #ebe5da 100%); }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+
+  <!-- Top bar minimalista -->
+  <div class="border-b border-stone-200 bg-white text-stone-500 text-xs tracking-widest">
+    <div class="max-w-6xl mx-auto px-6 py-2 flex justify-between items-center">
+      <span class="uppercase">Frete grátis em produtos · acima de R$ 200</span>
+      <div class="hidden md:flex gap-6 uppercase">
+        <span>Português</span>
+        <span>·</span>
+        <span class="gold-accent">Login</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b border-stone-200">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <nav class="hidden md:flex gap-10 text-sm uppercase tracking-widest text-stone-600 flex-1">
+        <a href="#" class="hover:gold-accent transition">Serviços</a>
+        <a href="#" class="hover:gold-accent transition">Equipe</a>
+        <a href="#" class="hover:gold-accent transition">Produtos</a>
+      </nav>
+      <div class="flex-1 text-center">
+        <div class="font-serif text-3xl font-medium tracking-wider">Maison <span class="gold-accent italic">Élise</span></div>
+        <div class="text-[10px] uppercase tracking-[0.4em] text-stone-400 mt-0.5">salon · spa · paris-são paulo</div>
+      </div>
+      <div class="flex-1 flex justify-end">
+        <a href="#agendar" class="border gold-border gold-accent hover:gold-bg hover:text-white px-6 py-2.5 text-xs uppercase tracking-widest transition">Reservar</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="marble-bg">
+    <div class="max-w-6xl mx-auto px-6 py-24 md:py-32 grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <div class="gold-accent text-xs uppercase tracking-[0.4em] mb-6">— desde 2008</div>
+        <h1 class="font-serif text-5xl md:text-7xl leading-[1.1] mb-8 text-stone-900">
+          A beleza<br>
+          <em class="gold-accent">se expressa</em><br>
+          em detalhes.
+        </h1>
+        <p class="text-stone-600 text-lg leading-relaxed mb-10 max-w-md font-light">
+          Um espaço onde cabelo, pele e bem-estar se encontram. Atendimento personalizado em ambiente acolhedor, no coração dos Jardins.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="#agendar" class="gold-bg text-white hover:bg-stone-800 px-8 py-4 text-sm uppercase tracking-widest transition">
+            Agendar visita →
+          </a>
+          <a href="#servicos" class="border border-stone-300 text-stone-700 hover:gold-border hover:gold-accent px-8 py-4 text-sm uppercase tracking-widest transition">
+            Cartão de serviços
+          </a>
+        </div>
+      </div>
+      <div class="relative">
+        <div class="absolute -top-6 -right-6 w-32 h-32 blush-bg rounded-full -z-0"></div>
+        <div class="absolute -bottom-6 -left-6 w-24 h-24 champagne-grad rounded-full -z-0"></div>
+        <div class="relative aspect-[4/5] bg-stone-100 border gold-border overflow-hidden">
+          <svg viewBox="0 0 400 500" class="w-full h-full">
+            <defs>
+              <linearGradient id="salon" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f9e4dc"/>
+                <stop offset="100%" stop-color="#e8d5b7"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="500" fill="url(#salon)"/>
+            <circle cx="200" cy="180" r="80" fill="#fff" opacity="0.6"/>
+            <circle cx="200" cy="180" r="55" fill="#b8956a" opacity="0.3"/>
+            <ellipse cx="200" cy="380" rx="120" ry="14" fill="#b8956a" opacity="0.2"/>
+            <text x="200" y="290" text-anchor="middle" fill="#78716c" font-family="Cormorant Garamond" font-size="22" font-style="italic">l'élégance</text>
+            <text x="200" y="320" text-anchor="middle" fill="#b8956a" font-family="Inter" font-size="10" letter-spacing="6">SALON</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pillars -->
+  <section class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-12 text-center">
+      <div>
+        <div class="w-12 h-12 mx-auto mb-4 gold-bg rounded-full flex items-center justify-center">
+          <i data-lucide="leaf" class="w-5 h-5 text-white"></i>
+        </div>
+        <h3 class="font-serif text-2xl mb-2">Produtos veganos</h3>
+        <p class="text-stone-500 text-sm font-light">Linha exclusiva, cruelty-free, com fórmulas francesas.</p>
+      </div>
+      <div>
+        <div class="w-12 h-12 mx-auto mb-4 gold-bg rounded-full flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+        </div>
+        <h3 class="font-serif text-2xl mb-2">Atendimento privê</h3>
+        <p class="text-stone-500 text-sm font-light">Apenas 1 cliente por horário no salão. Sem espera.</p>
+      </div>
+      <div>
+        <div class="w-12 h-12 mx-auto mb-4 gold-bg rounded-full flex items-center justify-center">
+          <i data-lucide="award" class="w-5 h-5 text-white"></i>
+        </div>
+        <h3 class="font-serif text-2xl mb-2">Equipe certificada</h3>
+        <p class="text-stone-500 text-sm font-light">Profissionais formadas em Paris, Milão e São Paulo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Serviços -->
+  <section id="servicos" class="bg-stone-50 py-24">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <div class="gold-accent text-xs uppercase tracking-[0.4em] mb-3">Cartão de serviços</div>
+        <h2 class="font-serif text-5xl text-stone-900">Nossa carta</h2>
+        <div class="w-12 h-px gold-bg mx-auto mt-6"></div>
+      </div>
+
+      <div class="space-y-1">
+        <!-- Categoria -->
+        <div class="bg-white p-8 md:p-10 border-l-2 gold-border">
+          <div class="text-xs uppercase tracking-[0.3em] gold-accent mb-2">cabelo</div>
+          <div class="space-y-5">
+            <div class="flex justify-between items-baseline">
+              <div>
+                <div class="font-serif text-2xl text-stone-900">Coloração premium</div>
+                <div class="text-sm text-stone-500 font-light mt-1">com produtos L'Oréal Professionnel · inclui hidratação</div>
+              </div>
+              <div class="flex items-center gap-4 shrink-0 ml-6">
+                <div class="text-xs text-stone-400 tracking-widest">90 MIN</div>
+                <div class="font-serif text-2xl gold-accent">R$ 280</div>
+              </div>
+            </div>
+            <div class="border-t border-stone-100"></div>
+            <div class="flex justify-between items-baseline">
+              <div>
+                <div class="font-serif text-2xl text-stone-900">Corte feminino</div>
+                <div class="text-sm text-stone-500 font-light mt-1">consulta + corte + finalização</div>
+              </div>
+              <div class="flex items-center gap-4 shrink-0 ml-6">
+                <div class="text-xs text-stone-400 tracking-widest">60 MIN</div>
+                <div class="font-serif text-2xl gold-accent">R$ 180</div>
+              </div>
+            </div>
+            <div class="border-t border-stone-100"></div>
+            <div class="flex justify-between items-baseline">
+              <div>
+                <div class="font-serif text-2xl text-stone-900">Escova progressiva</div>
+                <div class="text-sm text-stone-500 font-light mt-1">linha sem formol · efeito até 4 meses</div>
+              </div>
+              <div class="flex items-center gap-4 shrink-0 ml-6">
+                <div class="text-xs text-stone-400 tracking-widest">3H</div>
+                <div class="font-serif text-2xl gold-accent">R$ 450</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-8 md:p-10 border-l-2 gold-border">
+          <div class="text-xs uppercase tracking-[0.3em] gold-accent mb-2">pele · spa</div>
+          <div class="space-y-5">
+            <div class="flex justify-between items-baseline">
+              <div>
+                <div class="font-serif text-2xl text-stone-900">Limpeza de pele profunda</div>
+                <div class="text-sm text-stone-500 font-light mt-1">ritual completo de cuidado facial</div>
+              </div>
+              <div class="flex items-center gap-4 shrink-0 ml-6">
+                <div class="text-xs text-stone-400 tracking-widest">75 MIN</div>
+                <div class="font-serif text-2xl gold-accent">R$ 220</div>
+              </div>
+            </div>
+            <div class="border-t border-stone-100"></div>
+            <div class="flex justify-between items-baseline">
+              <div>
+                <div class="font-serif text-2xl text-stone-900">Massagem relaxante</div>
+                <div class="text-sm text-stone-500 font-light mt-1">corpo inteiro · aromaterapia</div>
+              </div>
+              <div class="flex items-center gap-4 shrink-0 ml-6">
+                <div class="text-xs text-stone-400 tracking-widest">60 MIN</div>
+                <div class="font-serif text-2xl gold-accent">R$ 250</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-8 md:p-10 border-l-2 gold-border">
+          <div class="text-xs uppercase tracking-[0.3em] gold-accent mb-2">unhas · spa das mãos</div>
+          <div class="space-y-5">
+            <div class="flex justify-between items-baseline">
+              <div>
+                <div class="font-serif text-2xl text-stone-900">Manicure francesa</div>
+                <div class="text-sm text-stone-500 font-light mt-1">esmaltação tradicional ou em gel</div>
+              </div>
+              <div class="flex items-center gap-4 shrink-0 ml-6">
+                <div class="text-xs text-stone-400 tracking-widest">45 MIN</div>
+                <div class="font-serif text-2xl gold-accent">R$ 90</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipe -->
+  <section class="py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <div class="gold-accent text-xs uppercase tracking-[0.4em] mb-3">Nossas profissionais</div>
+        <h2 class="font-serif text-5xl text-stone-900">A equipe Élise</h2>
+        <div class="w-12 h-px gold-bg mx-auto mt-6"></div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="aspect-[3/4] mb-5 overflow-hidden champagne-grad relative">
+            <div class="absolute inset-0 flex items-center justify-center text-stone-400">
+              <i data-lucide="user" class="w-20 h-20"></i>
+            </div>
+          </div>
+          <div class="font-serif text-2xl text-stone-900">Élise Moreau</div>
+          <div class="gold-accent text-xs uppercase tracking-widest mt-1">Diretora · colorista</div>
+          <div class="text-sm text-stone-500 font-light mt-3">Formada na L'Oréal Paris. 15 anos de carreira.</div>
+        </div>
+        <div class="text-center">
+          <div class="aspect-[3/4] mb-5 overflow-hidden blush-bg relative">
+            <div class="absolute inset-0 flex items-center justify-center text-stone-400">
+              <i data-lucide="user" class="w-20 h-20"></i>
+            </div>
+          </div>
+          <div class="font-serif text-2xl text-stone-900">Beatriz Lima</div>
+          <div class="gold-accent text-xs uppercase tracking-widest mt-1">Esteticista facial</div>
+          <div class="text-sm text-stone-500 font-light mt-3">Especialista em peles maduras e sensíveis.</div>
+        </div>
+        <div class="text-center">
+          <div class="aspect-[3/4] mb-5 overflow-hidden champagne-grad relative">
+            <div class="absolute inset-0 flex items-center justify-center text-stone-400">
+              <i data-lucide="user" class="w-20 h-20"></i>
+            </div>
+          </div>
+          <div class="font-serif text-2xl text-stone-900">Camila Rocha</div>
+          <div class="gold-accent text-xs uppercase tracking-widest mt-1">Cabeleireira sênior</div>
+          <div class="text-sm text-stone-500 font-light mt-3">Cortes femininos contemporâneos e clássicos.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agendar -->
+  <section id="agendar" class="marble-bg py-24">
+    <div class="max-w-2xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <div class="gold-accent text-xs uppercase tracking-[0.4em] mb-3">Reserve seu momento</div>
+        <h2 class="font-serif text-5xl text-stone-900">Sua próxima visita</h2>
+      </div>
+
+      <div class="bg-white p-10 shadow-xl">
+        <!-- Resumo -->
+        <div class="border-b border-stone-200 pb-6 mb-6">
+          <div class="text-xs uppercase tracking-widest gold-accent mb-3">Sua escolha</div>
+          <div class="font-serif text-2xl text-stone-900 mb-1">Coloração premium</div>
+          <div class="text-sm text-stone-500 font-light">com Élise · 90 minutos · R$ 280</div>
+        </div>
+
+        <div class="text-xs uppercase tracking-widest text-stone-400 mb-3">Escolha o dia</div>
+        <div class="grid grid-cols-5 gap-2 mb-8">
+          <button class="aspect-square border border-stone-200 hover:gold-border transition text-stone-700">
+            <div class="text-[10px] uppercase tracking-wider text-stone-400">qua</div>
+            <div class="font-serif text-xl">24</div>
+          </button>
+          <button class="aspect-square gold-bg text-white">
+            <div class="text-[10px] uppercase tracking-wider opacity-80">qui</div>
+            <div class="font-serif text-xl">25</div>
+          </button>
+          <button class="aspect-square border border-stone-200 hover:gold-border transition text-stone-700">
+            <div class="text-[10px] uppercase tracking-wider text-stone-400">sex</div>
+            <div class="font-serif text-xl">26</div>
+          </button>
+          <button class="aspect-square border border-stone-200 hover:gold-border transition text-stone-700">
+            <div class="text-[10px] uppercase tracking-wider text-stone-400">sáb</div>
+            <div class="font-serif text-xl">27</div>
+          </button>
+          <button class="aspect-square border border-stone-200 text-stone-300 cursor-not-allowed">
+            <div class="text-[10px] uppercase tracking-wider">dom</div>
+            <div class="font-serif text-xl">28</div>
+          </button>
+        </div>
+
+        <div class="text-xs uppercase tracking-widest text-stone-400 mb-3">Horário</div>
+        <div class="grid grid-cols-3 gap-2 mb-8">
+          <button class="py-3 border border-stone-200 hover:gold-border text-stone-700 font-serif text-lg transition">09h</button>
+          <button class="py-3 border border-stone-200 hover:gold-border text-stone-700 font-serif text-lg transition">10h30</button>
+          <button class="py-3 gold-bg text-white font-serif text-lg">14h</button>
+          <button class="py-3 border border-stone-200 hover:gold-border text-stone-700 font-serif text-lg transition">15h30</button>
+          <button class="py-3 border border-stone-200 text-stone-300 cursor-not-allowed line-through font-serif text-lg">17h</button>
+          <button class="py-3 border border-stone-200 hover:gold-border text-stone-700 font-serif text-lg transition">18h30</button>
+        </div>
+
+        <button class="w-full gold-bg hover:bg-stone-900 text-white font-light tracking-widest text-sm uppercase py-5 transition">
+          Confirmar reserva — 25 de maio, 14h
+        </button>
+        <p class="text-center text-xs text-stone-400 mt-4 font-light italic">
+          Cancele até 24h antes sem custo · sinal de 30% será cobrado para coloração
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quote -->
+  <section class="bg-stone-900 py-24 text-center text-white">
+    <div class="max-w-3xl mx-auto px-6">
+      <i data-lucide="quote" class="w-12 h-12 mx-auto gold-accent mb-6 opacity-50"></i>
+      <p class="font-serif text-3xl md:text-4xl italic leading-relaxed mb-6">
+        "O Maison Élise é meu refúgio. Saio de lá outra mulher, todas as vezes."
+      </p>
+      <div class="gold-accent text-xs uppercase tracking-[0.4em]">— Marina Castro, cliente desde 2019</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-white py-16 border-t border-stone-200">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-10 text-sm">
+      <div class="md:col-span-2">
+        <div class="font-serif text-2xl mb-3">Maison <em class="gold-accent">Élise</em></div>
+        <p class="text-stone-500 font-light">Rua Bela Cintra, 1500 — Jardins<br>São Paulo, SP · 01415-001</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-stone-400 mb-4">Horários</div>
+        <div class="text-stone-600 font-light space-y-1">
+          <div>Ter-sex · 9h às 20h</div>
+          <div>Sáb · 9h às 18h</div>
+          <div>Dom-seg · fechado</div>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-stone-400 mb-4">Contato</div>
+        <div class="text-stone-600 font-light space-y-1">
+          <div>(11) 3000-0000</div>
+          <div>contato@maisonelise.com.br</div>
+          <div class="gold-accent">@maisonelise</div>
+        </div>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-6 mt-12 pt-6 border-t border-stone-200 text-center text-xs text-stone-400 tracking-widest uppercase">
+      © 2026 Maison Élise · cnpj 00.000.000/0001-00
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

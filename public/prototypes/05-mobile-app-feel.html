@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cortei — App de agendamento</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .phone-frame {
+      width: 380px;
+      height: 780px;
+      background: #1a1a1a;
+      border-radius: 48px;
+      padding: 12px;
+      box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5), 0 30px 60px -30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+    }
+    .notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 32px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      z-index: 100;
+    }
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 14px 30px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 99;
+    }
+    .scrollable::-webkit-scrollbar { display: none; }
+    .scrollable { -ms-overflow-style: none; scrollbar-width: none; }
+    .grad-cover { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+    .grad-dark { background: linear-gradient(180deg, #18181b 0%, #09090b 100%); }
+  </style>
+</head>
+<body class="bg-neutral-100 antialiased min-h-screen flex flex-col items-center justify-center py-12 px-4">
+
+  <!-- Header info -->
+  <div class="text-center mb-10 max-w-2xl">
+    <div class="inline-block text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">protótipo 05</div>
+    <h1 class="text-3xl font-bold mb-2">Mobile app-feel</h1>
+    <p class="text-neutral-600">PWA com sensação de app nativo. Bottom tab, swipe gestures, fluxo full-screen. Pensado mobile-only.</p>
+  </div>
+
+  <!-- Two phones side by side -->
+  <div class="flex flex-wrap justify-center items-start gap-12">
+
+    <!-- Phone 1: Home / Listagem de serviços -->
+    <div>
+      <div class="text-center text-xs font-mono uppercase tracking-widest text-neutral-500 mb-4">home</div>
+      <div class="phone-frame">
+        <div class="phone-screen grad-dark">
+          <div class="notch"></div>
+          <div class="status-bar text-white">
+            <span>9:41</span>
+            <span class="flex items-center gap-1">
+              <i data-lucide="signal" class="w-4 h-4"></i>
+              <i data-lucide="wifi" class="w-4 h-4"></i>
+              <i data-lucide="battery-full" class="w-5 h-5"></i>
+            </span>
+          </div>
+
+          <!-- Content -->
+          <div class="h-full pt-16 pb-24 overflow-y-auto scrollable text-white">
+            <!-- Greeting -->
+            <div class="px-6 mb-6">
+              <div class="text-sm text-neutral-400">olá, Bruno 👋</div>
+              <h2 class="text-3xl font-bold leading-tight mt-1">o que vai ser<br>hoje?</h2>
+            </div>
+
+            <!-- Quick action -->
+            <div class="px-6 mb-6">
+              <button class="w-full grad-cover rounded-2xl p-5 text-left relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full"></div>
+                <div class="absolute -right-2 -top-2 w-20 h-20 bg-white/10 rounded-full"></div>
+                <div class="relative">
+                  <div class="text-xs uppercase tracking-widest text-indigo-200 mb-1">próximo livre</div>
+                  <div class="font-bold text-xl">Hoje, 14:30 · Tio Zé</div>
+                  <div class="text-sm text-indigo-100 mt-1">Corte + Barba · R$ 75</div>
+                  <div class="mt-3 inline-flex items-center gap-1 bg-white text-indigo-600 px-3 py-1.5 rounded-full text-xs font-semibold">
+                    Agendar agora
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Categorias -->
+            <div class="px-6 mb-4 flex items-center justify-between">
+              <h3 class="font-bold">Serviços</h3>
+              <span class="text-xs text-neutral-400">ver todos</span>
+            </div>
+            <div class="px-6 grid grid-cols-2 gap-3 mb-6">
+              <div class="bg-neutral-800 rounded-2xl p-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-3">
+                  <i data-lucide="scissors" class="w-5 h-5 text-indigo-400"></i>
+                </div>
+                <div class="font-semibold">Corte</div>
+                <div class="text-xs text-neutral-400 mt-0.5">a partir de R$50</div>
+              </div>
+              <div class="bg-neutral-800 rounded-2xl p-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center mb-3">
+                  <i data-lucide="user-round-pen" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                <div class="font-semibold">Barba</div>
+                <div class="text-xs text-neutral-400 mt-0.5">a partir de R$35</div>
+              </div>
+              <div class="bg-neutral-800 rounded-2xl p-4">
+                <div class="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center mb-3">
+                  <i data-lucide="hand" class="w-5 h-5 text-pink-400"></i>
+                </div>
+                <div class="font-semibold">Unhas</div>
+                <div class="text-xs text-neutral-400 mt-0.5">a partir de R$70</div>
+              </div>
+              <div class="bg-neutral-800 rounded-2xl p-4 border border-indigo-500/50">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center mb-3">
+                  <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                </div>
+                <div class="font-semibold">Combo</div>
+                <div class="text-xs text-indigo-400 mt-0.5">economize 15%</div>
+              </div>
+            </div>
+
+            <!-- Próximo agendamento -->
+            <div class="px-6 mb-4 flex items-center justify-between">
+              <h3 class="font-bold">Próximo agendamento</h3>
+            </div>
+            <div class="px-6 mb-6">
+              <div class="bg-neutral-800 rounded-2xl p-4 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center font-bold">25</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-neutral-400">quinta, 25 mai · 10:30</div>
+                  <div class="font-semibold truncate">Corte com Tio Zé</div>
+                </div>
+                <button class="text-indigo-400 text-sm font-semibold shrink-0">Ver →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom tab bar -->
+          <div class="absolute bottom-0 left-0 right-0 bg-neutral-900/95 backdrop-blur border-t border-neutral-800">
+            <div class="grid grid-cols-4 py-3 text-white">
+              <button class="flex flex-col items-center gap-1">
+                <i data-lucide="home" class="w-5 h-5 text-indigo-400"></i>
+                <span class="text-[10px] font-medium text-indigo-400">Início</span>
+              </button>
+              <button class="flex flex-col items-center gap-1">
+                <i data-lucide="calendar" class="w-5 h-5 text-neutral-400"></i>
+                <span class="text-[10px] font-medium text-neutral-400">Agenda</span>
+              </button>
+              <button class="flex flex-col items-center gap-1">
+                <i data-lucide="search" class="w-5 h-5 text-neutral-400"></i>
+                <span class="text-[10px] font-medium text-neutral-400">Buscar</span>
+              </button>
+              <button class="flex flex-col items-center gap-1">
+                <i data-lucide="user" class="w-5 h-5 text-neutral-400"></i>
+                <span class="text-[10px] font-medium text-neutral-400">Perfil</span>
+              </button>
+            </div>
+            <div class="flex justify-center pb-1">
+              <div class="w-32 h-1 rounded-full bg-white/30"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone 2: Booking flow -->
+    <div>
+      <div class="text-center text-xs font-mono uppercase tracking-widest text-neutral-500 mb-4">escolher horário</div>
+      <div class="phone-frame">
+        <div class="phone-screen bg-white">
+          <div class="notch"></div>
+          <div class="status-bar text-neutral-900">
+            <span>9:41</span>
+            <span class="flex items-center gap-1">
+              <i data-lucide="signal" class="w-4 h-4"></i>
+              <i data-lucide="wifi" class="w-4 h-4"></i>
+              <i data-lucide="battery-full" class="w-5 h-5"></i>
+            </span>
+          </div>
+
+          <div class="h-full pt-14 pb-32 overflow-y-auto scrollable">
+            <!-- App bar -->
+            <div class="px-5 py-4 flex items-center justify-between">
+              <button class="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              </button>
+              <div class="text-xs font-medium text-neutral-500">passo 3 de 4</div>
+              <button class="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Title -->
+            <div class="px-5 mb-6">
+              <h2 class="text-2xl font-bold leading-tight">Escolha o<br>melhor horário</h2>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full font-semibold">Corte + Barba</span>
+                <span class="px-3 py-1 bg-neutral-100 text-neutral-700 text-xs rounded-full font-semibold">Tio Zé</span>
+              </div>
+            </div>
+
+            <!-- Date scroller -->
+            <div class="mb-6">
+              <div class="px-5 mb-3 flex items-center justify-between">
+                <div class="text-sm font-semibold">Maio 2026</div>
+                <button class="text-indigo-600 text-sm font-semibold">Calendário ›</button>
+              </div>
+              <div class="flex gap-2 overflow-x-auto scrollable px-5">
+                <button class="shrink-0 w-14 rounded-2xl bg-neutral-100 text-center py-3">
+                  <div class="text-[10px] uppercase text-neutral-500 font-semibold">hj</div>
+                  <div class="font-bold text-lg">23</div>
+                  <div class="text-[9px] text-neutral-400">livre</div>
+                </button>
+                <button class="shrink-0 w-14 rounded-2xl bg-neutral-100 text-center py-3">
+                  <div class="text-[10px] uppercase text-neutral-500 font-semibold">qua</div>
+                  <div class="font-bold text-lg">24</div>
+                  <div class="text-[9px] text-neutral-400">livre</div>
+                </button>
+                <button class="shrink-0 w-14 rounded-2xl bg-indigo-600 text-white text-center py-3 shadow-lg shadow-indigo-500/30">
+                  <div class="text-[10px] uppercase opacity-80 font-semibold">qui</div>
+                  <div class="font-bold text-lg">25</div>
+                  <div class="text-[9px] opacity-90">6 livres</div>
+                </button>
+                <button class="shrink-0 w-14 rounded-2xl bg-neutral-100 text-center py-3">
+                  <div class="text-[10px] uppercase text-neutral-500 font-semibold">sex</div>
+                  <div class="font-bold text-lg">26</div>
+                  <div class="text-[9px] text-neutral-400">livre</div>
+                </button>
+                <button class="shrink-0 w-14 rounded-2xl bg-neutral-100 text-center py-3">
+                  <div class="text-[10px] uppercase text-neutral-500 font-semibold">sáb</div>
+                  <div class="font-bold text-lg">27</div>
+                  <div class="text-[9px] text-amber-500">2 livres</div>
+                </button>
+                <button class="shrink-0 w-14 rounded-2xl bg-neutral-100 text-neutral-300 text-center py-3">
+                  <div class="text-[10px] uppercase font-semibold">dom</div>
+                  <div class="font-bold text-lg">28</div>
+                  <div class="text-[9px]">fechado</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Period -->
+            <div class="px-5 mb-4 flex gap-2">
+              <button class="px-4 py-1.5 rounded-full bg-neutral-900 text-white text-xs font-semibold">Manhã</button>
+              <button class="px-4 py-1.5 rounded-full bg-neutral-100 text-neutral-600 text-xs font-semibold">Tarde</button>
+              <button class="px-4 py-1.5 rounded-full bg-neutral-100 text-neutral-600 text-xs font-semibold">Noite</button>
+            </div>
+
+            <!-- Slots -->
+            <div class="px-5 grid grid-cols-3 gap-2">
+              <button class="py-3 rounded-2xl border border-neutral-200 font-semibold text-sm">09:00</button>
+              <button class="py-3 rounded-2xl border border-neutral-200 font-semibold text-sm">09:30</button>
+              <button class="py-3 rounded-2xl bg-neutral-100 text-neutral-300 font-semibold text-sm line-through">10:00</button>
+              <button class="py-3 rounded-2xl bg-indigo-600 text-white font-semibold text-sm shadow-lg shadow-indigo-500/30">10:30</button>
+              <button class="py-3 rounded-2xl border border-neutral-200 font-semibold text-sm">11:00</button>
+              <button class="py-3 rounded-2xl border border-neutral-200 font-semibold text-sm">11:30</button>
+            </div>
+          </div>
+
+          <!-- Bottom CTA sticky -->
+          <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-5 pt-4 pb-8">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <div class="text-xs text-neutral-500">quinta, 25 mai</div>
+                <div class="font-bold text-lg">10:30 — 11:20</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-neutral-500">total</div>
+                <div class="font-bold text-lg">R$ 75</div>
+              </div>
+            </div>
+            <button class="w-full bg-indigo-600 text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30">
+              Continuar
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+            <div class="flex justify-center pt-2">
+              <div class="w-32 h-1 rounded-full bg-neutral-300"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Notes -->
+  <div class="mt-12 max-w-2xl text-center text-sm text-neutral-500">
+    <p>
+      Estilo <strong class="text-neutral-700">app nativo</strong>: bottom tab bar, swipe horizontal de datas,
+      botão sticky no fundo, status bar simulada.
+      Ideal para <strong class="text-neutral-700">PWA</strong> ou se você quiser convergir para app
+      React Native depois (v2).
+    </p>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

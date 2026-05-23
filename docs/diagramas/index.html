@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Barbearia SaaS — Diagramas do MVP</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --fg: #0f172a;
+    --muted: #64748b;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --accent: #2563eb;
+    --pill: #eff6ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  header {
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: #f1f5f9;
+    padding: 32px 24px;
+  }
+  header h1 { margin: 0 0 6px 0; font-size: 28px; letter-spacing: -0.02em; }
+  header p { margin: 0; color: #94a3b8; font-size: 14px; }
+  nav.toc {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(8px);
+    color: #cbd5e1;
+    padding: 12px 24px;
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 13px;
+    border-bottom: 1px solid #334155;
+  }
+  nav.toc a {
+    color: #cbd5e1; text-decoration: none;
+    padding: 4px 10px; border-radius: 4px;
+    border: 1px solid #334155;
+    transition: background 0.15s;
+  }
+  nav.toc a:hover { background: #334155; color: #f1f5f9; }
+  main { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
+  section.diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  section.diagram .head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  }
+  section.diagram h2 { margin: 0; font-size: 20px; }
+  section.diagram .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill {
+    background: var(--pill);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  section.diagram p.desc { margin: 4px 0 0 0; color: var(--muted); font-size: 13px; flex-basis: 100%; }
+  section.diagram .svg-wrap {
+    padding: 16px;
+    overflow-x: auto;
+    background: #fafbfc;
+  }
+  section.diagram .svg-wrap img,
+  section.diagram .svg-wrap object {
+    display: block;
+    width: 100%;
+    min-width: 900px;
+    height: auto;
+    border-radius: 6px;
+  }
+  section.diagram .foot {
+    padding: 12px 24px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  section.diagram .foot a {
+    color: var(--accent); text-decoration: none; margin-right: 14px;
+  }
+  section.diagram .foot a:hover { text-decoration: underline; }
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .hero-meta .stat {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .hero-meta .stat strong { display: block; font-size: 22px; color: #f1f5f9; }
+  .hero-meta .stat span { font-size: 12px; color: #94a3b8; }
+  .links {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .links a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafbfc;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .links a:hover { border-color: var(--accent); background: var(--pill); }
+  .links a small { display: block; color: var(--muted); margin-top: 2px; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Barbearia SaaS — Diagramas do MVP</h1>
+  <p>Sprint 7 dias · 2026-05-23 → 2026-05-30 · Next.js 15 + Prisma + Postgres + RLS</p>
+  <div class="hero-meta">
+    <div class="stat"><strong>15</strong><span>PBIs no backlog</span></div>
+    <div class="stat"><strong>~62h</strong><span>estimativa total</span></div>
+    <div class="stat"><strong>4</strong><span>diagramas visuais</span></div>
+    <div class="stat"><strong>20</strong><span>regras de negócio (RN-01..20)</span></div>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#cliente">① Fluxo Cliente</a>
+  <a href="#admin">② Fluxo Admin</a>
+  <a href="#arq">③ Arquitetura Multi-tenant</a>
+  <a href="#slot">④ Algoritmo Slot</a>
+  <a href="#links">📎 Docs &amp; Imports</a>
+</nav>
+
+<main>
+
+<section class="diagram" id="cliente">
+  <div class="head">
+    <h2>① Fluxo Cliente — Agendamento</h2>
+    <span class="tags">
+      <span class="pill">PBI-07</span>
+      <span class="pill">PBI-08</span>
+      <span class="pill">PBI-06</span>
+      <span class="pill">mobile-first</span>
+    </span>
+    <p class="desc">Os 4 toques: landing → serviço → profissional → horário → confirmar → sucesso. State 100% via URL search params. Ramos de erro inline (Zod) e slot ocupado (EXCLUDE constraint).</p>
+  </div>
+  <div class="svg-wrap"><img src="fluxo-cliente.svg" alt="Fluxograma do agendamento pelo cliente final"></div>
+  <div class="foot">
+    <a href="fluxo-cliente.svg" target="_blank">abrir SVG</a>
+    <a href="../11-pbis-detalhado.md#pbi-07--fluxo-cliente-4-passos-sem-submit">PBI-07 detalhado</a>
+    <a href="../08-prototipo.md">W-01..W-06 (wireframes)</a>
+  </div>
+</section>
+
+<section class="diagram" id="admin">
+  <div class="head">
+    <h2>② Fluxo Admin — Painel da Barbearia</h2>
+    <span class="tags">
+      <span class="pill">PBI-04</span>
+      <span class="pill">PBI-05</span>
+      <span class="pill">PBI-09</span>
+      <span class="pill">PBI-10</span>
+      <span class="pill">desktop-first</span>
+    </span>
+    <p class="desc">Login (NextAuth v5) → middleware com sessão+orgId → dashboard. Ramos: agenda do dia, CRUDs (serviços, profissionais + horários + bloqueios), configurações. Ações que alteram dados destacadas em laranja.</p>
+  </div>
+  <div class="svg-wrap"><img src="fluxo-admin.svg" alt="Fluxograma do painel admin"></div>
+  <div class="foot">
+    <a href="fluxo-admin.svg" target="_blank">abrir SVG</a>
+    <a href="../11-pbis-detalhado.md#pbi-04--crud-servi%C3%A7os-admin">PBI-04 detalhado</a>
+    <a href="../07-regras-negocio.md#rn-07--cancelamento">RN-07 cancelamento</a>
+  </div>
+</section>
+
+<section class="diagram" id="arq">
+  <div class="head">
+    <h2>③ Arquitetura Multi-tenant — Defesa em 4 camadas</h2>
+    <span class="tags">
+      <span class="pill">PBI-01</span>
+      <span class="pill">PBI-02</span>
+      <span class="pill">PBI-11</span>
+      <span class="pill">crítico-segurança</span>
+    </span>
+    <p class="desc">Como uma request atravessa Cliente → Next.js (middleware + Server Action + Zod) → withTenant → Postgres com RLS + EXCLUDE. Mostra também o caminho do atacante e por que ele para no RLS (404, não 403). Falha em uma camada = próxima ainda barra.</p>
+  </div>
+  <div class="svg-wrap"><img src="arquitetura-multi-tenant.svg" alt="Arquitetura multi-tenant com RLS"></div>
+  <div class="foot">
+    <a href="arquitetura-multi-tenant.svg" target="_blank">abrir SVG</a>
+    <a href="../03-modelo-dados.md#politicas-rls-sql">RLS SQL</a>
+    <a href="../04-seguranca.md">Doc segurança</a>
+    <a href="../11-pbis-detalhado.md#pbi-11--testes-de-isolamento-cross-tenant">PBI-11 isolamento</a>
+  </div>
+</section>
+
+<section class="diagram" id="slot">
+  <div class="head">
+    <h2>④ Algoritmo Slot Calculator — coração do produto</h2>
+    <span class="tags">
+      <span class="pill">PBI-06</span>
+      <span class="pill">15+ testes unit</span>
+      <span class="pill">função pura</span>
+    </span>
+    <p class="desc">calculateAvailableSlots: input (workingHours, appointments, blocks, duration, date, tz, minAdvance, now, step) → loop por candidato a cada 15min → 5 filtros (RN-03/04/05) → output Array&lt;{startMinute, startUtc}&gt;. Sem I/O, testável de cabo a rabo.</p>
+  </div>
+  <div class="svg-wrap"><img src="algoritmo-slot-calculator.svg" alt="Algoritmo do calculador de slots disponíveis"></div>
+  <div class="foot">
+    <a href="algoritmo-slot-calculator.svg" target="_blank">abrir SVG</a>
+    <a href="../11-pbis-detalhado.md#pbi-06--slot-calculator-cora%C3%A7%C3%A3o-do-produto">PBI-06 detalhado</a>
+    <a href="../07-regras-negocio.md#rn-03--granularidade-de-slots">RN-03 granularidade</a>
+  </div>
+</section>
+
+<section class="links" id="links">
+  <a href="../11-pbis-detalhado.md">
+    <strong>📋 11-pbis-detalhado.md</strong>
+    <small>Markdown estruturado: cada PBI com back/front/regra/testes</small>
+  </a>
+  <a href="../trello-import.json">
+    <strong>🗂️ trello-import.json</strong>
+    <small>Board + 4 listas + 15 cards (checklists nativos)</small>
+  </a>
+  <a href="../09-pbis.md">
+    <strong>📚 09-pbis.md (canônico)</strong>
+    <small>Fonte original das PBIs com AC completos</small>
+  </a>
+  <a href="../07-regras-negocio.md">
+    <strong>📜 07-regras-negocio.md</strong>
+    <small>RN-01..RN-20 + casos de borda</small>
+  </a>
+  <a href="../03-modelo-dados.md">
+    <strong>🗄️ 03-modelo-dados.md</strong>
+    <small>Schema Prisma + RLS + EXCLUDE constraint</small>
+  </a>
+  <a href="../10-plano-semana.md">
+    <strong>📅 10-plano-semana.md</strong>
+    <small>Cronograma D1→D7 com paralelizações</small>
+  </a>
+</section>
+
+</main>
+
+</body>
+</html>

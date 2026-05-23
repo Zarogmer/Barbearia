@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio — Agendamento sem complicação</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    .tabular { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="bg-white text-neutral-900 antialiased">
+
+  <!-- Header -->
+  <header class="border-b border-neutral-200 bg-white/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-neutral-900 rounded-lg"></div>
+        <span class="font-bold tracking-tight text-lg">studio</span>
+      </div>
+      <nav class="hidden md:flex gap-8 text-sm font-medium text-neutral-600">
+        <a href="#servicos" class="hover:text-neutral-900">Serviços</a>
+        <a href="#equipe" class="hover:text-neutral-900">Equipe</a>
+        <a href="#sobre" class="hover:text-neutral-900">Sobre</a>
+        <a href="#contato" class="hover:text-neutral-900">Contato</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button class="hidden md:block text-sm font-medium px-4 py-2 rounded-full hover:bg-neutral-100">Entrar</button>
+        <a href="#agendar" class="bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-medium px-5 py-2.5 rounded-full transition">Agendar</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="border-b border-neutral-200">
+    <div class="max-w-7xl mx-auto px-6 py-24 md:py-32">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-neutral-100 rounded-full text-xs font-medium mb-8">
+          <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+          Aberto agora · 3 horários hoje
+        </div>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-8">
+          O melhor corte<br>
+          começa antes da<br>
+          tesoura. <span class="text-neutral-400">No agendamento.</span>
+        </h1>
+        <p class="text-xl text-neutral-600 mb-10 max-w-xl">
+          Studio é cabelo, barba, unhas, sobrancelha — pra qualquer pessoa.
+          Sem dramas, sem ligar pra confirmar, sem caderninho.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="#agendar" class="bg-neutral-900 hover:bg-neutral-800 text-white font-medium px-7 py-4 rounded-full inline-flex items-center gap-2 transition">
+            Agendar em 30 segundos
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="#servicos" class="bg-white hover:bg-neutral-50 border border-neutral-300 text-neutral-900 font-medium px-7 py-4 rounded-full inline-flex items-center gap-2 transition">
+            Ver serviços e preços
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-neutral-200">
+        <div>
+          <div class="text-4xl font-bold tabular tracking-tight">4.9</div>
+          <div class="text-sm text-neutral-500 mt-1">★ Google · 234 reviews</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold tabular tracking-tight">12k+</div>
+          <div class="text-sm text-neutral-500 mt-1">agendamentos / ano</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold tabular tracking-tight">8</div>
+          <div class="text-sm text-neutral-500 mt-1">profissionais</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold tabular tracking-tight">28s</div>
+          <div class="text-sm text-neutral-500 mt-1">tempo médio p/ agendar</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Serviços -->
+  <section id="servicos" class="border-b border-neutral-200 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-12 gap-8 mb-12">
+        <div class="md:col-span-4">
+          <div class="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">/ serviços</div>
+          <h2 class="text-4xl md:text-5xl font-bold tracking-tight">Tudo o que a gente faz.</h2>
+        </div>
+        <p class="md:col-span-7 md:col-start-6 text-lg text-neutral-600 self-end">
+          Cabelo, barba, unhas, sobrancelha, design de barba, hidratação. Para qualquer gênero, qualquer tipo de cabelo, qualquer ocasião.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200">
+        <div class="bg-white p-8 hover:bg-neutral-50 transition cursor-pointer group">
+          <div class="flex items-start justify-between mb-6">
+            <i data-lucide="scissors" class="w-6 h-6"></i>
+            <span class="text-xs font-mono text-neutral-400">01</span>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Corte de cabelo</h3>
+          <p class="text-neutral-600 text-sm mb-6">Corte, lavagem e finalização. Para qualquer textura.</p>
+          <div class="flex items-end justify-between">
+            <div class="text-3xl font-bold tabular">R$ 80</div>
+            <div class="text-xs font-mono text-neutral-400">45min</div>
+          </div>
+        </div>
+        <div class="bg-white p-8 hover:bg-neutral-50 transition cursor-pointer group">
+          <div class="flex items-start justify-between mb-6">
+            <i data-lucide="user-round-pen" class="w-6 h-6"></i>
+            <span class="text-xs font-mono text-neutral-400">02</span>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Barba</h3>
+          <p class="text-neutral-600 text-sm mb-6">Aparar, modelar, navalha e óleo finalizador.</p>
+          <div class="flex items-end justify-between">
+            <div class="text-3xl font-bold tabular">R$ 45</div>
+            <div class="text-xs font-mono text-neutral-400">25min</div>
+          </div>
+        </div>
+        <div class="bg-white p-8 hover:bg-neutral-50 transition cursor-pointer group">
+          <div class="flex items-start justify-between mb-6">
+            <i data-lucide="palette" class="w-6 h-6"></i>
+            <span class="text-xs font-mono text-neutral-400">03</span>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Coloração</h3>
+          <p class="text-neutral-600 text-sm mb-6">Raiz, mechas, balayage, fantasia. Consultoria inclusa.</p>
+          <div class="flex items-end justify-between">
+            <div class="text-3xl font-bold tabular">R$ 220+</div>
+            <div class="text-xs font-mono text-neutral-400">90min</div>
+          </div>
+        </div>
+        <div class="bg-white p-8 hover:bg-neutral-50 transition cursor-pointer group">
+          <div class="flex items-start justify-between mb-6">
+            <i data-lucide="hand" class="w-6 h-6"></i>
+            <span class="text-xs font-mono text-neutral-400">04</span>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Unhas</h3>
+          <p class="text-neutral-600 text-sm mb-6">Manicure, pedicure, gel, fibra. Sem cutícula sangrando.</p>
+          <div class="flex items-end justify-between">
+            <div class="text-3xl font-bold tabular">R$ 70</div>
+            <div class="text-xs font-mono text-neutral-400">50min</div>
+          </div>
+        </div>
+        <div class="bg-white p-8 hover:bg-neutral-50 transition cursor-pointer group">
+          <div class="flex items-start justify-between mb-6">
+            <i data-lucide="eye" class="w-6 h-6"></i>
+            <span class="text-xs font-mono text-neutral-400">05</span>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Sobrancelha</h3>
+          <p class="text-neutral-600 text-sm mb-6">Design, henna, brow lamination.</p>
+          <div class="flex items-end justify-between">
+            <div class="text-3xl font-bold tabular">R$ 50</div>
+            <div class="text-xs font-mono text-neutral-400">20min</div>
+          </div>
+        </div>
+        <div class="bg-neutral-900 text-white p-8 cursor-pointer group hover:bg-neutral-800 transition">
+          <div class="flex items-start justify-between mb-6">
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+            <span class="text-xs font-mono text-neutral-400">06</span>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Combo completo</h3>
+          <p class="text-neutral-400 text-sm mb-6">Corte + barba + sobrancelha. Pacote do studio.</p>
+          <div class="flex items-end justify-between">
+            <div class="text-3xl font-bold tabular">R$ 150</div>
+            <div class="text-xs font-mono text-neutral-500">90min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipe -->
+  <section id="equipe" class="border-b border-neutral-200 py-24">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-end justify-between mb-12">
+        <div>
+          <div class="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">/ equipe</div>
+          <h2 class="text-4xl md:text-5xl font-bold tracking-tight">Quem te atende.</h2>
+        </div>
+        <span class="text-sm text-neutral-500 hidden md:block">8 profissionais</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="group cursor-pointer">
+          <div class="aspect-square bg-neutral-100 rounded-2xl mb-3 overflow-hidden relative">
+            <div class="absolute inset-0 flex items-center justify-center text-neutral-400">
+              <i data-lucide="user" class="w-16 h-16"></i>
+            </div>
+            <div class="absolute top-3 right-3 px-2 py-0.5 bg-white rounded-full text-[10px] font-medium">livre hoje</div>
+          </div>
+          <div class="font-semibold">Alex</div>
+          <div class="text-sm text-neutral-500">corte · barba · combo</div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-square bg-neutral-100 rounded-2xl mb-3 overflow-hidden relative">
+            <div class="absolute inset-0 flex items-center justify-center text-neutral-400">
+              <i data-lucide="user" class="w-16 h-16"></i>
+            </div>
+          </div>
+          <div class="font-semibold">Rafa</div>
+          <div class="text-sm text-neutral-500">corte · coloração</div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-square bg-neutral-100 rounded-2xl mb-3 overflow-hidden relative">
+            <div class="absolute inset-0 flex items-center justify-center text-neutral-400">
+              <i data-lucide="user" class="w-16 h-16"></i>
+            </div>
+            <div class="absolute top-3 right-3 px-2 py-0.5 bg-white rounded-full text-[10px] font-medium">livre hoje</div>
+          </div>
+          <div class="font-semibold">Camila</div>
+          <div class="text-sm text-neutral-500">unhas · spa das mãos</div>
+        </div>
+        <div class="group cursor-pointer">
+          <div class="aspect-square bg-neutral-100 rounded-2xl mb-3 overflow-hidden relative">
+            <div class="absolute inset-0 flex items-center justify-center text-neutral-400">
+              <i data-lucide="user" class="w-16 h-16"></i>
+            </div>
+          </div>
+          <div class="font-semibold">Pedro</div>
+          <div class="text-sm text-neutral-500">barba · sobrancelha</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agendar -->
+  <section id="agendar" class="bg-neutral-100 py-24">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="mb-10">
+        <div class="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">/ agendar</div>
+        <h2 class="text-4xl md:text-5xl font-bold tracking-tight">Quase lá.</h2>
+        <p class="text-lg text-neutral-600 mt-4">Escolha um horário. A gente confirma na hora.</p>
+      </div>
+
+      <div class="bg-white rounded-3xl p-8 md:p-10">
+        <!-- Resumo -->
+        <div class="flex flex-wrap items-center gap-3 mb-8 pb-8 border-b border-neutral-200">
+          <span class="px-3 py-1.5 bg-neutral-900 text-white text-sm rounded-full font-medium">Corte</span>
+          <span class="px-3 py-1.5 bg-neutral-100 text-sm rounded-full font-medium">com Alex</span>
+          <span class="ml-auto text-sm font-mono text-neutral-500">R$ 80 · 45min</span>
+        </div>
+
+        <!-- Datas -->
+        <div class="mb-8">
+          <div class="text-sm font-medium mb-3">Dia</div>
+          <div class="flex gap-2 overflow-x-auto pb-1">
+            <button class="shrink-0 px-4 py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 text-center transition">
+              <div class="text-xs text-neutral-500">hoje</div>
+              <div class="font-bold tabular text-lg">23</div>
+            </button>
+            <button class="shrink-0 px-4 py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 text-center transition">
+              <div class="text-xs text-neutral-500">qua</div>
+              <div class="font-bold tabular text-lg">24</div>
+            </button>
+            <button class="shrink-0 px-4 py-3 rounded-2xl bg-neutral-900 text-white text-center">
+              <div class="text-xs text-neutral-400">qui</div>
+              <div class="font-bold tabular text-lg">25</div>
+            </button>
+            <button class="shrink-0 px-4 py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 text-center transition">
+              <div class="text-xs text-neutral-500">sex</div>
+              <div class="font-bold tabular text-lg">26</div>
+            </button>
+            <button class="shrink-0 px-4 py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 text-center transition">
+              <div class="text-xs text-neutral-500">sáb</div>
+              <div class="font-bold tabular text-lg">27</div>
+            </button>
+            <button class="shrink-0 px-4 py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 text-center transition">
+              <div class="text-xs text-neutral-500">seg</div>
+              <div class="font-bold tabular text-lg">29</div>
+            </button>
+            <button class="shrink-0 px-4 py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 text-center transition">
+              <div class="text-xs text-neutral-500">ter</div>
+              <div class="font-bold tabular text-lg">30</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Horários -->
+        <div class="mb-10">
+          <div class="text-sm font-medium mb-3">Horário · quinta, 25</div>
+          <div class="grid grid-cols-4 gap-2">
+            <button class="py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 font-mono tabular transition">09:00</button>
+            <button class="py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 font-mono tabular transition">09:30</button>
+            <button class="py-3 rounded-2xl bg-neutral-100 text-neutral-300 font-mono tabular line-through cursor-not-allowed">10:00</button>
+            <button class="py-3 rounded-2xl bg-neutral-900 text-white font-mono tabular">10:30</button>
+            <button class="py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 font-mono tabular transition">11:00</button>
+            <button class="py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 font-mono tabular transition">14:00</button>
+            <button class="py-3 rounded-2xl bg-neutral-100 text-neutral-300 font-mono tabular line-through cursor-not-allowed">14:30</button>
+            <button class="py-3 rounded-2xl border border-neutral-200 hover:border-neutral-900 font-mono tabular transition">15:00</button>
+          </div>
+        </div>
+
+        <button class="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-5 rounded-2xl text-lg transition flex items-center justify-center gap-2">
+          Confirmar — qui, 25 às 10:30
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </button>
+        <p class="text-center text-xs text-neutral-500 mt-4">
+          Pagamento só na hora · cancele até 2h antes pelo link no email
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-white py-16 border-t border-neutral-200">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10 text-sm">
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-7 h-7 bg-neutral-900 rounded-lg"></div>
+          <span class="font-bold text-lg">studio</span>
+        </div>
+        <p class="text-neutral-500">Rua Augusta, 2000<br>São Paulo, SP</p>
+      </div>
+      <div>
+        <div class="font-semibold mb-3">Produto</div>
+        <ul class="space-y-2 text-neutral-600">
+          <li>Serviços</li><li>Equipe</li><li>Preços</li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold mb-3">Empresa</div>
+        <ul class="space-y-2 text-neutral-600">
+          <li>Sobre</li><li>Trabalhe conosco</li><li>Contato</li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold mb-3">Legal</div>
+        <ul class="space-y-2 text-neutral-600">
+          <li>Termos</li><li>Privacidade</li><li>Cookies</li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-neutral-200 text-xs text-neutral-500 flex flex-col md:flex-row gap-2 justify-between">
+      <span>© 2026 studio · todos direitos reservados</span>
+      <span class="font-mono">v0.1.0 · build #2647</span>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

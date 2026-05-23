@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1080" font-family="ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+    <style>
+      .title { font-size: 26px; font-weight: 700; fill: #0f172a; }
+      .subtitle { font-size: 13px; fill: #64748b; }
+      .layer { font-size: 16px; font-weight: 700; fill: #0f172a; }
+      .box-title { font-size: 14px; font-weight: 700; fill: #0f172a; }
+      .meta { font-size: 11px; fill: #475569; }
+      .mono { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #1e293b; }
+      .pass { font-size: 11px; font-weight: 700; fill: #15803d; }
+      .fail { font-size: 11px; font-weight: 700; fill: #b91c1c; }
+      .pbi-tag { font-size: 11px; font-weight: 600; fill: #1d4ed8; }
+      .rn-tag { font-size: 11px; font-weight: 700; fill: #7e22ce; }
+    </style>
+  </defs>
+
+  <text x="40" y="44" class="title">calculateAvailableSlots — algoritmo (PBI-06)</text>
+  <text x="40" y="66" class="subtitle">Função pura em src/lib/server/slot-calculator.ts · 15+ testes unit · sem I/O · trabalha em min locais, devolve startUtc</text>
+
+  <!-- Input -->
+  <g>
+    <rect x="40" y="90" width="500" height="180" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="60" y="115" class="layer">📥 Input</text>
+    <text x="60" y="138" class="mono">calculateAvailableSlots({</text>
+    <text x="60" y="154" class="mono">  workingHours,        // WorkingHours[] do prof (weekday)</text>
+    <text x="60" y="170" class="mono">  existingAppointments, // Appointment[] CONFIRMED do dia</text>
+    <text x="60" y="186" class="mono">  blocks,              // TimeBlock[] do prof no dia</text>
+    <text x="60" y="202" class="mono">  durationMinutes,     // Service.durationMinutes</text>
+    <text x="60" y="218" class="mono">  date,                // YYYY-MM-DD local</text>
+    <text x="60" y="234" class="mono">  timezone,            // 'America/Sao_Paulo'</text>
+    <text x="60" y="250" class="mono">  minAdvanceMinutes,   // 30 (cliente), 0 (admin force)</text>
+    <text x="60" y="266" class="mono">  now = new Date(),    // injetável p/ testar</text>
+    <text x="60" y="282" class="mono">  step = 15            // granularidade</text>
+    <text x="60" y="298" class="mono">})</text>
+  </g>
+
+  <!-- Loop block -->
+  <g>
+    <rect x="580" y="90" width="580" height="230" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="2"/>
+    <text x="600" y="115" class="layer">🔁 Para cada faixa de WorkingHours do weekday</text>
+    <text x="600" y="138" class="meta">date.weekday → procura WorkingHours[] daquele dia</text>
+    <text x="600" y="154" class="meta">se não houver faixa → retorna [] (RN-01)</text>
+    <line x1="590" y1="168" x2="1150" y2="168" stroke="#e2e8f0"/>
+    <text x="600" y="190" class="mono">for (faixa of workingHours[weekday]) {</text>
+    <text x="600" y="206" class="mono">  for (m = faixa.startMinute; m + duration ≤ faixa.endMinute; m += step) {</text>
+    <text x="600" y="222" class="mono">    candidate = { startMinute: m, endMinute: m + duration }</text>
+    <text x="600" y="238" class="mono">    if (passes(candidate)) push({ startMinute: m, startUtc: toUtc(date,m,tz) })</text>
+    <text x="600" y="254" class="mono">  }</text>
+    <text x="600" y="270" class="mono">}</text>
+    <line x1="590" y1="282" x2="1150" y2="282" stroke="#e2e8f0"/>
+    <text x="600" y="302" class="meta">Trabalha em minutos locais — converte p/ UTC só na saída (date-fns-tz).</text>
+  </g>
+
+  <!-- arrow from input to filters -->
+  <line x1="300" y1="320" x2="300" y2="360" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="313" y="345" class="meta">candidato a cada 15 min</text>
+
+  <!-- Filter chain title -->
+  <text x="40" y="385" class="layer">🧪 Cadeia de filtros — candidato passa só se TODOS dizem sim</text>
+
+  <!-- Filter 1: dentro do horário -->
+  <g>
+    <rect x="40" y="400" width="540" height="100" rx="8" fill="#ffffff" stroke="#475569"/>
+    <text x="60" y="425" class="box-title">① Está dentro da faixa de WorkingHours?</text>
+    <text x="60" y="445" class="mono">m ≥ faixa.startMinute</text>
+    <text x="60" y="462" class="meta">Implícito no for — já só gera dentro da faixa.</text>
+    <text x="60" y="486" class="rn-tag">RN-01 / RN-03(1)</text>
+  </g>
+  <line x1="580" y1="450" x2="630" y2="450" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="588" y="442" class="pass">✓ próximo</text>
+
+  <!-- Filter 2: fim cabe no expediente -->
+  <g>
+    <rect x="640" y="400" width="520" height="100" rx="8" fill="#ffffff" stroke="#475569"/>
+    <text x="660" y="425" class="box-title">② Fim do serviço cabe na faixa?</text>
+    <text x="660" y="445" class="mono">m + durationMinutes ≤ faixa.endMinute</text>
+    <text x="660" y="462" class="meta">Ex: faixa 9:00-9:30, duration 30 → m=9:00 passa, m=9:15 não cabe.</text>
+    <text x="660" y="486" class="rn-tag">RN-03(2) · RN-CB-01</text>
+  </g>
+
+  <!-- Down arrow filter 2 -> 3 -->
+  <line x1="900" y1="500" x2="900" y2="535" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <line x1="900" y1="535" x2="300" y2="535" stroke="#16a34a" stroke-width="2"/>
+  <line x1="300" y1="535" x2="300" y2="560" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <!-- Filter 3: appointment confirmado -->
+  <g>
+    <rect x="40" y="565" width="540" height="120" rx="8" fill="#ffffff" stroke="#475569"/>
+    <text x="60" y="590" class="box-title">③ Não conflita com Appointment CONFIRMED</text>
+    <text x="60" y="610" class="mono">!existingAppointments.some(a =&gt;</text>
+    <text x="60" y="626" class="mono">   overlap([m, m+dur], [a.startMin, a.endMin]))</text>
+    <text x="60" y="646" class="meta">Range '[)' — terminando 10:00 e começando 10:00 NÃO conflita.</text>
+    <text x="60" y="670" class="rn-tag">RN-03(3) · RN-04 (app-side)</text>
+  </g>
+  <line x1="580" y1="625" x2="630" y2="625" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <!-- Filter 4: TimeBlock -->
+  <g>
+    <rect x="640" y="565" width="520" height="120" rx="8" fill="#ffffff" stroke="#475569"/>
+    <text x="660" y="590" class="box-title">④ Não conflita com TimeBlock</text>
+    <text x="660" y="610" class="mono">!blocks.some(b =&gt;</text>
+    <text x="660" y="626" class="mono">   overlap([slotUtc, slotUtc+dur], [b.startsAt, b.endsAt]))</text>
+    <text x="660" y="646" class="meta">Almoço, férias, pessoal — TimeBlocks são timestamptz UTC.</text>
+    <text x="660" y="670" class="rn-tag">RN-03(4) · RN-10</text>
+  </g>
+
+  <line x1="900" y1="685" x2="900" y2="720" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <line x1="900" y1="720" x2="300" y2="720" stroke="#16a34a" stroke-width="2"/>
+  <line x1="300" y1="720" x2="300" y2="745" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <!-- Filter 5: antecedência -->
+  <g>
+    <rect x="40" y="750" width="540" height="120" rx="8" fill="#ffffff" stroke="#475569"/>
+    <text x="60" y="775" class="box-title">⑤ Respeita antecedência mínima</text>
+    <text x="60" y="795" class="mono">slotUtc ≥ now + minAdvanceMinutes</text>
+    <text x="60" y="812" class="meta">Cliente: 30 min · Admin (force): 0 min</text>
+    <text x="60" y="832" class="meta">Compara em UTC — slotUtc já é Date timestamptz.</text>
+    <text x="60" y="855" class="rn-tag">RN-03(5) · RN-05</text>
+  </g>
+
+  <line x1="580" y1="810" x2="630" y2="810" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <!-- Output -->
+  <g>
+    <rect x="640" y="750" width="520" height="120" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="660" y="775" class="box-title" fill="#15803d">📤 Output</text>
+    <text x="660" y="795" class="mono">Array&lt;{ startMinute: number; startUtc: Date }&gt;</text>
+    <text x="660" y="815" class="meta">UI renderiza usando startMinute (local) com label "09:15".</text>
+    <text x="660" y="831" class="meta">SA usa startUtc para o INSERT.</text>
+    <text x="660" y="855" class="pbi-tag">PBI-07 consome · PBI-08 reusa para anti-race</text>
+  </g>
+
+  <!-- Failure branch (any filter returns false) -->
+  <g>
+    <rect x="40" y="900" width="1120" height="80" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="60" y="924" class="box-title" fill="#b91c1c">✗ Qualquer filtro = false → descarta candidato (não vai para o output)</text>
+    <text x="60" y="945" class="meta">Não há &quot;parcialmente disponível&quot;: é tudo ou nada. UI mostra apenas slots aprovados.</text>
+    <text x="60" y="962" class="meta">Edge cases testados: sem horário no weekday (lista vazia), bloqueio cobrindo dia inteiro, slot no limite exato, antecedência = 30min na mosca.</text>
+  </g>
+
+  <!-- Testes -->
+  <g>
+    <rect x="40" y="1000" width="1120" height="60" rx="8" fill="#fefce8" stroke="#ca8a04"/>
+    <text x="60" y="1024" class="box-title" fill="#854d0e">🧪 Testes unit (15+) em tests/unit/lib/slot-calculator.test.ts — PBI-06 / PBI-12</text>
+    <text x="60" y="1046" class="meta">dia normal · sem horário no weekday · com bloqueios · com appointments · limite do expediente · antecedência 29 vs 30 vs 31 · fuso · múltiplas faixas · step custom · duration 0 ⇒ throw</text>
+  </g>
+</svg>

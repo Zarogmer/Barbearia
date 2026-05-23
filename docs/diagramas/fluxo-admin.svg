@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" font-family="ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/>
+    </marker>
+    <style>
+      .title { font-size: 26px; font-weight: 700; fill: #0f172a; }
+      .subtitle { font-size: 13px; fill: #64748b; }
+      .section { font-size: 18px; font-weight: 700; fill: #0f172a; }
+      .step-title { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .step-meta { font-size: 11px; fill: #64748b; }
+      .pbi-tag { font-size: 11px; font-weight: 600; fill: #1d4ed8; }
+      .legend { font-size: 12px; fill: #334155; }
+      .role { font-size: 11px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <text x="40" y="48" class="title">Fluxo Admin — Painel da Barbearia (desktop-first)</text>
+  <text x="40" y="70" class="subtitle">OWNER = full access · STAFF = própria agenda · todas as rotas (admin)/* protegidas por middleware</text>
+
+  <!-- Legend -->
+  <rect x="820" y="32" width="340" height="58" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <circle cx="838" cy="50" r="6" fill="#2563eb"/><text x="852" y="54" class="legend">tela / rota</text>
+  <circle cx="838" cy="72" r="6" fill="#a855f7"/><text x="852" y="76" class="legend">server action</text>
+  <circle cx="970" cy="50" r="6" fill="#ea580c"/><text x="984" y="54" class="legend">ação que altera dados</text>
+  <circle cx="970" cy="72" r="6" fill="#0ea5e9"/><text x="984" y="76" class="legend">só visualização</text>
+
+  <!-- Login / Middleware -->
+  <g>
+    <rect x="40" y="120" width="240" height="100" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="60" y="148" class="step-title">/login</text>
+    <text x="60" y="168" class="step-meta">Credentials (bcrypt 12) + Google</text>
+    <text x="60" y="184" class="step-meta">NextAuth v5, DB sessions</text>
+    <text x="60" y="200" class="step-meta">Redirect ?next=…</text>
+    <text x="60" y="216" class="pbi-tag">PBI-02 / PBI-03</text>
+  </g>
+
+  <line x1="280" y1="170" x2="345" y2="170" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Middleware -->
+  <g>
+    <rect x="345" y="120" width="240" height="100" rx="12" fill="#fef3c7" stroke="#ca8a04" stroke-width="2" stroke-dasharray="4 4"/>
+    <text x="365" y="148" class="step-title" fill="#854d0e">middleware.ts</text>
+    <text x="365" y="168" class="step-meta">auth() → Session</text>
+    <text x="365" y="184" class="step-meta">resolve Membership (org+role)</text>
+    <text x="365" y="200" class="step-meta">withTenant(orgId) em SAs</text>
+    <text x="365" y="216" class="pbi-tag" fill="#854d0e">PBI-02 · RLS hook</text>
+  </g>
+
+  <line x1="585" y1="170" x2="650" y2="170" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Dashboard -->
+  <g>
+    <rect x="650" y="120" width="240" height="100" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="670" y="148" class="step-title">/admin/dashboard</text>
+    <text x="670" y="168" class="step-meta">KPIs do dia (count, R$)</text>
+    <text x="670" y="184" class="step-meta">Atalhos para agenda/CRUDs</text>
+    <text x="670" y="216" class="pbi-tag">W-07 (protótipo)</text>
+  </g>
+
+  <!-- vertical spread -->
+  <line x1="770" y1="220" x2="770" y2="260" stroke="#475569" stroke-width="2"/>
+  <line x1="160" y1="260" x2="1100" y2="260" stroke="#475569" stroke-width="2"/>
+  <line x1="160" y1="260" x2="160" y2="295" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="430" y1="260" x2="430" y2="295" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="700" y1="260" x2="700" y2="295" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="970" y1="260" x2="970" y2="295" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Agenda do dia -->
+  <g>
+    <rect x="40" y="295" width="240" height="280" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="60" y="320" class="step-title">📅 /admin/agenda</text>
+    <text x="60" y="340" class="step-meta">?date=YYYY-MM-DD</text>
+    <text x="60" y="356" class="step-meta">Colunas = profissionais</text>
+    <text x="60" y="372" class="step-meta">Linhas = grade 30min</text>
+    <text x="60" y="388" class="step-meta">OWNER vê todos · STAFF só própria</text>
+    <line x1="50" y1="402" x2="270" y2="402" stroke="#e2e8f0"/>
+    <text x="60" y="422" class="step-meta" font-weight="700">Ações por bloco:</text>
+    <text x="60" y="442" class="step-meta">• Detalhe (Dialog)</text>
+    <text x="60" y="458" class="step-meta">• Marcar COMPLETED</text>
+    <text x="60" y="474" class="step-meta">• Marcar NO_SHOW</text>
+    <text x="60" y="490" class="step-meta">• Cancelar (razão se &lt;2h)</text>
+    <text x="60" y="510" class="step-meta" font-weight="700">Slot livre:</text>
+    <text x="60" y="526" class="step-meta">• Encaixe (force=true)</text>
+    <text x="60" y="546" class="pbi-tag">PBI-09 · W-08 · RN-07/08/09/11</text>
+  </g>
+
+  <!-- Serviços CRUD -->
+  <g>
+    <rect x="310" y="295" width="240" height="280" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="330" y="320" class="step-title">✂️ /admin/servicos</text>
+    <text x="330" y="340" class="step-meta">OWNER apenas</text>
+    <text x="330" y="356" class="step-meta">Lista Service.* da org</text>
+    <line x1="320" y1="370" x2="540" y2="370" stroke="#e2e8f0"/>
+    <text x="330" y="392" class="step-meta" font-weight="700">Form (Zod):</text>
+    <text x="330" y="408" class="step-meta">• name (2-80)</text>
+    <text x="330" y="424" class="step-meta">• description (max 500)</text>
+    <text x="330" y="440" class="step-meta">• durationMinutes (5-240, x5)</text>
+    <text x="330" y="456" class="step-meta">• priceCents (0-100000)</text>
+    <text x="330" y="472" class="step-meta">• active (bool)</text>
+    <text x="330" y="488" class="step-meta">• professionalIds[]</text>
+    <line x1="320" y1="500" x2="540" y2="500" stroke="#e2e8f0"/>
+    <text x="330" y="520" class="step-meta">Hard delete bloqueado</text>
+    <text x="330" y="536" class="step-meta">se houver appointment ref</text>
+    <text x="330" y="546" class="pbi-tag">PBI-04 · W-09/10 · RN-19</text>
+  </g>
+
+  <!-- Profissionais -->
+  <g>
+    <rect x="580" y="295" width="240" height="280" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="600" y="320" class="step-title">👤 /admin/profissionais</text>
+    <text x="600" y="340" class="step-meta">OWNER apenas</text>
+    <text x="600" y="356" class="step-meta">Lista + criar/editar</text>
+    <line x1="590" y1="370" x2="810" y2="370" stroke="#e2e8f0"/>
+    <text x="600" y="392" class="step-meta" font-weight="700">[id] detalhe:</text>
+    <text x="600" y="408" class="step-meta">• Bio, foto, serviços[]</text>
+    <text x="600" y="424" class="step-meta">• WorkingHours (7 dias)</text>
+    <text x="600" y="440" class="step-meta">   - faixas com x5 min</text>
+    <text x="600" y="456" class="step-meta">   - sem sobreposição</text>
+    <text x="600" y="472" class="step-meta">• TimeBlock (futuros)</text>
+    <line x1="590" y1="486" x2="810" y2="486" stroke="#e2e8f0"/>
+    <text x="600" y="506" class="step-meta">Salvar = transação</text>
+    <text x="600" y="522" class="step-meta">(prof + horários atômico)</text>
+    <text x="600" y="546" class="pbi-tag">PBI-05 · W-11 · RN-01/10</text>
+  </g>
+
+  <!-- Configurações -->
+  <g>
+    <rect x="850" y="295" width="240" height="280" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="870" y="320" class="step-title">⚙️ /admin/configuracoes</text>
+    <text x="870" y="340" class="step-meta">OWNER apenas</text>
+    <line x1="860" y1="356" x2="1080" y2="356" stroke="#e2e8f0"/>
+    <text x="870" y="378" class="step-meta">• name</text>
+    <text x="870" y="394" class="step-meta">• slug (3-50, kebab, unique)</text>
+    <text x="870" y="410" class="step-meta">   ⚠️ confirma modal</text>
+    <text x="870" y="426" class="step-meta">   (afeta URLs públicas)</text>
+    <text x="870" y="442" class="step-meta">• timezone (read-only MVP)</text>
+    <text x="870" y="458" class="step-meta">• allowGuestBooking (bool)</text>
+    <line x1="860" y1="472" x2="1080" y2="472" stroke="#e2e8f0"/>
+    <text x="870" y="494" class="step-meta">updateOrganization SA</text>
+    <text x="870" y="510" class="step-meta">Zod + role check</text>
+    <text x="870" y="546" class="pbi-tag">PBI-10 · RN-13</text>
+  </g>
+
+  <!-- Section: state changes -->
+  <rect x="40" y="610" width="1120" height="2" fill="#e2e8f0"/>
+  <text x="40" y="645" class="section">Ações que alteram dados — quem pode &amp; o que valida</text>
+
+  <!-- Action: cancelar -->
+  <g>
+    <rect x="40" y="665" width="260" height="135" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="58" y="690" class="step-title" fill="#9a3412">cancelAppointment</text>
+    <text x="58" y="710" class="step-meta">Cliente: ≥2h antes</text>
+    <text x="58" y="726" class="step-meta">Admin: sempre (razão se &lt;2h)</text>
+    <text x="58" y="746" class="step-meta">→ status=CANCELLED + cancelledAt</text>
+    <text x="58" y="762" class="step-meta">→ libera EXCLUDE (RN-04)</text>
+    <text x="58" y="782" class="pbi-tag" fill="#9a3412">PBI-09 · RN-07</text>
+  </g>
+
+  <!-- Action: marcar completed / no-show -->
+  <g>
+    <rect x="320" y="665" width="260" height="135" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="338" y="690" class="step-title" fill="#9a3412">markCompleted / markNoShow</text>
+    <text x="338" y="710" class="step-meta">OWNER ou STAFF (próprio)</text>
+    <text x="338" y="726" class="step-meta">Sempre manual no MVP</text>
+    <text x="338" y="746" class="step-meta">Transições só "p/ frente" (RN-20)</text>
+    <text x="338" y="782" class="pbi-tag" fill="#9a3412">PBI-09 · RN-08/09</text>
+  </g>
+
+  <!-- Action: encaixe -->
+  <g>
+    <rect x="600" y="665" width="260" height="135" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="618" y="690" class="step-title" fill="#9a3412">createBooking(force=true)</text>
+    <text x="618" y="710" class="step-meta">Admin only — RN-11</text>
+    <text x="618" y="726" class="step-meta">Pula antecedência (RN-05)</text>
+    <text x="618" y="742" class="step-meta">Pula janela 60d (RN-06)</text>
+    <text x="618" y="758" class="step-meta">EXCLUDE ainda barra sobreposição</text>
+    <text x="618" y="782" class="pbi-tag" fill="#9a3412">PBI-09</text>
+  </g>
+
+  <!-- Action: bloqueio -->
+  <g>
+    <rect x="880" y="665" width="260" height="135" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="898" y="690" class="step-title" fill="#9a3412">createTimeBlock</text>
+    <text x="898" y="710" class="step-meta">Almoço, férias, pessoal</text>
+    <text x="898" y="726" class="step-meta">Se sobrepor appointment</text>
+    <text x="898" y="742" class="step-meta">CONFIRMED → REJEITA</text>
+    <text x="898" y="758" class="step-meta">Admin precisa cancelar antes</text>
+    <text x="898" y="782" class="pbi-tag" fill="#9a3412">PBI-05 · RN-10</text>
+  </g>
+
+  <!-- Defense in depth bar -->
+  <g>
+    <rect x="40" y="830" width="1100" height="48" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="60" y="852" class="step-title">🛡️ Defesa em profundidade aplicada em TODA action</text>
+    <text x="60" y="870" class="step-meta">auth() → role check → Zod.parse → withTenant(orgId) → Postgres RLS + EXCLUDE · PBI-11 testa cross-tenant leak</text>
+  </g>
+</svg>

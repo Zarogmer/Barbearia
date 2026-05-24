@@ -17,11 +17,7 @@ import {
   quickBookingSchema,
 } from "@/lib/validators/appointment";
 
-export type AdminAgendaActionResult = {
-  ok?: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string>;
-};
+import type { AdminAgendaActionResult } from "./state";
 
 async function requireAdminOrg(): Promise<
   { orgId: string; canManageAll: boolean; ownProfessionalId: string | null } | { error: string }
@@ -175,4 +171,3 @@ export async function quickCreateBookingAction(
   return { ok: true };
 }
 
-export const initialAgendaActionState: AdminAgendaActionResult = {};

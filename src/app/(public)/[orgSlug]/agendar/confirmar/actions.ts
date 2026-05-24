@@ -17,12 +17,7 @@ import {
   confirmBookingSchema,
 } from "@/lib/validators/booking";
 
-export type ConfirmBookingState = {
-  error?: string;
-  fieldErrors?: Record<string, string>;
-};
-
-const EMPTY: ConfirmBookingState = {};
+import type { ConfirmBookingState } from "./state";
 
 export async function confirmBookingAction(
   ctx: {
@@ -110,4 +105,3 @@ export async function confirmBookingAction(
   redirect(`/${data.orgSlug}/agendamento/${result.appointmentId}`);
 }
 
-export const initialConfirmBookingState = EMPTY;

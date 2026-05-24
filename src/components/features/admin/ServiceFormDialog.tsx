@@ -4,12 +4,11 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Check, Loader2, Plus } from "lucide-react";
 
+import { createServiceAction, updateServiceAction } from "@/app/admin/servicos/actions";
 import {
-  createServiceAction,
   initialServiceState,
-  updateServiceAction,
   type ServiceActionState,
-} from "@/app/admin/servicos/actions";
+} from "@/app/admin/servicos/state";
 import {
   Dialog,
   DialogContent,

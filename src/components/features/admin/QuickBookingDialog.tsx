@@ -4,11 +4,11 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Loader2, Plus, Zap } from "lucide-react";
 
+import { quickCreateBookingAction } from "@/app/admin/agenda/actions";
 import {
   initialAgendaActionState,
-  quickCreateBookingAction,
   type AdminAgendaActionResult,
-} from "@/app/admin/agenda/actions";
+} from "@/app/admin/agenda/state";
 import {
   Dialog,
   DialogContent,

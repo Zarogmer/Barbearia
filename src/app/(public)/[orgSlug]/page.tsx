@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, MapPin, Star } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 
-import { getOrgBySlug, getProfessionalsByOrg, getServicesByOrg } from "@/lib/mock-data";
+import { listActiveProfessionals } from "@/lib/server/professionals";
+import { listActiveServices } from "@/lib/server/services-public";
+import { getOrgBySlug } from "@/lib/server/orgs";
 import { formatBRL, formatDuration } from "@/lib/utils";
 
 export default async function OrgLandingPage({
@@ -11,12 +13,13 @@ export default async function OrgLandingPage({
   params: Promise<{ orgSlug: string }>;
 }) {
   const { orgSlug } = await params;
-  const org = getOrgBySlug(orgSlug);
-
+  const org = await getOrgBySlug(orgSlug);
   if (!org) notFound();
 
-  const services = getServicesByOrg(org.id);
-  const professionals = getProfessionalsByOrg(org.id);
+  const [services, professionals] = await Promise.all([
+    listActiveServices(org.id),
+    listActiveProfessionals(org.id),
+  ]);
 
   return (
     <main className="mx-auto max-w-md px-5 py-5 sm:max-w-2xl">
@@ -26,7 +29,7 @@ export default async function OrgLandingPage({
         <div className="grid-bg absolute inset-0 opacity-20" />
         <div className="relative flex flex-col gap-3 p-6 text-[hsl(var(--surface))]">
           <span className="mono text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">
-            Barbearia premium
+            Agendamento online
           </span>
           <h1 className="font-display text-3xl font-extrabold leading-[1.05] tracking-tight">
             {org.name}
@@ -34,12 +37,7 @@ export default async function OrgLandingPage({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
             <span className="inline-flex items-center gap-1.5 opacity-90">
               <MapPin className="h-3.5 w-3.5" />
-              {org.address}
-            </span>
-            <span className="inline-flex items-center gap-1 text-brand">
-              <Star className="h-3.5 w-3.5 fill-brand text-brand" />
-              <span className="num font-semibold">{org.rating.toFixed(1)}</span>
-              <span className="opacity-80">· {org.reviewsCount} avaliações</span>
+              {org.timezone}
             </span>
           </div>
         </div>
@@ -62,19 +60,23 @@ export default async function OrgLandingPage({
           </h2>
           <span className="mono text-xs text-subtle">{services.length}</span>
         </div>
-        <div className="space-y-2">
-          {services.map((s) => (
-            <div key={s.id} className="card-i flex items-center justify-between p-4">
-              <div>
-                <div className="font-semibold">{s.name}</div>
-                <div className="mono text-xs text-subtle">
-                  {formatDuration(s.durationMinutes)}
+        {services.length === 0 ? (
+          <p className="mono text-xs text-subtle">Nenhum serviço cadastrado ainda.</p>
+        ) : (
+          <div className="space-y-2">
+            {services.map((s) => (
+              <div key={s.id} className="card-i flex items-center justify-between p-4">
+                <div>
+                  <div className="font-semibold">{s.name}</div>
+                  <div className="mono text-xs text-subtle">
+                    {formatDuration(s.durationMinutes)}
+                  </div>
                 </div>
+                <div className="num text-base font-semibold">{formatBRL(s.priceCents)}</div>
               </div>
-              <div className="num text-base font-semibold">{formatBRL(s.priceCents)}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Profissionais */}
@@ -85,31 +87,37 @@ export default async function OrgLandingPage({
           </h2>
           <span className="mono text-xs text-subtle">{professionals.length}</span>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {professionals.map((p) => {
-            const initials = p.name
-              .split(" ")
-              .map((n) => n[0])
-              .slice(0, 2)
-              .join("");
-            return (
-              <div
-                key={p.id}
-                className="card-i flex flex-col items-center p-4 text-center"
-              >
-                <span className="avatar-ring mb-2">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3 text-sm font-bold">
-                    {initials}
+        {professionals.length === 0 ? (
+          <p className="mono text-xs text-subtle">Nenhum profissional cadastrado ainda.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {professionals.map((p) => {
+              const initials = p.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
+              const shortBio = p.bio?.slice(0, 24) ?? "";
+              return (
+                <div
+                  key={p.id}
+                  className="card-i flex flex-col items-center p-4 text-center"
+                >
+                  <span className="avatar-ring mb-2">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3 text-sm font-bold">
+                      {initials}
+                    </span>
                   </span>
-                </span>
-                <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
-                <div className="text-[11px] text-subtle">
-                  {p.bio.slice(0, 24)}…
+                  <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
+                  {shortBio && (
+                    <div className="text-[11px] text-subtle">{shortBio}…</div>
+                  )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <p className="mt-10 text-center mono text-[10px] text-subtle">

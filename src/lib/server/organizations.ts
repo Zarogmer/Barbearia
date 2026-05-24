@@ -1,0 +1,101 @@
+import "server-only";
+
+import { Prisma } from "@prisma/client";
+
+import { prismaAdmin, withTenant } from "@/lib/db";
+import type { UpdateOrganizationInput } from "@/lib/validators/organization";
+
+export type AdminOrganization = {
+  id: string;
+  slug: string;
+  name: string;
+  timezone: string;
+  allowGuestBooking: boolean;
+};
+
+/**
+ * Carrega org do owner. RLS é redundante aqui (só consulta a própria org),
+ * mas withTenant mantém o padrão e centraliza o contexto.
+ */
+export async function getOrganizationForAdmin(
+  organizationId: string,
+): Promise<AdminOrganization> {
+  return withTenant(organizationId, async (db) => {
+    return db.organization.findUniqueOrThrow({
+      where: { id: organizationId },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        timezone: true,
+        allowGuestBooking: true,
+      },
+    });
+  });
+}
+
+export class OrganizationError extends Error {
+  constructor(
+    message: string,
+    public code: "SLUG_TAKEN" | "VALIDATION" | "UNKNOWN",
+  ) {
+    super(message);
+    this.name = "OrganizationError";
+  }
+}
+
+/**
+ * Atualiza dados da org. Slug é unique global — usa prismaAdmin pra checar
+ * disponibilidade (RLS limitaria a só ver a própria org). Captura
+ * P2002 do INSERT/UPDATE como backstop.
+ */
+export async function updateOrganization(
+  organizationId: string,
+  input: UpdateOrganizationInput,
+): Promise<AdminOrganization> {
+  // Pre-check de slug: rápido, evita exception em P2002 no caminho feliz.
+  const conflict = await prismaAdmin.organization.findFirst({
+    where: {
+      slug: input.slug,
+      NOT: { id: organizationId },
+    },
+    select: { id: true },
+  });
+  if (conflict) {
+    throw new OrganizationError(
+      `Já existe outra barbearia com o slug "${input.slug}".`,
+      "SLUG_TAKEN",
+    );
+  }
+
+  return withTenant(organizationId, async (db) => {
+    try {
+      return await db.organization.update({
+        where: { id: organizationId },
+        data: {
+          name: input.name,
+          slug: input.slug,
+          allowGuestBooking: input.allowGuestBooking,
+        },
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          timezone: true,
+          allowGuestBooking: true,
+        },
+      });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        throw new OrganizationError(
+          `Slug "${input.slug}" já está em uso.`,
+          "SLUG_TAKEN",
+        );
+      }
+      throw err;
+    }
+  });
+}

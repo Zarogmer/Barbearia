@@ -10,6 +10,7 @@ import {
   OCCUPIED_SLOTS,
   SAMPLE_SLOTS,
 } from "@/lib/mock-data";
+import { cn } from "@/lib/utils";
 
 function getTodayPlus(days: number): string {
   const d = new Date();
@@ -28,7 +29,12 @@ export default async function ChooseTimePage({
   searchParams,
 }: {
   params: Promise<{ orgSlug: string }>;
-  searchParams: Promise<{ serviceId?: string; professionalId?: string; date?: string; time?: string }>;
+  searchParams: Promise<{
+    serviceId?: string;
+    professionalId?: string;
+    date?: string;
+    time?: string;
+  }>;
 }) {
   const { orgSlug } = await params;
   const sp = await searchParams;
@@ -45,7 +51,6 @@ export default async function ChooseTimePage({
 
   const selectedDate = sp.date ?? getTodayPlus(0);
   const selectedTime = sp.time;
-
   const baseQs = `serviceId=${sp.serviceId}&professionalId=${sp.professionalId}`;
 
   const nextHref =
@@ -53,57 +58,86 @@ export default async function ChooseTimePage({
       ? `/${orgSlug}/agendar/confirmar?${baseQs}&date=${selectedDate}&time=${selectedTime}`
       : "#";
 
+  const availableCount = SAMPLE_SLOTS.filter((s) => !OCCUPIED_SLOTS.includes(s)).length;
+
   return (
-    <main className="mx-auto max-w-md px-4 py-6 sm:max-w-2xl">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
+      <header className="mb-6 flex items-center justify-between">
         <Link
           href={`/${orgSlug}/agendar/profissional?serviceId=${sp.serviceId}`}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           Voltar
         </Link>
         <StepIndicator current={3} total={4} />
-      </div>
+      </header>
 
-      <h1 className="mb-1 text-2xl font-bold">Quando?</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        {service.name} {professional ? `· com ${professional.name.split(" ")[0]}` : "· qualquer profissional"}
+      <h1 className="mb-1.5 font-display text-2xl font-extrabold tracking-tight">Quando?</h1>
+      <p className="mb-6 text-sm text-subtle">
+        {service.name}
+        {professional ? ` · com ${professional.name.split(" ")[0]}` : " · qualquer profissional"}
       </p>
 
       {/* Datas próximas */}
-      <div className="mb-6">
-        <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
-          <CalendarIcon className="h-4 w-4" />
-          Próximos dias
+      <section className="mb-6">
+        <div className="mb-2.5 flex items-center justify-between">
+          <h2 className="inline-flex items-center gap-1.5 mono text-[11px] font-semibold uppercase tracking-wider text-subtle">
+            <CalendarIcon className="h-3.5 w-3.5" />
+            Próximos dias
+          </h2>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 sm:mx-0 sm:px-0">
           {NEXT_7_DAYS.map((d) => {
             const dateStr = d.toISOString().split("T")[0]!;
             const isSelected = dateStr === selectedDate;
-            const weekday = d.toLocaleDateString("pt-BR", { weekday: "short" });
+            const weekday = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+            const isToday = dateStr === getTodayPlus(0);
             return (
               <Link
                 key={dateStr}
                 href={`/${orgSlug}/agendar/horario?${baseQs}&date=${dateStr}`}
                 replace
-                className={`flex flex-col items-center rounded-lg border px-4 py-2 transition ${
+                className={cn(
+                  "flex shrink-0 flex-col items-center rounded-lg border px-4 py-2.5 transition-all",
                   isSelected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "hover:border-foreground/30"
-                }`}
+                    ? "border-ink bg-ink text-surface"
+                    : "border-line bg-surface hover:-translate-y-px hover:border-brand",
+                )}
               >
-                <span className="text-xs uppercase">{weekday.slice(0, 3)}</span>
-                <span className="text-lg font-semibold">{d.getDate()}</span>
+                <span
+                  className={cn(
+                    "mono text-[10px] uppercase tracking-wider",
+                    isSelected ? "opacity-80" : "text-subtle",
+                  )}
+                >
+                  {weekday}
+                </span>
+                <span className="num mt-0.5 text-lg font-bold leading-none">{d.getDate()}</span>
+                {isToday && (
+                  <span
+                    className={cn(
+                      "mt-1 text-[8px] font-bold uppercase tracking-wider",
+                      isSelected ? "opacity-80" : "text-brand",
+                    )}
+                  >
+                    hoje
+                  </span>
+                )}
               </Link>
             );
           })}
         </div>
-      </div>
+      </section>
 
       {/* Slots */}
-      <div className="mb-6">
-        <div className="mb-2 text-sm font-medium">Horários disponíveis</div>
+      <section className="mb-6 flex-1">
+        <div className="mb-2.5 flex items-center justify-between">
+          <h2 className="mono text-[11px] font-semibold uppercase tracking-wider text-subtle">
+            Horários disponíveis
+          </h2>
+          <span className="mono text-xs text-subtle">{availableCount} livres</span>
+        </div>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {SAMPLE_SLOTS.map((t) => {
             const occupied = OCCUPIED_SLOTS.includes(t);
@@ -117,32 +151,28 @@ export default async function ChooseTimePage({
                 href={href}
                 replace
                 aria-disabled={occupied}
-                className={`flex h-12 items-center justify-center rounded-lg border text-sm font-medium transition ${
-                  occupied
-                    ? "cursor-not-allowed border-dashed border-muted-foreground/20 bg-muted text-muted-foreground line-through"
-                    : isSelected
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:border-foreground/30"
-                }`}
+                data-state={occupied ? "disabled" : isSelected ? "active" : "default"}
+                className="chip-slot"
               >
                 {t}
               </Link>
             );
           })}
         </div>
-      </div>
+      </section>
 
       <Link
         href={nextHref}
         aria-disabled={!selectedTime}
-        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-base font-semibold transition ${
+        className={cn(
+          "sticky bottom-4 flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all",
           selectedTime
-            ? "bg-primary text-primary-foreground hover:bg-primary/90"
-            : "cursor-not-allowed bg-muted text-muted-foreground"
-        }`}
+            ? "bg-ink text-surface shadow-sm hover:-translate-y-px hover:shadow-md"
+            : "pointer-events-none cursor-not-allowed bg-surface-2 text-subtle",
+        )}
       >
         Continuar
-        <ArrowRight className="h-5 w-5" />
+        <ArrowRight className="h-4 w-4" />
       </Link>
     </main>
   );

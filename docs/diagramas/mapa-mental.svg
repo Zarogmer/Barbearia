@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" font-family="ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <radialGradient id="hubGrad" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </radialGradient>
+    <style>
+      .title { font-size: 24px; font-weight: 700; fill: #0f172a; }
+      .subtitle { font-size: 13px; fill: #64748b; }
+      .hub-title { font-size: 22px; font-weight: 700; fill: #ffffff; }
+      .hub-sub { font-size: 11px; fill: #cbd5e1; }
+      .branch-title { font-size: 16px; font-weight: 700; fill: #ffffff; }
+      .branch-meta { font-size: 11px; fill: #1e293b; }
+      .branch-meta-light { font-size: 11px; fill: #475569; }
+      .leaf-title { font-size: 11px; font-weight: 600; fill: #0f172a; }
+      .legend { font-size: 11px; fill: #475569; }
+      .ref { font-size: 9px; font-weight: 600; fill-opacity: 0.7; }
+    </style>
+  </defs>
+
+  <text x="40" y="40" class="title">🧠 Mapa Mental — Barbearia SaaS</text>
+  <text x="40" y="60" class="subtitle">Visão única do sistema · 8 ramos · referências cruzadas pros docs canônicos</text>
+
+  <!-- ============ Connections (drawn FIRST so they're behind boxes) ============ -->
+  <g stroke-width="2.5" fill="none" opacity="0.55">
+    <!-- to Atores (top) -->
+    <path d="M 700 430 C 700 360, 700 300, 700 240" stroke="#2563eb"/>
+    <!-- to Domínio (top-right) -->
+    <path d="M 800 450 C 900 410, 1010 360, 1080 320" stroke="#0ea5e9"/>
+    <!-- to Stack (right) -->
+    <path d="M 830 500 C 950 500, 1080 500, 1170 500" stroke="#7c3aed"/>
+    <!-- to Segurança (bottom-right) -->
+    <path d="M 800 550 C 900 590, 1010 640, 1080 680" stroke="#dc2626"/>
+    <!-- to Fluxos (bottom) -->
+    <path d="M 700 570 C 700 640, 700 700, 700 760" stroke="#16a34a"/>
+    <!-- to Regras (bottom-left) -->
+    <path d="M 600 550 C 500 590, 390 640, 320 680" stroke="#ca8a04"/>
+    <!-- to Ambientes (left) -->
+    <path d="M 570 500 C 450 500, 320 500, 230 500" stroke="#f97316"/>
+    <!-- to Workflow (top-left) -->
+    <path d="M 600 450 C 500 410, 390 360, 320 320" stroke="#0d9488"/>
+  </g>
+
+  <!-- ============ HUB (center) ============ -->
+  <g>
+    <circle cx="700" cy="500" r="130" fill="url(#hubGrad)" stroke="#475569" stroke-width="3"/>
+    <text x="700" y="480" text-anchor="middle" class="hub-title">Barbearia</text>
+    <text x="700" y="510" text-anchor="middle" class="hub-title">SaaS</text>
+    <text x="700" y="535" text-anchor="middle" class="hub-sub">MVP · 7 dias · 15 PBIs</text>
+    <text x="700" y="552" text-anchor="middle" class="hub-sub">multi-tenant · agendamento</text>
+    <text x="700" y="569" text-anchor="middle" class="hub-sub">barbearias e salões</text>
+  </g>
+
+  <!-- ============ Branch 1: ATORES (top) ============ -->
+  <g>
+    <rect x="540" y="100" width="320" height="140" rx="14" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+    <rect x="540" y="100" width="320" height="34" rx="14" fill="#2563eb"/>
+    <text x="560" y="123" class="branch-title">👥 Atores</text>
+    <text x="820" y="123" class="ref" fill="#ffffff" text-anchor="end">04-seguranca §Matriz</text>
+
+    <text x="560" y="155" class="leaf-title">• Cliente final</text>
+    <text x="580" y="170" class="branch-meta-light">agenda; opcional cadastro</text>
+
+    <text x="560" y="188" class="leaf-title">• OWNER</text>
+    <text x="580" y="203" class="branch-meta-light">dono — full access da org</text>
+
+    <text x="560" y="221" class="leaf-title">• STAFF</text>
+    <text x="580" y="236" class="branch-meta-light">profissional — agenda própria</text>
+
+    <text x="730" y="155" class="leaf-title">• Anônimo</text>
+    <text x="750" y="170" class="branch-meta-light">se org permite guest</text>
+
+    <text x="730" y="188" class="leaf-title">• Super-admin</text>
+    <text x="750" y="203" class="branch-meta-light">cria orgs via script</text>
+
+    <text x="730" y="221" class="leaf-title">• Agente IA</text>
+    <text x="750" y="236" class="branch-meta-light">abre PR, humano aprova</text>
+  </g>
+
+  <!-- ============ Branch 2: DOMÍNIO (top-right) ============ -->
+  <g>
+    <rect x="990" y="220" width="320" height="200" rx="14" fill="#ffffff" stroke="#0ea5e9" stroke-width="2.5"/>
+    <rect x="990" y="220" width="320" height="34" rx="14" fill="#0ea5e9"/>
+    <text x="1010" y="243" class="branch-title">📦 Domínio</text>
+    <text x="1290" y="243" class="ref" fill="#ffffff" text-anchor="end">03-modelo-dados</text>
+
+    <text x="1010" y="275" class="leaf-title">Organization (tenant raiz)</text>
+    <text x="1030" y="290" class="branch-meta-light">slug, timezone, allowGuestBooking</text>
+
+    <text x="1010" y="308" class="leaf-title">User · Membership(OWNER|STAFF)</text>
+    <text x="1010" y="326" class="leaf-title">Service · ProfessionalService</text>
+    <text x="1030" y="341" class="branch-meta-light">duração, priceCents, active</text>
+
+    <text x="1010" y="359" class="leaf-title">Professional · WorkingHours · TimeBlock</text>
+    <text x="1030" y="374" class="branch-meta-light">faixas por weekday · bloqueios</text>
+
+    <text x="1010" y="392" class="leaf-title">Appointment (CONFIRMED→COMPLETED/...)</text>
+    <text x="1030" y="407" class="branch-meta-light">UTC + customerName copy-on-write</text>
+  </g>
+
+  <!-- ============ Branch 3: STACK (right) ============ -->
+  <g>
+    <rect x="1170" y="430" width="200" height="200" rx="14" fill="#ffffff" stroke="#7c3aed" stroke-width="2.5"/>
+    <rect x="1170" y="430" width="200" height="34" rx="14" fill="#7c3aed"/>
+    <text x="1190" y="453" class="branch-title">🛠️ Stack</text>
+    <text x="1350" y="453" class="ref" fill="#ffffff" text-anchor="end">02-arquitetura</text>
+
+    <text x="1190" y="483" class="leaf-title">Next.js 15 (App Router)</text>
+    <text x="1190" y="500" class="leaf-title">TypeScript strict</text>
+    <text x="1190" y="517" class="leaf-title">Tailwind + shadcn/ui</text>
+    <text x="1190" y="534" class="leaf-title">Prisma + Postgres 16</text>
+    <text x="1190" y="551" class="leaf-title">NextAuth v5 (DB sessions)</text>
+    <text x="1190" y="568" class="leaf-title">Zod (validação)</text>
+    <text x="1190" y="585" class="leaf-title">Vitest + Playwright</text>
+    <text x="1190" y="602" class="leaf-title">pnpm · date-fns-tz</text>
+    <text x="1190" y="619" class="leaf-title">Resend (email)</text>
+  </g>
+
+  <!-- ============ Branch 4: SEGURANÇA (bottom-right) ============ -->
+  <g>
+    <rect x="990" y="660" width="320" height="200" rx="14" fill="#ffffff" stroke="#dc2626" stroke-width="2.5"/>
+    <rect x="990" y="660" width="320" height="34" rx="14" fill="#dc2626"/>
+    <text x="1010" y="683" class="branch-title">🛡️ Segurança</text>
+    <text x="1290" y="683" class="ref" fill="#ffffff" text-anchor="end">04-seguranca</text>
+
+    <text x="1010" y="715" class="leaf-title">Multi-tenant: organizationId em tudo</text>
+    <text x="1010" y="734" class="leaf-title">RLS no banco (current_org_id() + policies)</text>
+    <text x="1010" y="753" class="leaf-title">EXCLUDE constraint anti-conflito (btree_gist)</text>
+    <text x="1010" y="772" class="leaf-title">withTenant(orgId, fn) em toda query</text>
+    <text x="1010" y="791" class="leaf-title">Zod parse em toda fronteira</text>
+    <text x="1010" y="810" class="leaf-title">bcrypt cost 12 · session DB · cookies httpOnly</text>
+    <text x="1010" y="829" class="leaf-title">3 roles Postgres (app_user/migrator/super)</text>
+    <text x="1010" y="848" class="branch-meta" fill="#b91c1c">⚠ Cross-tenant leak = pior bug possível</text>
+  </g>
+
+  <!-- ============ Branch 5: FLUXOS (bottom) ============ -->
+  <g>
+    <rect x="540" y="760" width="320" height="180" rx="14" fill="#ffffff" stroke="#16a34a" stroke-width="2.5"/>
+    <rect x="540" y="760" width="320" height="34" rx="14" fill="#16a34a"/>
+    <text x="560" y="783" class="branch-title">🌊 Fluxos</text>
+    <text x="820" y="783" class="ref" fill="#ffffff" text-anchor="end">08-prototipo + diagramas/</text>
+
+    <text x="560" y="815" class="leaf-title">Cliente (4 toques, mobile-first)</text>
+    <text x="580" y="830" class="branch-meta-light">serviço → prof → horário → confirmar</text>
+
+    <text x="560" y="850" class="leaf-title">Admin (desktop)</text>
+    <text x="580" y="865" class="branch-meta-light">login → agenda dia + CRUDs</text>
+
+    <text x="560" y="885" class="leaf-title">Encaixe / walk-in</text>
+    <text x="580" y="900" class="branch-meta-light">admin force=true (RN-11)</text>
+
+    <text x="560" y="920" class="leaf-title">Cancel / Complete / NoShow</text>
+    <text x="580" y="935" class="branch-meta-light">manuais; RN-07/08/09</text>
+  </g>
+
+  <!-- ============ Branch 6: REGRAS (bottom-left) ============ -->
+  <g>
+    <rect x="90" y="660" width="320" height="200" rx="14" fill="#ffffff" stroke="#ca8a04" stroke-width="2.5"/>
+    <rect x="90" y="660" width="320" height="34" rx="14" fill="#ca8a04"/>
+    <text x="110" y="683" class="branch-title">📜 Regras de negócio</text>
+    <text x="390" y="683" class="ref" fill="#ffffff" text-anchor="end">07-regras-negocio (RN-01..20)</text>
+
+    <text x="110" y="715" class="leaf-title">RN-01/02: horário + duração fixa</text>
+    <text x="110" y="734" class="leaf-title">RN-03: slot a cada 15 min · 5 filtros</text>
+    <text x="110" y="753" class="leaf-title">RN-04: anti-conflito (app + EXCLUDE)</text>
+    <text x="110" y="772" class="leaf-title">RN-05: antecedência 30 min (cliente)</text>
+    <text x="110" y="791" class="leaf-title">RN-06: janela 60 dias futuro</text>
+    <text x="110" y="810" class="leaf-title">RN-07: cancel ≥2h · RN-08/09: NoShow/Done</text>
+    <text x="110" y="829" class="leaf-title">RN-12: "qualquer prof" = alfabético</text>
+    <text x="110" y="848" class="leaf-title">RN-13: UTC no DB · SP na borda</text>
+  </g>
+
+  <!-- ============ Branch 7: AMBIENTES (left) ============ -->
+  <g>
+    <rect x="30" y="430" width="200" height="200" rx="14" fill="#ffffff" stroke="#f97316" stroke-width="2.5"/>
+    <rect x="30" y="430" width="200" height="34" rx="14" fill="#f97316"/>
+    <text x="50" y="453" class="branch-title">🌍 Ambientes</text>
+    <text x="210" y="453" class="ref" fill="#ffffff" text-anchor="end">wiki/fluxo-dev</text>
+
+    <text x="50" y="483" class="leaf-title">💻 Local</text>
+    <text x="50" y="498" class="branch-meta-light">localhost:3000 · pg docker</text>
+
+    <text x="50" y="520" class="leaf-title">🔬 Preview (= dev)</text>
+    <text x="50" y="535" class="branch-meta-light">Vercel auto por PR</text>
+    <text x="50" y="550" class="branch-meta-light">Neon branch preview</text>
+
+    <text x="50" y="572" class="leaf-title">🚀 Prod</text>
+    <text x="50" y="587" class="branch-meta-light">Vercel main · Neon main</text>
+    <text x="50" y="602" class="branch-meta-light">auto após merge</text>
+    <text x="50" y="617" class="branch-meta-light">+ smoke manual 3 min</text>
+  </g>
+
+  <!-- ============ Branch 8: WORKFLOW (top-left) ============ -->
+  <g>
+    <rect x="90" y="220" width="320" height="200" rx="14" fill="#ffffff" stroke="#0d9488" stroke-width="2.5"/>
+    <rect x="90" y="220" width="320" height="34" rx="14" fill="#0d9488"/>
+    <text x="110" y="243" class="branch-title">⚙️ Workflow</text>
+    <text x="390" y="243" class="ref" fill="#ffffff" text-anchor="end">06-padroes-codigo + 09-pbis</text>
+
+    <text x="110" y="275" class="leaf-title">15 PBIs · sprint 7 dias (D1→D7)</text>
+    <text x="110" y="294" class="leaf-title">Trello: Task → Doing → Review → Done</text>
+    <text x="110" y="313" class="leaf-title">Trunk-based: feat/&lt;slug&gt; → main (squash)</text>
+    <text x="110" y="332" class="leaf-title">Conventional Commits + Husky pre-commit</text>
+    <text x="110" y="351" class="leaf-title">CI: lint + tc + unit + integration + e2e</text>
+    <text x="110" y="370" class="leaf-title">1 reviewer (2 se prisma/auth/middleware/RLS)</text>
+    <text x="110" y="389" class="leaf-title">Cobertura: 70% global · 85% server · 95% val</text>
+    <text x="110" y="408" class="leaf-title">Agentes podem abrir PR; humano aprova</text>
+  </g>
+
+  <!-- ============ Legend (bottom) ============ -->
+  <g>
+    <rect x="900" y="940" width="480" height="50" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="920" y="962" class="legend" font-weight="700">Como ler:</text>
+    <text x="920" y="980" class="legend">hub no centro = visão geral · 8 ramos = pilares · texto pequeno cita doc/RN canônico</text>
+  </g>
+</svg>

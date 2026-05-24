@@ -1,6 +1,12 @@
 # CLAUDE.md — Contexto para agentes
 
 > Este arquivo é lido por todo agente (Claude Code, Cursor, Copilot, etc.) antes de tocar em qualquer linha. **Leia inteiro antes de propor mudanças.**
+>
+> Depois deste arquivo, leia também (em ordem):
+> 1. [docs/wiki/bots/reading-order.md](docs/wiki/bots/reading-order.md) — qual doc abrir antes de mexer em cada área
+> 2. [docs/wiki/bots/principios.md](docs/wiki/bots/principios.md) — não-negociáveis + gatilhos de PARAR
+> 3. [docs/wiki/bots/anti-patterns.md](docs/wiki/bots/anti-patterns.md) — rejeição automática em PR
+> 4. [docs/wiki/bots/patterns.md](docs/wiki/bots/patterns.md) — patterns copy-paste-friendly do projeto
 
 ## 1. O que é
 

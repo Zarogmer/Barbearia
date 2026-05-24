@@ -134,20 +134,40 @@
   <div class="hero-meta">
     <div class="stat"><strong>15</strong><span>PBIs no backlog</span></div>
     <div class="stat"><strong>~62h</strong><span>estimativa total</span></div>
-    <div class="stat"><strong>4</strong><span>diagramas visuais</span></div>
+    <div class="stat"><strong>6</strong><span>diagramas visuais</span></div>
     <div class="stat"><strong>20</strong><span>regras de negócio (RN-01..20)</span></div>
   </div>
 </header>
 
 <nav class="toc">
+  <a href="#mapa">🧠 Mapa Mental</a>
   <a href="#cliente">① Fluxo Cliente</a>
   <a href="#admin">② Fluxo Admin</a>
   <a href="#arq">③ Arquitetura Multi-tenant</a>
   <a href="#slot">④ Algoritmo Slot</a>
+  <a href="#devprod">⑤ Dev → Prod</a>
   <a href="#links">📎 Docs &amp; Imports</a>
 </nav>
 
 <main>
+
+<section class="diagram" id="mapa">
+  <div class="head">
+    <h2>🧠 Mapa Mental — Sistema inteiro em uma tela</h2>
+    <span class="tags">
+      <span class="pill">overview</span>
+      <span class="pill">8 ramos</span>
+      <span class="pill">início recomendado</span>
+    </span>
+    <p class="desc">Hub central + 8 ramos: atores · domínio · stack · segurança · fluxos · regras · ambientes · workflow. Cada ramo cita o doc canônico (RN-XX, número do doc) pra aprofundar.</p>
+  </div>
+  <div class="svg-wrap"><img src="mapa-mental.svg" alt="Mapa mental do sistema"></div>
+  <div class="foot">
+    <a href="mapa-mental.svg" target="_blank">abrir SVG</a>
+    <a href="../wiki/README.md">Wiki — portal</a>
+    <a href="../00-overview.md">Overview dos docs</a>
+  </div>
+</section>
 
 <section class="diagram" id="cliente">
   <div class="head">
@@ -226,14 +246,49 @@
   </div>
 </section>
 
+<section class="diagram" id="devprod">
+  <div class="head">
+    <h2>⑤ Fluxo Dev → Prod — como toda PBI sai do local</h2>
+    <span class="tags">
+      <span class="pill">trunk-based</span>
+      <span class="pill">Vercel preview por PR</span>
+      <span class="pill">deploy prod auto</span>
+    </span>
+    <p class="desc">3 lanes: Local (4 passos) → Preview/Dev (CI + Vercel + QA + reviewer) → Prod (deploy automático após merge + smoke manual 3 min). Inclui rollback em &lt; 5 min se algo der ruim.</p>
+  </div>
+  <div class="svg-wrap"><img src="fluxo-dev-prod.svg" alt="Fluxo dev → prod"></div>
+  <div class="foot">
+    <a href="fluxo-dev-prod.svg" target="_blank">abrir SVG</a>
+    <a href="../wiki/fluxo-desenvolvimento.md">Wiki: fluxo de desenvolvimento</a>
+    <a href="../wiki/pratica-commits.md">Wiki: prática de commits</a>
+    <a href="../11-pbis-detalhado.md#-deploy-padr%C3%A3o-vale-para-toda-pbi">🚀 Deploy padrão das PBIs</a>
+  </div>
+</section>
+
 <section class="links" id="links">
+  <a href="../wiki/README.md">
+    <strong>📚 Wiki — portal</strong>
+    <small>Entrada navegável; humanos e bots</small>
+  </a>
+  <a href="../wiki/fluxo-desenvolvimento.md">
+    <strong>🔄 Fluxo dev → prod</strong>
+    <small>Trunk-based + Vercel preview + auto prod</small>
+  </a>
+  <a href="../wiki/pratica-commits.md">
+    <strong>✍️ Prática de commits</strong>
+    <small>Conventional Commits + escopos do projeto</small>
+  </a>
   <a href="../11-pbis-detalhado.md">
     <strong>📋 11-pbis-detalhado.md</strong>
-    <small>Markdown estruturado: cada PBI com back/front/regra/testes</small>
+    <small>15 PBIs com 5 abas (back/front/regra/testes/deploy)</small>
   </a>
   <a href="../trello-import.json">
     <strong>🗂️ trello-import.json</strong>
-    <small>Board + 4 listas + 15 cards (checklists nativos)</small>
+    <small>Board + listas + 15 cards + defaultChecklists.deploy</small>
+  </a>
+  <a href="https://trello.com/b/hYZHvqGV/barbearia">
+    <strong>🗂️ Board Trello</strong>
+    <small>Backlog/Doing/Review/Done com checklists 🚀 Deploy</small>
   </a>
   <a href="../09-pbis.md">
     <strong>📚 09-pbis.md (canônico)</strong>

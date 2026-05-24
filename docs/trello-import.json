@@ -26,7 +26,8 @@
     { "id": "docs",      "name": "docs",      "color": "lime" },
     { "id": "p0",        "name": "p0 (bloqueia MVP)", "color": "red_dark" },
     { "id": "p1",        "name": "p1 (deveria ter)",  "color": "orange" },
-    { "id": "p2",        "name": "p2 (nice to have)", "color": "yellow" }
+    { "id": "p2",        "name": "p2 (nice to have)", "color": "yellow" },
+    { "id": "v2",        "name": "v2 (pós-MVP)",      "color": "pink" }
   ],
   "lists": [
     { "id": "backlog", "name": "📋 Backlog", "pos": 1 },
@@ -34,6 +35,24 @@
     { "id": "review",  "name": "👀 Review",  "pos": 3 },
     { "id": "done",    "name": "✅ Done",    "pos": 4 }
   ],
+  "defaultChecklists": {
+    "deploy": {
+      "name": "🚀 Deploy",
+      "items": [
+        "pnpm typecheck && pnpm lint && pnpm test:run verde local",
+        "Branch feat/<slug-da-pbi> criada de main atualizado",
+        "PR aberta → CI verde + Vercel preview URL no PR",
+        "Smoke da feature no preview (compartilhar URL no canal)",
+        "Screenshot/vídeo no PR body (se mudou UI)",
+        "Reviewer aprovou (2 se mexe em prisma/auth/middleware/RLS)",
+        "Squash merge em main → deploy prod automático",
+        "Smoke prod: /api/health 200 + fluxo crítico da PBI funciona",
+        "Card Trello movido para Concluído",
+        "Cliente avisado no canal (se feature visível)"
+      ]
+    }
+  },
+  "defaultDescriptionFooter": "\n\n---\n\n## 📚 Recursos\n- [Wiki — portal](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/) | [Fluxo dev→prod](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/fluxo-desenvolvimento.md) | [Prática de commits](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/pratica-commits.md)\n- [Bots: reading-order](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/bots/reading-order.md) · [princípios](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/bots/principios.md) · [patterns](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/bots/patterns.md) · [anti-patterns](https://github.com/Zarogmer/Barbearia/blob/main/docs/wiki/bots/anti-patterns.md)\n- [Diagramas](https://github.com/Zarogmer/Barbearia/blob/main/docs/diagramas/index.html): fluxo cliente · fluxo admin · arquitetura · slot-calculator · fluxo dev→prod · mapa mental",
   "cards": [
     {
       "id": "PBI-01",
@@ -332,7 +351,7 @@
       "pos": 7,
       "estimateHours": 5,
       "dependsOn": ["PBI-06"],
-      "desc": "**Estimativa:** 5h · **Depende:** PBI-06\n**Diagrama:** [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n**Telas existentes:** src/app/(public)/[orgSlug]/...\n**Refs:** [09-pbis.md#PBI-07](docs/09-pbis.md) · [08-prototipo.md W-01..W-04](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nLigar 4 telas do cliente ao back. State 100% URL. Sem submit (vai em PBI-08).",
+      "desc": "**Estimativa:** 5h · **Depende:** PBI-06\n**Diagrama:** [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n**Protótipo visual:** [docs/prototipo/index.html#cliente](docs/prototipo/index.html) — W-01..W-06 mockados em alta-fi\n**Telas existentes:** src/app/(public)/[orgSlug]/...\n**Refs:** [09-pbis.md#PBI-07](docs/09-pbis.md) · [08-prototipo.md W-01..W-04](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nLigar 4 telas do cliente ao back. State 100% URL. Sem submit (vai em PBI-08). Polimento visual final em PBI-16.",
       "checklists": [
         {
           "name": "🔧 Backend",
@@ -429,7 +448,7 @@
       "pos": 9,
       "estimateHours": 6,
       "dependsOn": ["PBI-08"],
-      "desc": "**Estimativa:** 6h · **Depende:** PBI-08\n**Tela existente:** src/app/admin/agenda/\n**Refs:** [09-pbis.md#PBI-09](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg) · [08-prototipo.md W-08](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nVisualização de agenda do dia por profissional. Bloco appt/bloco TimeBlock; ações de mudança de status; encaixe.",
+      "desc": "**Estimativa:** 6h · **Depende:** PBI-08\n**Tela existente:** src/app/admin/agenda/\n**Protótipo visual:** [docs/prototipo/index.html#admin](docs/prototipo/index.html) — W-07/W-08/W-09 desktop frames\n**Refs:** [09-pbis.md#PBI-09](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg) · [08-prototipo.md W-08](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nVisualização de agenda do dia por profissional. Bloco appt/bloco TimeBlock; ações de mudança de status; encaixe. Polimento visual final em PBI-16.",
       "checklists": [
         {
           "name": "🔧 Backend",
@@ -681,18 +700,188 @@
           ]
         }
       ]
+    },
+    {
+      "id": "PBI-16",
+      "name": "PBI-16 — Aplicar design system Lustro (telas W-01..W-09)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "docs", "p1"],
+      "pos": 16,
+      "estimateHours": 4,
+      "dependsOn": ["PBI-02"],
+      "desc": "**Estimativa:** 4h · **Depende:** PBI-02 (paraleliza com 04-09)\n**Protótipo:** [docs/prototipo/index.html](docs/prototipo/index.html) — abrir local + escolher paleta\n**Refs:** [08-prototipo.md#design-system--lustro](docs/08-prototipo.md) · [11-pbis-detalhado.md](docs/11-pbis-detalhado.md)\n\n## 🎯 Objetivo\nElevar fidelidade das telas existentes (W-01..W-09) de wireframe baixa-fi pro design system Lustro. Fontes premium, paleta escolhida (Charcoal default), microanimações, tokens unificados. Sem mudar fluxo nem regras — apenas visual.\n\n## DoD (além do universal)\n- Usuário humano escolhe entre Charcoal / Sunset / Editorial antes do PBI começar (1 das 3 vai pra prod; outras 2 ficam como variantes via data-theme)\n- Screenshots antes/depois no PR body de cada uma das 9 telas\n- Lighthouse Mobile mantém Perf ≥80 (não regredir)",
+      "checklists": [
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "next/font/google em layout.tsx: Plus Jakarta Sans (display) + Inter (body) + JetBrains Mono (numeric) + Instrument Serif (opcional)",
+            "Atualizar globals.css com tokens Lustro: 3 paletas em [data-theme=charcoal|sunset|editorial] + dark variantes",
+            "tailwind.config.ts: novas cores (brand/ink/surface/surface-2/line/ok/warn/danger), shadows (xs..xl + glow), animations (fade-up, pop-in, shimmer)",
+            "pnpm add motion (substitui imports framer-motion se houver)",
+            "Componentes custom: ChipSlot (3 estados), AvatarRing (conic-gradient), KpiCard, TimelineRow",
+            "W-01 landing: hero gradient ink→brand, eyebrow, marquee de stats (opcional)",
+            "W-02..W-04: stepper visual com dots, transições motion entre passos (View Transitions API)",
+            "W-05: form com labels mono uppercase, focus ring brand, resumo em card surface-2",
+            "W-06 sucesso: animação pop do checkmark (popCheck keyframes — 800ms cubic-bezier elástico)",
+            "W-07 dashboard: 4 KPI cards com mini-charts, próximos agendamentos grid denso",
+            "W-08 agenda: timeline 2-col grid, appt-blocks absolutos colorindo por status",
+            "W-09 serviços: tabela densa com avatares stack -space-x-2, ações inline",
+            "Dark mode tokens prontos (sem toggle visível no MVP — só base CSS)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Mobile-first: viewport 360–414px é o caso default; desktop é bônus",
+            "prefers-reduced-motion: desligar todas animações exceto opacity",
+            "Contraste mínimo AA em ambos os modes (text vs surface)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Visual regression: Playwright screenshot cada uma das 9 telas em mobile + desktop",
+            "A11y: axe-core nas 9 telas — 0 violations criticas",
+            "Manual: rodar protótipo (npx serve docs/prototipo) e comparar com implementação Next.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-17",
+      "name": "PBI-17 — Relatórios financeiros (v2)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "v2"],
+      "pos": 17,
+      "estimateHours": 8,
+      "dependsOn": ["PBI-08", "PBI-09"],
+      "desc": "**Estimativa:** 8h · **Depende:** PBI-08, PBI-09 · **NÃO faz parte do MVP de 7 dias**\n**Protótipo visual:** [docs/prototipo/index.html#v2](docs/prototipo/index.html) — W-17\n\n## 🎯 Objetivo\nPainel de relatórios financeiros pro dono: faturamento por período, comissões por profissional, ticket médio, tendência diária. Exportação PDF.\n\n## ⚠ Por que v2 (fora do MVP)\nAdiciona modelo de Commission/Payout, agregações SQL complexas, lib de gráficos, geração de PDF. Custo: 8-12h. MVP de 7 dias não suporta. Implementar após validar core com 1+ barbearia real em prod.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "prisma: model Commission (professionalId, serviceId, percentage, createdAt) — % por profissional/serviço",
+            "src/lib/server/reports.ts: getFinancialReport(orgId, startDate, endDate, professionalId?) agregando appointments COMPLETED",
+            "Aggregations: SUM(price) por dia/profissional/serviço, COUNT(*), AVG(price)",
+            "src/lib/server/reports/pdf.ts: gera PDF com pdf-lib ou puppeteer (cliente-side preferível pra economia)",
+            "API route GET /api/admin/reports/export?format=pdf&from=...&to=...",
+            "Cache de 5min via unstable_cache (relatórios não mudam tão rápido)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/relatorios: 4 KPI cards (faturamento, comissões, ticket médio, atendimentos)",
+            "Gráfico de barras stacked (faturamento por dia, segmentado por profissional) usando recharts ou tremor.so",
+            "Tabela por profissional com colunas: atendimentos, faturamento, comissão %, comissão R$, ticket médio",
+            "Filtros: período (hoje/7d/30d/90d/custom com calendar), profissional (multi-select), serviço (multi-select)",
+            "Botão 'Exportar PDF' chama API e dispara download",
+            "Botão 'Relatório individual' por profissional (drill-down pra detalhes daquele prof)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Comissão default 0% se não cadastrada (mostrar alerta no relatório)",
+            "Faturamento = sum(price) onde status=COMPLETED (não inclui CANCELLED/NO_SHOW)",
+            "Ticket médio = faturamento / count(appointments COMPLETED)",
+            "Período inclusivo nas pontas (00:00 do start até 23:59 do end, timezone SP)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: aggregações com dataset fixture (faturamento total, por prof, por serviço)",
+            "Integration: report em período sem appointments retorna zeros (não null/erro)",
+            "E2E: gerar relatório → verificar números batendo com fixture → exportar PDF não crashar"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-18",
+      "name": "PBI-18 — Estoque de produtos + PDV (v2)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "v2"],
+      "pos": 18,
+      "estimateHours": 12,
+      "dependsOn": ["PBI-04", "PBI-09"],
+      "desc": "**Estimativa:** 12h · **Depende:** PBI-04, PBI-09 · **NÃO faz parte do MVP de 7 dias**\n**Protótipo visual:** [docs/prototipo/index.html#v2](docs/prototipo/index.html) — W-18\n\n## 🎯 Objetivo\nGestão de estoque de produtos (pomada, óleo, shampoo, insumos). Alerta de mínimo. Entradas/saídas registradas. PDV embutido pra vender produto avulso ou junto com agendamento.\n\n## ⚠ Por que v2 (fora do MVP)\nDomínio novo grande (Product, InventoryMovement, Sale, Cost). Precisa de PDV inline pra cobrar agendamento + venda. Custo: 12-16h. Implementar após MVP validado.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "prisma: model Product (orgId, sku, name, category, salePrice, costPrice, minStock, active)",
+            "prisma: model InventoryMovement (productId, type IN/OUT/ADJUST, quantity, reason, userId, createdAt)",
+            "prisma: model Sale (orgId, appointmentId?, items[], total, paymentMethod, createdAt) — pode existir sem appointment (venda avulsa)",
+            "src/lib/server/inventory.ts: createMovement, adjustStock, getCurrentStock (sum movements)",
+            "Trigger pós-Sale.create: gera InventoryMovement OUT pra cada item",
+            "Alerta de mínimo: query computed `stockBelowMin` na listagem"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/estoque: tabela densa (SKU, nome, categoria, qtd atual, mínimo, preço venda, última saída, status)",
+            "Alerta no topo: 'N produtos abaixo do mínimo' (clicável)",
+            "Modal Nova entrada (com nota fiscal/fornecedor opcional)",
+            "Modal Saída avulsa (sem appointment) — venda direta",
+            "Drawer Produto: histórico de movimentações, edição de mínimo/preço",
+            "PDV embutido na agenda (W-08): ao concluir appointment, abre modal 'Adicionar produtos à venda?' com lista de produtos"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Estoque negativo permitido (com aviso) — barbearia pequena pode 'vender o que vai chegar amanhã'",
+            "Status: Crítico (qtd <= mínimo*0.5), Baixo (qtd <= mínimo), OK (qtd > mínimo)",
+            "Produto inativo aparece em histórico mas não em PDV/listagem default"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: getCurrentStock soma corretamente (IN + ADJUST_POS - OUT - ADJUST_NEG)",
+            "Integration: criar Sale com 3 items gera 3 InventoryMovement OUT",
+            "Integration: ajuste manual permitido por OWNER, bloqueado pra STAFF",
+            "E2E: concluir appointment + adicionar 2 produtos → checkout → estoque dos 2 reduz"
+          ]
+        }
+      ]
     }
   ],
   "metadata": {
-    "totalCards": 15,
-    "totalEstimatedHours": 62,
+    "totalCards": 18,
+    "totalEstimatedHours": 86,
+    "mvpEstimatedHours": 66,
+    "v2EstimatedHours": 20,
     "criticalPath": "PBI-01 → PBI-02 → PBI-04 → PBI-05 → PBI-06 → PBI-07 → PBI-08 → PBI-09",
-    "parallelizable": ["PBI-03 (após 02)", "PBI-10 (após 02)", "PBI-15 (após 08)", "PBI-04 + PBI-06 (após 02 — se prof seedado)"],
+    "parallelizable": ["PBI-03 (após 02)", "PBI-10 (após 02)", "PBI-15 (após 08)", "PBI-16 (após 02 — paralelo a 04-09)", "PBI-04 + PBI-06 (após 02 — se prof seedado)"],
     "diagramRefs": [
       "docs/diagramas/fluxo-cliente.svg",
       "docs/diagramas/fluxo-admin.svg",
       "docs/diagramas/arquitetura-multi-tenant.svg",
-      "docs/diagramas/algoritmo-slot-calculator.svg"
+      "docs/diagramas/algoritmo-slot-calculator.svg",
+      "docs/diagramas/fluxo-dev-prod.svg",
+      "docs/diagramas/mapa-mental.svg"
+    ],
+    "wikiRefs": [
+      "docs/wiki/README.md",
+      "docs/wiki/fluxo-desenvolvimento.md",
+      "docs/wiki/pratica-commits.md",
+      "docs/wiki/humanos/comece-aqui.md",
+      "docs/wiki/humanos/glossario.md",
+      "docs/wiki/humanos/faq.md",
+      "docs/wiki/humanos/trilhas.md",
+      "docs/wiki/bots/reading-order.md",
+      "docs/wiki/bots/principios.md",
+      "docs/wiki/bots/patterns.md",
+      "docs/wiki/bots/anti-patterns.md"
+    ],
+    "checklistsPerCard": 5,
+    "changeLog": [
+      { "date": "2026-05-23", "change": "Initial 15 cards with 4 checklists (back/front/regra/testes)" },
+      { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" }
     ]
   }
 }

@@ -227,6 +227,57 @@ Não no escopo da semana, mas listar para visibility:
 - Sentry para erros em prod
 - Backup automatizado + plano de DR
 
+## Mapeamento PBI ↔ Tela do protótipo
+
+Cada PBI tem agora uma tela mockada no protótipo HTML ([docs/prototipo/index.html](prototipo/index.html)). Quem pega a PBI deve abrir a seção correspondente e replicar o visual na implementação Next.js. Mock-data em `src/lib/mock-data.ts` pode ser usado nos primeiros passos.
+
+| PBI | Foco | Seção do protótipo (`#anchor`) | Tela(s) |
+|---|---|---|---|
+| **PBI-01** | Postgres + RLS + migrations | — (infra) | — |
+| **PBI-02** | NextAuth Credentials | `#auth` | W-12a login |
+| **PBI-03** | Google OAuth + email verify | `#auth` | W-12 (botão Google + estado verificação) |
+| **PBI-04** | CRUD serviços | `#admin` + `#cruds` | W-09 (lista) + W-10 (modal Novo Serviço) |
+| **PBI-05** | CRUD profissionais + horários | `#cruds` | W-11 (modal com 3 tabs: dados/horários/serviços) |
+| **PBI-06** | Slot calculator | — (algoritmo puro) | — |
+| **PBI-07** | Fluxo cliente (4 passos) | `#cliente` | W-01 → W-02 → W-03 → W-04 |
+| **PBI-08** | Confirmação + criar agendamento | `#cliente` + `#estados` | W-05, W-06 + state "slot ocupou" |
+| **PBI-09** | Agenda do dia (admin) | `#admin` + `#drawer` | W-08 (timeline) + W-13 (drawer detalhes) |
+| **PBI-10** | Configurações da org | `#cruds` | Página Configurações com Zona de perigo |
+| **PBI-11** | Testes cross-tenant | — (testes) | — |
+| **PBI-12** | Coverage gates + testes | — (testes) | — |
+| **PBI-13** | CI GitHub Actions | — (infra) | — |
+| **PBI-14** | Deploy Vercel + Neon | — (infra) | — |
+| **PBI-15** | PWA + polish | `#estados` | Empty/loading/erro states |
+| **PBI-16** | Aplicar design system Lustro | TODAS | Cross-cutting · usar protótipo como referência visual final |
+
+## Ordem de execução recomendada (critical path)
+
+```
+D2 ─── PBI-01 ─┐
+               ├─→ PBI-02 ─→ PBI-03 (paralelo)
+               │
+D3 ─── ────────┴─→ PBI-04 ──┐
+                            ├─→ PBI-06 (paralelo)
+               └─→ PBI-05 ──┤
+                            │
+D4 ─── ─────────────────────┴─→ PBI-07 ─→ PBI-08
+                                                ↓
+D5 ─── ─────────────────────────────────────── PBI-09 ─→ PBI-10
+                                                ↓
+D6 ─── ──────────────────────────────────── PBI-11 ─→ PBI-12 ─→ PBI-13
+                                                ↓
+D7 ─── ──────────────────────────────────── PBI-14 ─→ PBI-15
+```
+
+**PBI-16** (design system) acontece em paralelo a tudo, sob demanda — quem implementa uma PBI consulta o protótipo e aplica o visual já durante a PBI. Não é PBI sequencial.
+
+**Antes de pegar a primeira PBI:**
+1. Abrir [docs/prototipo/index.html](prototipo/index.html) e ler a seção correspondente
+2. Conferir AC e checklist do card no Trello ([board](https://trello.com/b/hYZHvqGV/barbearia))
+3. Criar branch `feat/pbi-XX-slug` a partir de `main` atualizado
+4. Implementar back + front + testes no MESMO PR
+5. Marcar itens do checklist Trello conforme avança
+
 ## Definição de sucesso da semana
 
 1. **Funcional:** 1 barbearia real consegue se cadastrar (com nossa ajuda) e operar 1 dia inteiro com o sistema.

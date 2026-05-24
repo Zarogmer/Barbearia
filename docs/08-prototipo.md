@@ -1,6 +1,119 @@
 # 08 — Protótipo (fluxos + wireframes)
 
-> Protótipo de baixa fidelidade. Foco em **estrutura, hierarquia e fluxo**, não em visual. Visual fica para o componente shadcn + Tailwind aplicado na implementação.
+> **Protótipo navegável interativo:** [docs/prototipo/index.html](prototipo/index.html) — abra direto no navegador ou rode `npx serve docs/prototipo` para um servidor local. Inclui **16 telas MVP + 5 v2** em mockups de alta fidelidade + 3 paletas trocáveis em tempo real + componentes + tokens + estados de borda (empty/loading/erro).
+>
+> **Cobertura do protótipo (v0.4.0):**
+>
+> **MVP (W-01..W-16):**
+> - W-01..W-06 — fluxo cliente (mobile)
+> - W-07..W-09 — admin (dashboard, agenda, lista de serviços)
+> - W-10 — modal Novo Serviço (CRUD)
+> - W-11 — modal Novo Profissional (CRUD)
+> - W-12 — login + cadastro (split-screen)
+> - W-13 — drawer detalhes de agendamento (sobre W-08)
+> - W-14 — lista de profissionais (admin)
+> - W-15 — modal Novo Agendamento (encaixe manual)
+> - W-16 — modal Cancelar agendamento (com motivo)
+> - + página de Configurações da org
+> - + 6 estados de borda (empty/loading/erro/404/validation)
+>
+> **v2 / pós-MVP (W-17..W-21):** ⏳ não implementar agora
+> - W-17 — Relatórios financeiros (KPIs, gráficos, comissões por profissional)
+> - W-18 — Estoque de produtos (lista + alertas de mínimo + entrada/saída)
+> - W-19 — Meus agendamentos (cliente logado, mobile)
+> - W-20 — CRM · Lista de clientes (com tag VIP/Regular/Perdido)
+> - W-21 — Caixa diário (PDV: abertura/sangria/fechamento + movimentos)
+>
+> Os wireframes ASCII abaixo continuam sendo a fonte canônica de **estrutura, hierarquia e fluxo**. O protótipo HTML mostra como esses wireframes ficam com o design system aplicado.
+
+## Design System — "Lustro"
+
+Nome interno do design system: **Lustro** (do verbo polir, dar brilho — alusão à profissão de barbeiro).
+
+### Tipografia (Google Fonts, gratuitas)
+
+| Papel | Família | Pesos | Onde usar |
+|---|---|---|---|
+| **Display** | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) | 400–800 | Headlines, hero, títulos de seção (h1..h3), KPIs grandes |
+| **Body** | [Inter](https://fonts.google.com/specimen/Inter) | 400–700 | Texto corrido, labels de form, navegação, cards |
+| **Mono** | [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) | 400–600 | Horários (09:30), preços (R$ 50,00), IDs, eyebrows, datas |
+| **Editorial accent** | [Instrument Serif](https://fonts.google.com/specimen/Instrument+Serif) | 400 italic | Destaques pontuais em hero ("agendar virou *arte*") — opcional |
+
+Carregar via `next/font/google` no `src/app/layout.tsx`. Subset latin + display swap obrigatório.
+
+### Paletas (3 opções, trocáveis via CSS custom properties)
+
+Cada paleta define 11 tokens. Trocar é renomear `data-theme` no `<html>`. Sem refactor de classes.
+
+#### A — Charcoal Premium *(recomendada / default)*
+Neutros profundos + accent dourado discreto. Atemporal de barbearia masculina premium.
+
+| Token | Light | Dark |
+|---|---|---|
+| `--brand` | `38 92% 50%` (amber-500 #f59e0b) | `41 96% 56%` |
+| `--ink` | `240 10% 4%` (zinc-950) | `0 0% 98%` |
+| `--surface` | `0 0% 100%` (white) | `240 10% 4%` |
+| `--surface-2` | `240 5% 98%` | `240 6% 9%` |
+| `--line` | `240 6% 90%` | `240 5% 18%` |
+
+#### B — Sunset Modern
+Gradient quente rosa→laranja, neutros mornos. Jovem, friendly, beauty-forward.
+
+| Token | Light | Dark |
+|---|---|---|
+| `--brand` | `339 90% 51%` (rose-500) | `339 90% 60%` |
+| `--ink` | `330 30% 8%` | `30 20% 96%` |
+| `--surface` | `30 33% 99%` (warm white) | `330 10% 6%` |
+
+#### C — Editorial Black
+Hyper-minimal, alto contraste, accent esmeralda. Vibe Linear / Vercel.
+
+| Token | Light | Dark |
+|---|---|---|
+| `--brand` | `160 84% 35%` (emerald-700) | `160 75% 45%` |
+| `--ink` | `0 0% 4%` (near-black) | `0 0% 98%` |
+| `--surface` | `0 0% 100%` (pure white) | `0 0% 0%` (pure black) |
+
+### Tokens base
+
+- **Radii:** `4 · 8 · 12 · 16 · 24 · 32 · 999` (4px grid). Padrão `12`.
+- **Spacing:** `4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96` (4px grid).
+- **Shadows:** `xs` (1px hairline) → `sm` (card resting) → `md` (card hover) → `lg` (modal) → `xl` (dropdown/popover) — todas HSL-based em `--ink` com opacity baixa, sem cinza saturado.
+- **Border:** sempre `hsl(var(--line))`, 1px.
+- **Brand glow (foco):** `0 0 0 4px hsl(var(--brand) / 0.18)` — usado em `:focus-visible` de inputs/buttons.
+
+### Animação
+
+Three libs, três usos:
+
+| Lib | Uso | Quando |
+|---|---|---|
+| **`motion/react`** (sucessora Framer Motion, ~30kb) | Layout animations, stagger, gestures | Cards entrando, sheet/drawer abrindo, transições de estado |
+| **`tailwindcss-animate`** (já no projeto) | Fade/slide/zoom utilitários sem JS | Modais shadcn, toasts, hover states |
+| **View Transitions API** (nativa, Next.js 15 `unstable_ViewTransition`) | Transições entre rotas | W-02 → W-03 → W-04 → W-05 (fluxo cliente em 4 toques) |
+
+**Princípio:** animação só onde dá feedback. Microanimações curtas (150–250ms). Cubic-bezier `(0.16, 1, 0.3, 1)` (ease-out-quint) é o default. Animação grande (>400ms) reservada pra momentos especiais: o checkmark da confirmação (W-06).
+
+Respeitar sempre `@media (prefers-reduced-motion: reduce)` — desligar tudo exceto opacity.
+
+### Componentes principais (shadcn + custom)
+
+| Componente | Origem | Custom |
+|---|---|---|
+| Button | shadcn | Adicionar variante `brand` (cor primária = amber/rose/emerald), size `lg` (h-12) |
+| Input | shadcn | Focus ring com `--brand`, label flutuante opcional |
+| Card | shadcn | Variante `is-interactive` com hover lift + border glow |
+| Calendar | shadcn | Sem mudanças |
+| Dialog/Sheet | shadcn | Backdrop com `backdrop-blur` |
+| `ChipSlot` | custom | Botão para horário, 3 estados (livre/selecionado/ocupado), mono font |
+| `Stepper` | custom (já existe `StepIndicator`) | Dots conectados, dot ativo expande pra pill |
+| `AvatarRing` | custom | Avatar com `conic-gradient` ring (brand → ink) |
+| `KpiCard` | custom (admin) | Número grande mono + delta + sparkline |
+| `Timeline` | custom (admin) | Grid de 2 colunas (1 por profissional), blocos absolutamente posicionados |
+
+### Tema escuro
+
+Todas as paletas suportam dark mode via `data-mode="dark"` no `<html>`. Detectar `prefers-color-scheme` + permitir toggle manual com persistência em localStorage. Implementar no MVP? **Não.** Fica pra v2. Tokens já estão prontos pro dia em que ligarmos.
 
 ## Princípios de UX
 

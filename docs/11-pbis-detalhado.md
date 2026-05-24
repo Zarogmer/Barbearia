@@ -1,14 +1,15 @@
-# 11 — PBIs em formato Trello (back / front / regra / testes)
+# 11 — PBIs em formato Trello (back / front / regra / testes / deploy)
 
-> **Por que esse doc existe?** As telas já vieram prontas dos protótipos (`prototypes/*.html` + `src/app/admin/*`). Devs vão "pegar a tela" e ligar no back. Esse doc separa **o que o card pega** em quatro frentes para evitar PR Frankenstein.
+> **Por que esse doc existe?** As telas já vieram prontas dos protótipos (`prototypes/*.html` + `src/app/admin/*`). Devs vão "pegar a tela" e ligar no back. Esse doc separa **o que o card pega** em cinco frentes para evitar PR Frankenstein.
 >
 > - **🔧 Backend** — Server Actions, queries, validações, migrações, infra.
 > - **🎨 Frontend** — wire da tela existente (forms, estados, navegação, error boundaries).
 > - **📜 Regra de negócio** — quais RN-XX desta PBI implementa; what to *not* let through.
 > - **🧪 Testes** — unit / integration / E2E que precisam viver na mesma PR.
+> - **🚀 Deploy** — gates local → preview Vercel (= dev) → prod automático após merge em `main`.
 >
-> Fontes: [09-pbis.md](09-pbis.md) (canônico), [07-regras-negocio.md](07-regras-negocio.md), [03-modelo-dados.md](03-modelo-dados.md), [04-seguranca.md](04-seguranca.md).
-> Diagramas: [diagramas/fluxo-cliente.svg](diagramas/fluxo-cliente.svg) · [fluxo-admin.svg](diagramas/fluxo-admin.svg) · [arquitetura-multi-tenant.svg](diagramas/arquitetura-multi-tenant.svg) · [algoritmo-slot-calculator.svg](diagramas/algoritmo-slot-calculator.svg).
+> Fontes: [09-pbis.md](09-pbis.md) (canônico), [07-regras-negocio.md](07-regras-negocio.md), [03-modelo-dados.md](03-modelo-dados.md), [04-seguranca.md](04-seguranca.md), [wiki/fluxo-desenvolvimento.md](wiki/fluxo-desenvolvimento.md).
+> Diagramas: [fluxo-cliente.svg](diagramas/fluxo-cliente.svg) · [fluxo-admin.svg](diagramas/fluxo-admin.svg) · [arquitetura-multi-tenant.svg](diagramas/arquitetura-multi-tenant.svg) · [algoritmo-slot-calculator.svg](diagramas/algoritmo-slot-calculator.svg) · [fluxo-dev-prod.svg](diagramas/fluxo-dev-prod.svg) · [mapa-mental.svg](diagramas/mapa-mental.svg).
 
 ## Convenção dos cards
 
@@ -19,6 +20,27 @@
 | **Checklist** | 4 fixos: `🔧 Backend`, `🎨 Frontend`, `📜 Regra de negócio`, `🧪 Testes` |
 | **DoD universal** | (vale para todos — ver [09-pbis.md §DoD](09-pbis.md)) |
 | **Owner** | atribuir só ao mover para `Doing` |
+
+## 🚀 Deploy padrão (vale para TODA PBI)
+
+> Detalhes em [wiki/fluxo-desenvolvimento.md](wiki/fluxo-desenvolvimento.md). Trunk-based + Vercel preview por PR + deploy prod automático ao merger em `main`.
+
+Cada PBI tem o mesmo checklist 🚀 — em vez de repetir 15x abaixo, abaixo de cada PBI listo só **variações específicas** (ex: PBI-01 não tem screenshot; PBI-14 redefine smoke). Quando a seção 🚀 da PBI disser "padrão", aplique este checklist:
+
+```markdown
+- [ ] `pnpm typecheck && pnpm lint && pnpm test:run` verde local
+- [ ] Branch `feat/<slug-da-pbi>` criada de `main` atualizado
+- [ ] PR aberta → CI verde + Vercel preview URL no PR
+- [ ] Smoke da feature no preview (compartilhar URL no canal)
+- [ ] Screenshot/vídeo no PR body (se mudou UI)
+- [ ] Reviewer aprovou (2 se mexe em prisma/auth/middleware/RLS)
+- [ ] Squash merge em main → deploy prod automático
+- [ ] Smoke prod: /api/health 200 + fluxo crítico da PBI funciona
+- [ ] Card Trello movido para Concluído
+- [ ] Cliente avisado no canal (se feature visível)
+```
+
+Tempo típico de uma PBI: local 30 min – 6h, review + smoke ~30 min.
 
 ## Estado atual do código (snapshot 2026-05-23)
 
@@ -73,6 +95,9 @@ Implicações práticas:
 - [ ] Manual: rodar `pnpm db:seed` 2x → idempotente (não duplica).
 - [ ] (Automated entra em PBI-11; aqui só smoke manual.)
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** sem screenshot (infra). Smoke prod = `psql` no Neon com `app_user` confirmando 0 rows sem `SET app.current_org_id`. Sem aviso ao cliente (invisível).
+
 ---
 
 ### PBI-02 — NextAuth v5 (Credentials + Prisma adapter)
@@ -107,6 +132,9 @@ Implicações práticas:
 - [ ] Integration: login rejeita senha errada com mesma mensagem do email errado (sem oracle).
 - [ ] E2E feliz: signup → login → redirect dashboard.
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot tela de login. Smoke prod = login `admin@demo.com` → `/admin/dashboard` carrega. Avisa cliente (primeira PBI com fluxo visível).
+
 ---
 
 ### PBI-03 — Google OAuth + verificação de email (Resend)
@@ -134,6 +162,9 @@ Implicações práticas:
 - [ ] Unit: gerar token retorna identificador + expira em 24h ± 1s.
 - [ ] Integration: verificar token válido seta `emailVerifiedAt`; expirado retorna erro; já usado retorna "já verificado".
 - [ ] E2E (mock Resend): signup → captura console URL → GET URL → emailVerified.
+
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** smoke prod = signup com email real → recebe email Resend → clica link → verificado. Configurar `RESEND_API_KEY` no Vercel scope `Production` antes do merge.
 
 ---
 
@@ -172,6 +203,9 @@ Implicações práticas:
 - [ ] Integration: `deactivateService` em serviço com Appointment → marca `active=false` (não deleta).
 - [ ] E2E: OWNER cria serviço → aparece na lista; STAFF acessa `/admin/servicos` → 403.
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot do modal de criar serviço. Smoke prod = OWNER demo cria serviço de teste e desativa em seguida (não suja dados reais). Avisa cliente.
+
 ---
 
 ### PBI-05 — CRUD profissionais + horários + bloqueios
@@ -205,6 +239,9 @@ Implicações práticas:
 - [ ] Integration: `setWorkingHours` é atômico — se 2ª faixa inválida, 1ª não fica salva.
 - [ ] Integration: criar TimeBlock sobrepondo Appointment → erro com IDs dos conflitos.
 - [ ] E2E: criar prof → adicionar 2 faixas seg → ver na lista → bloquear amanhã 12-13h.
+
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot do editor de WorkingHours. Smoke prod = OWNER demo cria prof teste com 1 faixa seg e bloqueio amanhã; depois apaga. Avisa cliente.
 
 ---
 
@@ -251,6 +288,9 @@ Implicações práticas:
 - [ ] Duration 0 ou negativa → `throw` com mensagem clara.
 - [ ] (Integration em booking-service.test.ts: carrega de db real com `withTenant` e devolve mesmo resultado do unit equivalente.)
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** sem screenshot (função pura, sem UI). Smoke prod = nada visível mudou — confirmar via `GET /api/health` + 1 booking de teste consome a função. Sem aviso ao cliente.
+
 ---
 
 ### PBI-07 — Fluxo cliente (4 passos sem submit)
@@ -282,6 +322,9 @@ Implicações práticas:
 - [ ] Componente: `SlotPicker` renderiza grid de horários a partir de mock.
 - [ ] Componente: `StepIndicator` reflete passo correto.
 - [ ] (E2E completo do fluxo entra em PBI-08 quando o submit fecha.)
+
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot mobile de cada um dos 4 passos. Smoke prod = abrir `/barbearia-demo/agendar` no mobile, navegar até o passo de horário (sem submeter ainda). Aviso ao cliente = "agendamento público está visível, sem submit ainda".
 
 ---
 
@@ -321,6 +364,9 @@ Implicações práticas:
 - [ ] E2E feliz: navegar 4 passos → confirmar → ver página de sucesso.
 - [ ] E2E race: abrir 2 abas no mesmo slot → 2ª recebe mensagem amigável.
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot do confirmar + página de sucesso. Smoke prod = fazer 1 agendamento real end-to-end (cancela depois pelo cliente). **Comunicação cliente formal:** "barbearia agora aceita agendamentos públicos via link".
+
 ---
 
 ## D5 — Painel admin
@@ -357,6 +403,9 @@ Implicações práticas:
 - [ ] Integration: `quickCreateBooking(force:true)` cria fora do horário, mas conflito ainda barra.
 - [ ] E2E: cancelar appt da agenda → some da grid + status atualizado.
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot agenda do dia (OWNER + STAFF). Smoke prod = OWNER abre agenda do dia, faz encaixe teste, cancela. Avisa cliente — agenda do dia está operacional.
+
 ---
 
 ### PBI-10 — Configurações da organização
@@ -380,6 +429,9 @@ Implicações práticas:
 #### 🧪 Testes
 - [ ] Unit: slug `Hello World` falha (não kebab); `ab` falha (<3); `valid-slug` passa.
 - [ ] Integration: slug duplicado retorna erro amigável.
+
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshot tela configurações + modal de aviso de slug. Smoke prod = OWNER edita nome (não slug — evita quebrar URLs). Avisa cliente.
 
 ---
 
@@ -412,6 +464,9 @@ Implicações práticas:
   - SA `cancelAppointment(<id-beta>)` chamada com auth alfa → erro neutro.
 - [ ] Rodam em **toda PR** (label exigida no CI do PBI-13).
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** sem screenshot, sem aviso ao cliente. Smoke prod = nenhum efeito visível; PR depois desta DEVE incluir os novos testes rodando verde no CI.
+
 ---
 
 ### PBI-12 — Suite mínima + coverage gates
@@ -435,6 +490,9 @@ Implicações práticas:
 - [ ] Integration booking-service ≥5 casos.
 - [ ] `pnpm test:coverage` gera `coverage/index.html`.
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** sem screenshot, sem aviso. Smoke prod = nenhum (mudança de infra de teste). Validar que próximo PR sem cobertura suficiente é bloqueado pelo CI.
+
 ---
 
 ### PBI-13 — CI GitHub Actions
@@ -457,6 +515,9 @@ Implicações práticas:
 #### 🧪 Testes
 - [ ] Primeira execução verde end-to-end em PR de teste.
 - [ ] `docker-compose.test.yml` valida fora do CI também.
+
+#### 🚀 Deploy
+Padrão (ver topo) **+ habilita branch protection** em `main` após o primeiro CI verde. A partir daqui TODA PR precisa de CI verde pra merger. Avisa o time (mudança de processo).
 
 ---
 
@@ -484,6 +545,12 @@ Implicações práticas:
 - [ ] Smoke prod manual: cadastrar org teste via seed admin → fazer agendamento via fluxo público → ver na agenda admin.
 - [ ] `/api/health` 200 em prod.
 
+#### 🚀 Deploy
+**Esta PBI É o deploy.** Variações sobre o padrão:
+- "preview por PR" passa a existir DE FATO a partir desta PBI (antes era teórico).
+- Smoke prod = roteiro completo: signup admin → criar org → criar serviço/prof → fazer agendamento → ver na agenda.
+- Anuncio oficial ao cliente — URL pública agora real.
+
 ---
 
 ### PBI-15 — PWA + polimento UX
@@ -509,6 +576,9 @@ Implicações práticas:
 - [ ] Lighthouse CI (action) bloqueia se score abaixo do threshold.
 - [ ] E2E offline: ServiceWorker responde com fallback.
 
+#### 🚀 Deploy
+Padrão (ver topo). **Variações:** screenshots Lighthouse antes/depois. Smoke prod = rodar Lighthouse contra prod, anexar relatório. Avisa cliente: "app instalável (PWA), funciona offline limitado".
+
 ---
 
 ## Resumo de paralelização (D3 → D4)
@@ -525,8 +595,12 @@ Em um time misto de ~3 humanos + 2 agentes, dá pra ter `PBI-04` + `PBI-05` + `P
 ## Como usar com o JSON do Trello
 
 O arquivo [trello-import.json](trello-import.json) traduz este markdown em estrutura board/lists/cards.
-- Cada PBI → 1 card com descrição em markdown (mesmas 4 seções).
-- Checklists nativos do Trello (4 por card: Backend/Frontend/Regra/Testes).
+- Cada PBI → 1 card com descrição em markdown (5 seções: Back/Front/Regra/Testes/Deploy).
+- Checklists nativos do Trello (**5 por card**: 🔧 Backend, 🎨 Frontend, 📜 Regra de negócio, 🧪 Testes, 🚀 Deploy).
+- O checklist 🚀 Deploy é igual em todos os cards (definido em `defaultChecklists.deploy` no JSON) — o script de import duplica em cada card.
 - Labels mapeadas (`backend`, `frontend`, `infra`, `seguranca`, `testes`, `docs`, `p0/p1/p2`).
-- Lista inicial = "Backlog". Mover para "Doing"/"Review"/"Done" no fluxo.
-- Importar via: Power-Up "Custom JSON Import" / Butler / script (ver `scripts/trello-import.ps1` quando criado).
+- Lista inicial = `Task` (atende como Backlog). Mover para `Doing`/`Review`/`Concluído` no fluxo.
+
+**Scripts:**
+- [`scripts/trello-import.ps1`](../scripts/trello-import.ps1) — primeira importação (cria os 15 cards do zero).
+- [`scripts/trello-update.ps1`](../scripts/trello-update.ps1) — atualiza cards existentes (adiciona checklist 🚀 Deploy + bloco 📚 Recursos no desc se ainda não tem). Idempotente.

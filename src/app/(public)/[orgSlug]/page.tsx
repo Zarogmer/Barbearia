@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, MapPin, Star, User } from "lucide-react";
+import { ArrowRight, MapPin, Star } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
-import {
-  getOrgBySlug,
-  getProfessionalsByOrg,
-  getServicesByOrg,
-} from "@/lib/mock-data";
+import { getOrgBySlug, getProfessionalsByOrg, getServicesByOrg } from "@/lib/mock-data";
 import { formatBRL, formatDuration } from "@/lib/utils";
 
 export default async function OrgLandingPage({
@@ -24,60 +19,102 @@ export default async function OrgLandingPage({
   const professionals = getProfessionalsByOrg(org.id);
 
   return (
-    <main className="mx-auto max-w-md px-4 py-6 sm:max-w-2xl">
+    <main className="mx-auto max-w-md px-5 py-5 sm:max-w-2xl">
       {/* Hero */}
-      <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 p-8 text-white">
-        <h1 className="mb-2 text-2xl font-bold sm:text-3xl">{org.name}</h1>
-        <div className="mb-1 flex items-center gap-1.5 text-sm text-slate-200">
-          <MapPin className="h-4 w-4" />
-          {org.address}
+      <section className="relative mb-6 overflow-hidden rounded-xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-ink via-ink to-[hsl(var(--brand)/0.55)]" />
+        <div className="grid-bg absolute inset-0 opacity-20" />
+        <div className="relative flex flex-col gap-3 p-6 text-[hsl(var(--surface))]">
+          <span className="mono text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">
+            Barbearia premium
+          </span>
+          <h1 className="font-display text-3xl font-extrabold leading-[1.05] tracking-tight">
+            {org.name}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span className="inline-flex items-center gap-1.5 opacity-90">
+              <MapPin className="h-3.5 w-3.5" />
+              {org.address}
+            </span>
+            <span className="inline-flex items-center gap-1 text-brand">
+              <Star className="h-3.5 w-3.5 fill-brand text-brand" />
+              <span className="num font-semibold">{org.rating.toFixed(1)}</span>
+              <span className="opacity-80">· {org.reviewsCount} avaliações</span>
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 text-sm text-slate-200">
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          {org.rating.toFixed(1)} ({org.reviewsCount} avaliações)
-        </div>
-      </div>
+      </section>
 
       {/* CTA primário */}
       <Link
         href={`/${orgSlug}/agendar`}
-        className="mb-8 flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+        className="mb-8 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
       >
         Agendar agora
-        <ArrowRight className="h-5 w-5" />
+        <ArrowRight className="h-4 w-4" />
       </Link>
 
       {/* Serviços */}
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold">Serviços</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-sm font-bold uppercase tracking-wider text-subtle">
+            Serviços
+          </h2>
+          <span className="mono text-xs text-subtle">{services.length}</span>
+        </div>
         <div className="space-y-2">
           {services.map((s) => (
-            <Card key={s.id} className="flex items-center justify-between p-4">
+            <div key={s.id} className="card-i flex items-center justify-between p-4">
               <div>
-                <div className="font-medium">{s.name}</div>
-                <div className="text-sm text-muted-foreground">{formatDuration(s.durationMinutes)}</div>
+                <div className="font-semibold">{s.name}</div>
+                <div className="mono text-xs text-subtle">
+                  {formatDuration(s.durationMinutes)}
+                </div>
               </div>
-              <div className="text-right text-base font-semibold">{formatBRL(s.priceCents)}</div>
-            </Card>
+              <div className="num text-base font-semibold">{formatBRL(s.priceCents)}</div>
+            </div>
           ))}
         </div>
       </section>
 
       {/* Profissionais */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Profissionais</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-sm font-bold uppercase tracking-wider text-subtle">
+            Profissionais
+          </h2>
+          <span className="mono text-xs text-subtle">{professionals.length}</span>
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {professionals.map((p) => (
-            <Card key={p.id} className="flex flex-col items-center p-4 text-center">
-              <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                <User className="h-8 w-8 text-muted-foreground" />
+          {professionals.map((p) => {
+            const initials = p.name
+              .split(" ")
+              .map((n) => n[0])
+              .slice(0, 2)
+              .join("");
+            return (
+              <div
+                key={p.id}
+                className="card-i flex flex-col items-center p-4 text-center"
+              >
+                <span className="avatar-ring mb-2">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3 text-sm font-bold">
+                    {initials}
+                  </span>
+                </span>
+                <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
+                <div className="text-[11px] text-subtle">
+                  {p.bio.slice(0, 24)}…
+                </div>
               </div>
-              <div className="text-sm font-medium">{p.name.split(" ")[0]}</div>
-              <div className="text-xs text-muted-foreground">{p.bio.slice(0, 30)}…</div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       </section>
+
+      <p className="mt-10 text-center mono text-[10px] text-subtle">
+        powered by <span className="text-brand">Lustro</span>
+      </p>
     </main>
   );
 }

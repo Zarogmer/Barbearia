@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" font-family="ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+    <style>
+      .title { font-size: 26px; font-weight: 700; fill: #0f172a; }
+      .subtitle { font-size: 13px; fill: #64748b; }
+      .lane-title { font-size: 14px; font-weight: 700; fill: #ffffff; }
+      .step-title { font-size: 14px; font-weight: 700; fill: #0f172a; }
+      .step-meta { font-size: 11px; fill: #475569; }
+      .mono { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #1e293b; }
+      .pill { font-size: 10px; font-weight: 700; fill: #ffffff; }
+      .legend { font-size: 12px; fill: #334155; }
+    </style>
+  </defs>
+
+  <text x="40" y="44" class="title">Fluxo de desenvolvimento — Local → Preview → Prod</text>
+  <text x="40" y="66" class="subtitle">Trunk-based · Vercel preview por PR · deploy prod automático ao merger em main · smoke manual pós-deploy</text>
+
+  <!-- ============ LANE 1: LOCAL ============ -->
+  <rect x="40" y="100" width="1200" height="170" rx="10" fill="#eff6ff" stroke="#2563eb"/>
+  <rect x="40" y="100" width="180" height="40" rx="10" fill="#2563eb"/>
+  <text x="60" y="125" class="lane-title">💻 LOCAL</text>
+  <text x="60" y="155" class="step-meta" fill="#1e3a8a">localhost:3000 · Postgres docker · .env.local</text>
+
+  <!-- Steps in Local -->
+  <g>
+    <rect x="240" y="160" width="180" height="90" rx="8" fill="#ffffff" stroke="#2563eb"/>
+    <text x="258" y="183" class="step-title">1. Pega PBI</text>
+    <text x="258" y="202" class="step-meta">Trello → Task → Doing</text>
+    <text x="258" y="216" class="step-meta">Lê bloco da PBI</text>
+    <text x="258" y="230" class="step-meta">+ docs canônicos</text>
+  </g>
+  <line x1="420" y1="205" x2="465" y2="205" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="465" y="160" width="200" height="90" rx="8" fill="#ffffff" stroke="#2563eb"/>
+    <text x="483" y="183" class="step-title">2. Branch + código</text>
+    <text x="483" y="202" class="mono">git checkout -b feat/&lt;slug&gt;</text>
+    <text x="483" y="218" class="step-meta">Implementa + testes na</text>
+    <text x="483" y="232" class="step-meta">MESMA branch</text>
+  </g>
+  <line x1="665" y1="205" x2="710" y2="205" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="710" y="160" width="240" height="90" rx="8" fill="#ffffff" stroke="#2563eb"/>
+    <text x="728" y="183" class="step-title">3. Gates locais</text>
+    <text x="728" y="202" class="mono">pnpm typecheck</text>
+    <text x="728" y="216" class="mono">pnpm lint</text>
+    <text x="728" y="230" class="mono">pnpm test:run</text>
+  </g>
+  <line x1="950" y1="205" x2="995" y2="205" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <g>
+    <rect x="995" y="160" width="220" height="90" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="1013" y="183" class="step-title" fill="#15803d">4. Push + abre PR</text>
+    <text x="1013" y="202" class="mono">git push -u origin feat/...</text>
+    <text x="1013" y="216" class="mono">gh pr create --fill</text>
+    <text x="1013" y="232" class="step-meta">→ dispara CI + preview</text>
+  </g>
+
+  <!-- Arrow to next lane -->
+  <line x1="1105" y1="250" x2="1105" y2="300" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ LANE 2: PREVIEW (dev) ============ -->
+  <rect x="40" y="310" width="1200" height="240" rx="10" fill="#faf5ff" stroke="#a855f7"/>
+  <rect x="40" y="310" width="280" height="40" rx="10" fill="#a855f7"/>
+  <text x="60" y="335" class="lane-title">🔬 PREVIEW (= ambiente dev)</text>
+  <text x="60" y="365" class="step-meta" fill="#581c87">&lt;branch&gt;--barbearia.vercel.app · Neon branch preview · 1 URL por PR</text>
+
+  <!-- CI -->
+  <g>
+    <rect x="60" y="380" width="220" height="140" rx="8" fill="#ffffff" stroke="#a855f7"/>
+    <text x="78" y="403" class="step-title">5a. CI roda</text>
+    <text x="78" y="424" class="step-meta">• lint + typecheck</text>
+    <text x="78" y="440" class="step-meta">• test-unit (coverage)</text>
+    <text x="78" y="456" class="step-meta">• test-integration (Pg)</text>
+    <text x="78" y="472" class="step-meta">• test-e2e (Playwright)</text>
+    <text x="78" y="492" class="step-meta" font-weight="700">Bloqueia merge se vermelho</text>
+    <text x="78" y="510" class="step-meta" fill="#7e22ce">PBI-13</text>
+  </g>
+
+  <line x1="280" y1="450" x2="335" y2="450" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Vercel preview -->
+  <g>
+    <rect x="335" y="380" width="240" height="140" rx="8" fill="#ffffff" stroke="#a855f7"/>
+    <text x="353" y="403" class="step-title">5b. Vercel build + deploy</text>
+    <text x="353" y="424" class="step-meta">URL única do PR aparece</text>
+    <text x="353" y="440" class="step-meta">como comment no PR.</text>
+    <text x="353" y="460" class="step-meta">Banco: Neon branch isolada</text>
+    <text x="353" y="476" class="step-meta">(reset entre PRs).</text>
+    <text x="353" y="500" class="mono">pnpm db:migrate deploy</text>
+  </g>
+
+  <line x1="575" y1="450" x2="625" y2="450" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- QA/Cliente -->
+  <g>
+    <rect x="625" y="380" width="240" height="140" rx="8" fill="#ffffff" stroke="#a855f7"/>
+    <text x="643" y="403" class="step-title">6. Smoke + QA + cliente</text>
+    <text x="643" y="424" class="step-meta">Compartilha URL do preview</text>
+    <text x="643" y="440" class="step-meta">no canal do time.</text>
+    <text x="643" y="460" class="step-meta">QA roda checklist da PBI.</text>
+    <text x="643" y="476" class="step-meta">Cliente pode validar UI</text>
+    <text x="643" y="492" class="step-meta">se for feature visível.</text>
+  </g>
+
+  <line x1="865" y1="450" x2="915" y2="450" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reviewer -->
+  <g>
+    <rect x="915" y="380" width="300" height="140" rx="8" fill="#ffffff" stroke="#a855f7"/>
+    <text x="933" y="403" class="step-title">7. Reviewer aprova</text>
+    <text x="933" y="424" class="step-meta">1 reviewer (default)</text>
+    <text x="933" y="440" class="step-meta">2 reviewers se mexe em:</text>
+    <text x="933" y="456" class="mono">prisma/ · auth · middleware · RLS</text>
+    <text x="933" y="476" class="step-meta">Pede mudanças? Volta pro</text>
+    <text x="933" y="492" class="step-meta">passo 2 (mais commits → CI</text>
+    <text x="933" y="508" class="step-meta">+ preview re-deployam auto).</text>
+  </g>
+
+  <!-- Arrow down to prod -->
+  <line x1="1065" y1="520" x2="1065" y2="580" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="1080" y="555" class="step-meta" fill="#15803d" font-weight="700">squash merge → main</text>
+
+  <!-- ============ LANE 3: PROD ============ -->
+  <rect x="40" y="590" width="1200" height="190" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+  <rect x="40" y="590" width="160" height="40" rx="10" fill="#16a34a"/>
+  <text x="60" y="615" class="lane-title">🚀 PRODUÇÃO</text>
+  <text x="60" y="645" class="step-meta" fill="#14532d">barbearia.vercel.app (custom domain v2) · Neon branch main · cliente real</text>
+
+  <g>
+    <rect x="220" y="660" width="240" height="100" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="238" y="683" class="step-title">8. Deploy automático</text>
+    <text x="238" y="703" class="step-meta">Vercel detecta push em main</text>
+    <text x="238" y="719" class="step-meta">Build + migrate deploy + go-live</text>
+    <text x="238" y="735" class="step-meta">~2-3 min do merge ao live</text>
+    <text x="238" y="752" class="step-meta" fill="#15803d" font-weight="700">Sem aprovação manual</text>
+  </g>
+
+  <line x1="460" y1="710" x2="510" y2="710" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="510" y="660" width="280" height="100" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="528" y="683" class="step-title">9. Smoke prod (3 min, manual)</text>
+    <text x="528" y="703" class="mono">GET /api/health → 200</text>
+    <text x="528" y="719" class="step-meta">Login admin demo → dashboard ok</text>
+    <text x="528" y="735" class="step-meta">Fluxo crítico da PBI funciona</text>
+    <text x="528" y="752" class="step-meta">end-to-end</text>
+  </g>
+
+  <line x1="790" y1="710" x2="840" y2="710" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="840" y="660" width="240" height="100" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="858" y="683" class="step-title">10. Trello → Concluído</text>
+    <text x="858" y="703" class="step-meta">Move card</text>
+    <text x="858" y="719" class="step-meta">Avisa cliente no canal</text>
+    <text x="858" y="735" class="step-meta">(se feature visível)</text>
+  </g>
+
+  <line x1="1080" y1="710" x2="1130" y2="710" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="1130" y="660" width="100" height="100" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="1142" y="710" class="step-title" fill="#15803d">✅ FIM</text>
+    <text x="1142" y="730" class="step-meta">PBI fechada</text>
+  </g>
+
+  <!-- ============ ROLLBACK LANE (failure) ============ -->
+  <rect x="40" y="800" width="1200" height="60" rx="10" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="60" y="822" class="step-title" fill="#b91c1c">⚠️ Smoke prod falhou? Rollback em &lt; 5 min</text>
+  <text x="60" y="843" class="step-meta">Vercel Dashboard → Deployments → ⋯ "Promote to Production" no commit anterior · OU `git revert &lt;hash&gt; && git push` (auto-deploya)</text>
+
+  <!-- Legend -->
+  <g>
+    <rect x="970" y="100" width="270" height="48" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="982" y="108" width="14" height="14" rx="3" fill="#2563eb"/><text x="1002" y="120" class="legend">Local</text>
+    <rect x="1042" y="108" width="14" height="14" rx="3" fill="#a855f7"/><text x="1062" y="120" class="legend">Preview (dev)</text>
+    <rect x="1156" y="108" width="14" height="14" rx="3" fill="#16a34a"/><text x="1176" y="120" class="legend">Prod</text>
+    <text x="982" y="140" class="legend">Tempo total típico: 30 min - 3 dias por PBI</text>
+  </g>
+</svg>

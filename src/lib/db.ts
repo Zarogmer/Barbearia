@@ -55,8 +55,16 @@ export async function withTenant<T>(
   if (!UUID_RE.test(organizationId)) {
     throw new Error("withTenant: organizationId precisa ser UUID válido");
   }
-  return prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(`SET LOCAL app.current_org_id = '${organizationId}'`);
-    return fn(tx as unknown as PrismaClient);
-  });
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.$executeRawUnsafe(`SET LOCAL app.current_org_id = '${organizationId}'`);
+      return fn(tx as unknown as PrismaClient);
+    },
+    {
+      // Railway/Neon proxy às vezes leva > 2s pra abrir conexão.
+      // Pages com vários `withTenant` em Promise.all competem pela pool.
+      maxWait: 15_000,
+      timeout: 20_000,
+    },
+  );
 }

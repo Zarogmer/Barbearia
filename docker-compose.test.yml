@@ -1,0 +1,26 @@
+# Postgres dedicado para integration tests. Sobe na porta 5433
+# (5432 fica pro DB de dev). Volume tmpfs = perde tudo no stop, o
+# que é o que queremos.
+#
+# Uso:
+#   docker compose -f docker-compose.test.yml up -d
+#   pnpm test:integration
+#   docker compose -f docker-compose.test.yml down
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: barbearia-postgres-test
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: barbearia_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 10

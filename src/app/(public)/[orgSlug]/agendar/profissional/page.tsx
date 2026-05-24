@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 
 import { StepIndicator } from "@/components/features/booking/StepIndicator";
-import { getOrgBySlug, getProfessionalsForService, getServiceById } from "@/lib/mock-data";
+import { getOrgBySlug } from "@/lib/server/orgs";
+import { listProfessionalsForService } from "@/lib/server/professionals";
+import { getActiveServiceById } from "@/lib/server/services-public";
 import { cn } from "@/lib/utils";
 
 export default async function ChooseProfessionalPage({
@@ -15,15 +17,14 @@ export default async function ChooseProfessionalPage({
 }) {
   const { orgSlug } = await params;
   const { serviceId, professionalId } = await searchParams;
-  const org = getOrgBySlug(orgSlug);
-
+  const org = await getOrgBySlug(orgSlug);
   if (!org) notFound();
   if (!serviceId) redirect(`/${orgSlug}/agendar`);
 
-  const service = getServiceById(serviceId);
+  const service = await getActiveServiceById(org.id, serviceId);
   if (!service) redirect(`/${orgSlug}/agendar`);
 
-  const professionals = getProfessionalsForService(org.id, serviceId);
+  const professionals = await listProfessionalsForService(org.id, serviceId);
   const selected = professionalId;
   const baseQs = `serviceId=${serviceId}`;
 
@@ -77,50 +78,58 @@ export default async function ChooseProfessionalPage({
         </div>
       </Link>
 
-      <div className="mb-4 flex items-center gap-3">
-        <div className="h-px flex-1 bg-line" />
-        <span className="mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
-          ou escolha
-        </span>
-        <div className="h-px flex-1 bg-line" />
-      </div>
+      {professionals.length > 0 && (
+        <>
+          <div className="mb-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-line" />
+            <span className="mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+              ou escolha
+            </span>
+            <div className="h-px flex-1 bg-line" />
+          </div>
 
-      <div className="mb-6 flex-1 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {professionals.map((p) => {
-          const initials = p.name
-            .split(" ")
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join("");
-          const isSelected = selected === p.id;
-          return (
-            <Link
-              key={p.id}
-              href={`/${orgSlug}/agendar/profissional?${baseQs}&professionalId=${p.id}`}
-              replace
-              className={cn(
-                "flex flex-col items-center rounded-md border bg-surface p-4 text-center transition-all",
-                isSelected
-                  ? "border-brand shadow-glow"
-                  : "border-line hover:-translate-y-px hover:border-brand",
-              )}
-            >
-              <span className="avatar-ring mb-2">
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3 text-sm font-bold">
-                  {initials}
-                </span>
-              </span>
-              <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
-              <div className="text-[10px] text-subtle">{p.bio.slice(0, 22)}…</div>
-              {isSelected && (
-                <span className="mt-1 mono text-[9px] font-semibold uppercase tracking-wider text-brand">
-                  Selecionado
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </div>
+          <div className="mb-6 grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3">
+            {professionals.map((p) => {
+              const initials = p.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
+              const isSelected = selected === p.id;
+              const shortBio = p.bio?.slice(0, 22) ?? "";
+              return (
+                <Link
+                  key={p.id}
+                  href={`/${orgSlug}/agendar/profissional?${baseQs}&professionalId=${p.id}`}
+                  replace
+                  className={cn(
+                    "flex flex-col items-center rounded-md border bg-surface p-4 text-center transition-all",
+                    isSelected
+                      ? "border-brand shadow-glow"
+                      : "border-line hover:-translate-y-px hover:border-brand",
+                  )}
+                >
+                  <span className="avatar-ring mb-2">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-3 text-sm font-bold">
+                      {initials}
+                    </span>
+                  </span>
+                  <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
+                  {shortBio && (
+                    <div className="text-[10px] text-subtle">{shortBio}…</div>
+                  )}
+                  {isSelected && (
+                    <span className="mt-1 mono text-[9px] font-semibold uppercase tracking-wider text-brand">
+                      Selecionado
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <Link
         href={nextHref}

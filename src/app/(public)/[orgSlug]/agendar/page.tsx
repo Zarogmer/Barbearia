@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { StepIndicator } from "@/components/features/booking/StepIndicator";
-import { getOrgBySlug, getServicesByOrg } from "@/lib/mock-data";
-import { formatBRL, formatDuration } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { getOrgBySlug } from "@/lib/server/orgs";
+import { listActiveServices } from "@/lib/server/services-public";
+import { cn, formatBRL, formatDuration } from "@/lib/utils";
 
 export default async function ChooseServicePage({
   params,
@@ -16,11 +16,10 @@ export default async function ChooseServicePage({
 }) {
   const { orgSlug } = await params;
   const { serviceId: selected } = await searchParams;
-  const org = getOrgBySlug(orgSlug);
-
+  const org = await getOrgBySlug(orgSlug);
   if (!org) notFound();
 
-  const services = getServicesByOrg(org.id);
+  const services = await listActiveServices(org.id);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
@@ -41,51 +40,52 @@ export default async function ChooseServicePage({
       <p className="mb-6 text-sm text-subtle">Selecione um para continuar.</p>
 
       <div className="mb-6 flex-1 space-y-2">
-        {services.map((s) => {
-          const isSelected = selected === s.id;
-          return (
-            <Link
-              key={s.id}
-              href={`/${orgSlug}/agendar?serviceId=${s.id}`}
-              replace
-              className={cn(
-                "block rounded-md border bg-surface p-4 transition-all",
-                isSelected
-                  ? "border-brand bg-brand-soft shadow-glow"
-                  : "border-line hover:-translate-y-px hover:border-brand",
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                    isSelected ? "border-brand" : "border-line",
-                  )}
-                >
-                  {isSelected && (
-                    <span className="h-2 w-2 rounded-full bg-brand animate-pop-in" />
-                  )}
-                </span>
-                <div className="flex-1">
-                  <div className="font-semibold">{s.name}</div>
-                  <div
+        {services.length === 0 ? (
+          <p className="mono text-xs text-subtle">
+            Nenhum serviço disponível no momento.
+          </p>
+        ) : (
+          services.map((s) => {
+            const isSelected = selected === s.id;
+            return (
+              <Link
+                key={s.id}
+                href={`/${orgSlug}/agendar?serviceId=${s.id}`}
+                replace
+                className={cn(
+                  "block rounded-md border bg-surface p-4 transition-all",
+                  isSelected
+                    ? "border-brand bg-brand-soft shadow-glow"
+                    : "border-line hover:-translate-y-px hover:border-brand",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span
                     className={cn(
-                      "mono text-xs",
-                      isSelected ? "text-brand" : "text-subtle",
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                      isSelected ? "border-brand" : "border-line",
                     )}
                   >
-                    {formatDuration(s.durationMinutes)} · {formatBRL(s.priceCents)}
+                    {isSelected && (
+                      <span className="h-2 w-2 rounded-full bg-brand animate-pop-in" />
+                    )}
+                  </span>
+                  <div className="flex-1">
+                    <div className="font-semibold">{s.name}</div>
+                    <div
+                      className={cn(
+                        "mono text-xs",
+                        isSelected ? "text-brand" : "text-subtle",
+                      )}
+                    >
+                      {formatDuration(s.durationMinutes)} · {formatBRL(s.priceCents)}
+                    </div>
                   </div>
                 </div>
-                {s.id === "svc-3" && (
-                  <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand">
-                    Popular
-                  </span>
-                )}
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })
+        )}
       </div>
 
       <Link

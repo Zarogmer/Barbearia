@@ -1,49 +1,116 @@
 import Link from "next/link";
-import { Scissors, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Scissors, LayoutDashboard, Sparkles } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-4 py-12 text-center">
-      <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-        <Scissors className="h-8 w-8" />
-      </div>
+    <main className="relative min-h-screen overflow-hidden">
+      <div className="grid-bg absolute inset-0 opacity-40" />
 
-      <h1 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">Barbearia SaaS</h1>
-      <p className="mb-8 max-w-md text-muted-foreground">
-        Protótipo navegável do sistema de agendamento. Explore os dois fluxos abaixo.
-      </p>
+      <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="eyebrow mb-6">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
+          Protótipo · MVP em 7 dias
+        </div>
 
-      <div className="grid w-full gap-4 sm:grid-cols-2">
-        <Link href="/barbearia-demo" className="block">
-          <div className="group h-full rounded-xl border bg-card p-6 text-left shadow-sm transition-all hover:border-primary hover:shadow-md">
-            <Scissors className="mb-3 h-6 w-6 text-primary" />
-            <h2 className="mb-1 font-semibold">Fluxo do cliente</h2>
-            <p className="text-sm text-muted-foreground">
-              Veja como um cliente agenda um corte em 4 passos.
+        <h1 className="mb-5 text-5xl font-extrabold leading-[0.95] tracking-tight md:text-7xl">
+          Agendar virou{" "}
+          <span className="relative">
+            <span className="serif italic text-brand">arte</span>
+            <svg
+              aria-hidden
+              className="absolute -bottom-2 left-0 w-full"
+              viewBox="0 0 200 12"
+              fill="none"
+            >
+              <path
+                d="M2 9C50 3 100 3 198 9"
+                stroke="hsl(var(--brand))"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+          .
+        </h1>
+
+        <p className="mb-10 max-w-xl text-lg leading-relaxed text-subtle">
+          Sistema multi-tenant de agendamento para barbearias e salões. Cliente agenda em 4 toques.
+          Dono gerencia tudo do desktop.{" "}
+          <span className="font-medium text-ink">Premium, rápido, sem fricção.</span>
+        </p>
+
+        <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+          <Link
+            href="/barbearia-demo"
+            className="group relative overflow-hidden rounded-lg border border-line bg-surface p-6 text-left transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-lg"
+          >
+            <div className="absolute right-4 top-4 text-subtle transition-colors group-hover:text-brand">
+              <ArrowRight className="h-5 w-5" />
+            </div>
+            <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-md bg-brand-soft text-brand">
+              <Scissors className="h-5 w-5" />
+            </div>
+            <h2 className="mb-1.5 font-display text-lg font-bold tracking-tight">
+              Fluxo do cliente
+            </h2>
+            <p className="text-sm text-subtle">
+              Veja como um cliente agenda um corte em 4 passos pelo celular.
             </p>
-            <span className="mt-3 inline-flex items-center text-sm font-medium text-primary group-hover:underline">
-              Acessar barbearia demo →
+            <span className="mono mt-4 inline-block text-[10px] uppercase tracking-wider text-subtle">
+              /barbearia-demo
             </span>
-          </div>
-        </Link>
+          </Link>
 
-        <Link href="/admin/dashboard" className="block">
-          <div className="group h-full rounded-xl border bg-card p-6 text-left shadow-sm transition-all hover:border-primary hover:shadow-md">
-            <LayoutDashboard className="mb-3 h-6 w-6 text-primary" />
-            <h2 className="mb-1 font-semibold">Painel admin</h2>
-            <p className="text-sm text-muted-foreground">
-              Visão do dono da barbearia: agenda, serviços, profissionais.
+          <Link
+            href="/admin/dashboard"
+            className="group relative overflow-hidden rounded-lg border border-line bg-surface p-6 text-left transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-lg"
+          >
+            <div className="absolute right-4 top-4 text-subtle transition-colors group-hover:text-brand">
+              <ArrowRight className="h-5 w-5" />
+            </div>
+            <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-md bg-brand-soft text-brand">
+              <LayoutDashboard className="h-5 w-5" />
+            </div>
+            <h2 className="mb-1.5 font-display text-lg font-bold tracking-tight">
+              Painel admin
+            </h2>
+            <p className="text-sm text-subtle">
+              Visão do dono: agenda do dia, KPIs, serviços, profissionais.
             </p>
-            <span className="mt-3 inline-flex items-center text-sm font-medium text-primary group-hover:underline">
-              Entrar no painel →
+            <span className="mono mt-4 inline-block text-[10px] uppercase tracking-wider text-subtle">
+              /admin/dashboard
             </span>
-          </div>
-        </Link>
-      </div>
+          </Link>
+        </div>
 
-      <p className="mt-12 text-xs text-muted-foreground">
-        D1 do MVP · dados mockados · veja a pasta <code className="rounded bg-muted px-1.5 py-0.5">docs/</code>
-      </p>
+        <div className="mt-12 grid grid-cols-3 gap-8">
+          <div>
+            <div className="num text-3xl font-extrabold text-ink">15</div>
+            <div className="text-xs text-subtle">PBIs no backlog</div>
+          </div>
+          <div>
+            <div className="num text-3xl font-extrabold text-ink">4</div>
+            <div className="text-xs text-subtle">toques pra agendar</div>
+          </div>
+          <div>
+            <div className="num text-3xl font-extrabold text-ink">3</div>
+            <div className="text-xs text-subtle">paletas</div>
+          </div>
+        </div>
+
+        <div className="mt-10 flex items-center gap-2 text-xs text-subtle">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>
+            Showcase do design system:{" "}
+            <a
+              href="/prototipo/"
+              className="text-brand underline-offset-4 hover:underline"
+            >
+              docs/prototipo
+            </a>
+          </span>
+        </div>
+      </div>
     </main>
   );
 }

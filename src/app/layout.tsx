@@ -53,7 +53,10 @@ export default function RootLayout({
       data-theme="charcoal"
       className={`${inter.variable} ${jakarta.variable} ${jetbrains.variable} ${instrument.variable}`}
     >
-      <body className="min-h-screen bg-surface font-sans text-ink antialiased">
+      <body
+        className="min-h-screen bg-surface font-sans text-ink antialiased"
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

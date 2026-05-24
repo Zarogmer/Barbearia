@@ -4,11 +4,14 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Check, Loader2, Plus } from "lucide-react";
 
-import { createServiceAction, updateServiceAction } from "@/app/admin/servicos/actions";
 import {
-  initialServiceState,
-  type ServiceActionState,
-} from "@/app/admin/servicos/state";
+  createProfessionalAction,
+  updateProfessionalAction,
+} from "@/app/admin/profissionais/actions";
+import {
+  initialProfessionalState,
+  type ProfessionalActionState,
+} from "@/app/admin/profissionais/state";
 import {
   Dialog,
   DialogContent,
@@ -21,31 +24,30 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
-export type ProfessionalOption = { id: string; name: string; active: boolean };
+export type ServiceOption = { id: string; name: string };
 
-export type ServiceDefaults = {
+export type ProfessionalDefaults = {
   id: string;
   name: string;
-  description: string | null;
-  durationMinutes: number;
-  priceCents: number;
+  bio: string | null;
+  photoUrl: string | null;
   active: boolean;
-  professionalIds: string[];
+  serviceIds: string[];
 };
 
 type Props = {
   mode: "create" | "edit";
-  professionals: ProfessionalOption[];
-  defaults?: ServiceDefaults;
+  services: ServiceOption[];
+  defaults?: ProfessionalDefaults;
   trigger: React.ReactNode;
 };
 
-export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Props) {
+export function ProfessionalFormDialog({ mode, services, defaults, trigger }: Props) {
   const [open, setOpen] = useState(false);
-  const action = mode === "create" ? createServiceAction : updateServiceAction;
-  const [state, dispatch] = useActionState<ServiceActionState, FormData>(
+  const action = mode === "create" ? createProfessionalAction : updateProfessionalAction;
+  const [state, dispatch] = useActionState<ProfessionalActionState, FormData>(
     action,
-    initialServiceState,
+    initialProfessionalState,
   );
 
   useEffect(() => {
@@ -58,12 +60,12 @@ export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Pr
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-lg font-bold">
-            {mode === "create" ? "Novo serviço" : "Editar serviço"}
+            {mode === "create" ? "Novo profissional" : "Editar profissional"}
           </DialogTitle>
           <DialogDescription className="text-xs text-subtle">
             {mode === "create"
-              ? "Cadastre um novo serviço do catálogo."
-              : "Atualize os detalhes do serviço."}
+              ? "Cadastre um membro da equipe. Horários e bloqueios são configurados depois."
+              : "Atualize dados básicos. Horários ficam na página de detalhe."}
           </DialogDescription>
         </DialogHeader>
 
@@ -86,51 +88,30 @@ export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Pr
             id="name"
             label="Nome *"
             defaultValue={defaults?.name}
-            placeholder="Ex: Corte degradê"
+            placeholder="Ex: João Silva"
             required
             error={state.fieldErrors?.name}
           />
-
+          <Textarea
+            id="bio"
+            label="Bio"
+            defaultValue={defaults?.bio ?? ""}
+            placeholder="Especialidades, anos de experiência (opcional)"
+            error={state.fieldErrors?.bio}
+          />
           <Field
-            id="description"
-            label="Descrição"
-            defaultValue={defaults?.description ?? ""}
-            placeholder="O que está incluso (opcional)"
-            error={state.fieldErrors?.description}
+            id="photoUrl"
+            label="URL da foto"
+            type="url"
+            defaultValue={defaults?.photoUrl ?? ""}
+            placeholder="https://..."
+            error={state.fieldErrors?.photoUrl}
           />
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field
-              id="durationMinutes"
-              label="Duração *"
-              type="number"
-              defaultValue={defaults?.durationMinutes?.toString()}
-              placeholder="30"
-              suffix="min"
-              required
-              error={state.fieldErrors?.durationMinutes}
-              mono
-            />
-            <Field
-              id="priceCents"
-              label="Preço *"
-              type="number"
-              step="0.01"
-              defaultValue={
-                defaults ? (defaults.priceCents / 100).toFixed(2) : undefined
-              }
-              placeholder="50,00"
-              prefix="R$"
-              required
-              error={state.fieldErrors?.priceCents}
-              mono
-            />
-          </div>
-
-          <ProfessionalsMultiSelect
-            professionals={professionals}
-            defaultSelected={defaults?.professionalIds ?? []}
-            error={state.fieldErrors?.professionalIds}
+          <ServicesMultiSelect
+            services={services}
+            defaultSelected={defaults?.serviceIds ?? []}
+            error={state.fieldErrors?.serviceIds}
           />
 
           <ActiveToggle defaultActive={defaults?.active ?? true} />
@@ -187,22 +168,14 @@ function Field({
   placeholder,
   required,
   error,
-  suffix,
-  prefix,
-  step,
-  mono,
 }: {
   id: string;
   label: string;
   type?: string;
-  defaultValue?: string | number;
+  defaultValue?: string;
   placeholder?: string;
   required?: boolean;
   error?: string;
-  suffix?: string;
-  prefix?: string;
-  step?: string;
-  mono?: boolean;
 }) {
   return (
     <div>
@@ -212,43 +185,72 @@ function Field({
       >
         {label}
       </label>
-      <div
+      <input
+        id={id}
+        name={id}
+        type={type}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        required={required}
+        aria-invalid={!!error}
         className={cn(
-          "flex h-11 items-center rounded-lg border bg-surface transition-all focus-within:border-brand focus-within:shadow-glow",
-          error ? "border-danger" : "border-line",
+          "h-11 w-full rounded-lg border bg-surface px-3.5 text-sm outline-none transition-all",
+          error
+            ? "border-danger focus:shadow-[0_0_0_4px_hsl(var(--danger)/0.18)]"
+            : "border-line focus:border-brand focus:shadow-glow",
         )}
-      >
-        {prefix && (
-          <span className="pl-3 mono text-xs text-subtle">{prefix}</span>
-        )}
-        <input
-          id={id}
-          name={id}
-          type={type}
-          step={step}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          required={required}
-          className={cn(
-            "flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-subtle/60",
-            mono && "mono",
-          )}
-        />
-        {suffix && (
-          <span className="pr-3 mono text-xs text-subtle">{suffix}</span>
-        )}
-      </div>
+      />
       {error && <p className="mt-1 text-[11px] text-danger">{error}</p>}
     </div>
   );
 }
 
-function ProfessionalsMultiSelect({
-  professionals,
+function Textarea({
+  id,
+  label,
+  defaultValue,
+  placeholder,
+  error,
+}: {
+  id: string;
+  label: string;
+  defaultValue?: string;
+  placeholder?: string;
+  error?: string;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+      >
+        {label}
+      </label>
+      <textarea
+        id={id}
+        name={id}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        rows={3}
+        aria-invalid={!!error}
+        className={cn(
+          "w-full rounded-lg border bg-surface px-3.5 py-2 text-sm outline-none transition-all",
+          error
+            ? "border-danger focus:shadow-[0_0_0_4px_hsl(var(--danger)/0.18)]"
+            : "border-line focus:border-brand focus:shadow-glow",
+        )}
+      />
+      {error && <p className="mt-1 text-[11px] text-danger">{error}</p>}
+    </div>
+  );
+}
+
+function ServicesMultiSelect({
+  services,
   defaultSelected,
   error,
 }: {
-  professionals: ProfessionalOption[];
+  services: ServiceOption[];
   defaultSelected: string[];
   error?: string;
 }) {
@@ -266,41 +268,36 @@ function ProfessionalsMultiSelect({
   return (
     <div>
       <label className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
-        Profissionais
+        Serviços que executa
       </label>
-      {professionals.length === 0 ? (
+      {services.length === 0 ? (
         <p className="mono text-[11px] text-subtle">
-          Nenhum profissional cadastrado. Cadastre primeiro em <span className="text-ink">/admin/profissionais</span>.
+          Nenhum serviço cadastrado. Cadastre primeiro em{" "}
+          <span className="text-ink">/admin/servicos</span>.
         </p>
       ) : (
         <div className="space-y-1.5">
-          {professionals.map((p) => {
-            const isSelected = selected.has(p.id);
+          {services.map((s) => {
+            const isSelected = selected.has(s.id);
             return (
               <label
-                key={p.id}
+                key={s.id}
                 className={cn(
                   "flex cursor-pointer items-center gap-2.5 rounded-lg border bg-surface px-3 py-2 transition-colors",
                   isSelected
                     ? "border-brand bg-brand-soft"
                     : "border-line hover:bg-surface-2",
-                  !p.active && "opacity-60",
                 )}
               >
                 <input
                   type="checkbox"
-                  name="professionalIds"
-                  value={p.id}
+                  name="serviceIds"
+                  value={s.id}
                   checked={isSelected}
-                  onChange={() => toggle(p.id)}
+                  onChange={() => toggle(s.id)}
                   className="h-4 w-4 rounded border-line accent-[hsl(var(--brand))]"
                 />
-                <span className="text-sm font-medium">{p.name}</span>
-                {!p.active && (
-                  <span className="mono text-[9px] uppercase tracking-wider text-subtle">
-                    inativo
-                  </span>
-                )}
+                <span className="text-sm font-medium">{s.name}</span>
               </label>
             );
           })}
@@ -318,33 +315,28 @@ function ActiveToggle({ defaultActive }: { defaultActive: boolean }) {
       <div>
         <div className="text-sm font-medium">Ativo</div>
         <div className="text-[11px] text-subtle">
-          Quando inativo, não aparece no fluxo de agendamento.
+          Inativo não aparece para clientes. Agendamentos futuros não são cancelados.
         </div>
       </div>
-      <Switch
-        name="active"
-        checked={checked}
-        onCheckedChange={setChecked}
-      />
-      {/* Switch do shadcn não popula FormData. Hidden input replica o valor. */}
+      <Switch name="active" checked={checked} onCheckedChange={setChecked} />
       <input type="hidden" name="active" value={checked ? "true" : "false"} />
     </div>
   );
 }
 
-export function NewServiceTrigger() {
+export function NewProfessionalTrigger() {
   return (
     <button
       type="button"
       className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
     >
       <Plus className="h-4 w-4" />
-      Novo serviço
+      Novo profissional
     </button>
   );
 }
 
-export function EditServiceTrigger({ name }: { name: string }) {
+export function EditProfessionalTrigger({ name }: { name: string }) {
   return (
     <button
       type="button"
@@ -352,27 +344,20 @@ export function EditServiceTrigger({ name }: { name: string }) {
       className="rounded-md p-2 text-subtle transition-colors hover:bg-surface-2 hover:text-ink"
     >
       <span className="sr-only">Editar</span>
-      <Pencil />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
     </button>
   );
 }
-
-function Pencil() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z" />
-    </svg>
-  );
-}
-

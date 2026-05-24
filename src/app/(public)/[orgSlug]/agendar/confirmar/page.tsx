@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { StepIndicator } from "@/components/features/booking/StepIndicator";
 import {
   getOrgBySlug,
@@ -45,80 +44,91 @@ export default async function ConfirmPage({
 
   const [yyyy, mm, dd] = sp.date.split("-");
   const friendlyDate = `${dd}/${mm}/${yyyy}`;
-
-  // Prototype: clicking "confirmar" redirects to a fake confirmation page.
   const fakeId = "demo-" + Math.random().toString(36).slice(2, 8);
 
   return (
-    <main className="mx-auto max-w-md px-4 py-6 sm:max-w-2xl">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
+      <header className="mb-6 flex items-center justify-between">
         <Link
           href={`/${orgSlug}/agendar/horario?serviceId=${sp.serviceId}&professionalId=${sp.professionalId}&date=${sp.date}`}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           Voltar
         </Link>
         <StepIndicator current={4} total={4} />
-      </div>
+      </header>
 
-      <h1 className="mb-1 text-2xl font-bold">Confirme seus dados</h1>
-      <p className="mb-6 text-sm text-muted-foreground">Revise o pedido e preencha seus dados.</p>
+      <h1 className="mb-1.5 font-display text-2xl font-extrabold tracking-tight">Quase lá</h1>
+      <p className="mb-6 text-sm text-subtle">Confira o resumo e preencha seus dados.</p>
 
-      <Card className="mb-6 p-4">
+      {/* Resumo */}
+      <section className="mb-5 rounded-md border border-line bg-surface-2 p-4">
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Serviço</dt>
-            <dd className="font-medium">{service.name}</dd>
+            <dt className="text-subtle">Serviço</dt>
+            <dd className="font-semibold">{service.name}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Profissional</dt>
-            <dd className="font-medium">{professional.name}</dd>
+            <dt className="text-subtle">Profissional</dt>
+            <dd className="font-semibold">{professional.name}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Data</dt>
-            <dd className="font-medium">{friendlyDate}</dd>
+            <dt className="text-subtle">Data</dt>
+            <dd className="mono font-semibold">{friendlyDate}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Horário</dt>
-            <dd className="font-medium">{sp.time}</dd>
+            <dt className="text-subtle">Horário</dt>
+            <dd className="mono font-semibold">{sp.time}</dd>
           </div>
-          <div className="my-2 h-px bg-border" />
-          <div className="flex justify-between">
-            <dt className="text-muted-foreground">Total</dt>
-            <dd className="text-base font-bold">{formatBRL(service.priceCents)}</dd>
+          <div className="my-1.5 h-px bg-line" />
+          <div className="flex items-baseline justify-between">
+            <dt className="text-subtle">Total</dt>
+            <dd className="font-display text-lg font-extrabold">
+              {formatBRL(service.priceCents)}
+            </dd>
           </div>
         </dl>
-      </Card>
+      </section>
 
-      <form action={`/${orgSlug}/agendamento/${fakeId}`} className="space-y-4">
+      {/* Form */}
+      <form action={`/${orgSlug}/agendamento/${fakeId}`} className="space-y-3.5">
         <div>
-          <label htmlFor="name" className="mb-1 block text-sm font-medium">
-            Nome <span className="text-destructive">*</span>
+          <label
+            htmlFor="name"
+            className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+          >
+            Nome *
           </label>
           <input
             id="name"
             name="name"
             required
             placeholder="Seu nome completo"
-            className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
+            className="h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-sm outline-none transition-all focus:border-brand focus:shadow-glow"
           />
         </div>
         <div>
-          <label htmlFor="phone" className="mb-1 block text-sm font-medium">
-            Telefone (WhatsApp)
+          <label
+            htmlFor="phone"
+            className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+          >
+            WhatsApp
           </label>
           <input
             id="phone"
             name="phone"
             type="tel"
             placeholder="(11) 99999-8888"
-            className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="mono h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-sm outline-none transition-all focus:border-brand focus:shadow-glow"
           />
         </div>
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium">
-            Email <span className="text-destructive">*</span>
+          <label
+            htmlFor="email"
+            className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+          >
+            Email *
           </label>
           <input
             id="email"
@@ -126,28 +136,32 @@ export default async function ConfirmPage({
             type="email"
             required
             placeholder="voce@email.com"
-            className="h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-sm outline-none transition-all focus:border-brand focus:shadow-glow"
           />
         </div>
 
-        <label className="flex items-start gap-2 pt-2 text-sm">
-          <input type="checkbox" required className="mt-1 h-4 w-4 rounded border" />
-          <span className="text-muted-foreground">
-            Concordo com os <a className="underline">termos de uso</a> e{" "}
-            <a className="underline">política de privacidade</a>.
+        <label className="flex items-start gap-2.5 pt-1 text-xs">
+          <input
+            type="checkbox"
+            required
+            className="mt-0.5 h-4 w-4 rounded border-line accent-[hsl(var(--brand))]"
+          />
+          <span className="text-subtle">
+            Concordo com os <span className="text-ink underline-offset-2 hover:underline">termos de cancelamento</span>{" "}
+            (cancelar até 2h antes).
           </span>
         </label>
 
         <button
           type="submit"
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-semibold text-primary-foreground transition hover:bg-primary/90"
+          className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
         >
-          <Check className="h-5 w-5" />
+          <Check className="h-4 w-4" />
           Confirmar agendamento
         </button>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Protótipo · em produção, isso dispara Server Action com validação Zod (PBI-08).
+        <p className="text-center mono text-[10px] text-subtle">
+          protótipo · em produção dispara Server Action com Zod (PBI-08)
         </p>
       </form>
     </main>

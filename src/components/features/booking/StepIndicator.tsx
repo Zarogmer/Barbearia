@@ -8,20 +8,16 @@ type StepIndicatorProps = {
 
 export function StepIndicator({ current, total, className }: StepIndicatorProps) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <span className="text-sm text-muted-foreground">
-        Passo {current}/{total}
+    <div className={cn("flex items-center gap-2.5", className)}>
+      <span className="mono text-[11px] font-medium uppercase tracking-wider text-subtle">
+        Passo {current} de {total}
       </span>
-      <div className="flex gap-1">
-        {Array.from({ length: total }).map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              "h-1.5 w-6 rounded-full",
-              i < current ? "bg-primary" : "bg-muted",
-            )}
-          />
-        ))}
+      <div className="flex items-center gap-1.5">
+        {Array.from({ length: total }).map((_, i) => {
+          const state =
+            i + 1 < current ? "done" : i + 1 === current ? "active" : "pending";
+          return <span key={i} className="step-dot" data-state={state} />;
+        })}
       </div>
     </div>
   );

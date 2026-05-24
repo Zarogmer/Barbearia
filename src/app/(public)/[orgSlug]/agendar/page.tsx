@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { StepIndicator } from "@/components/features/booking/StepIndicator";
 import { getOrgBySlug, getServicesByOrg } from "@/lib/mock-data";
 import { formatBRL, formatDuration } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export default async function ChooseServicePage({
   params,
@@ -23,65 +23,83 @@ export default async function ChooseServicePage({
   const services = getServicesByOrg(org.id);
 
   return (
-    <main className="mx-auto max-w-md px-4 py-6 sm:max-w-2xl">
-      <div className="mb-6 flex items-center justify-between">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
+      <header className="mb-6 flex items-center justify-between">
         <Link
           href={`/${orgSlug}`}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-subtle transition-colors hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           Voltar
         </Link>
         <StepIndicator current={1} total={4} />
-      </div>
+      </header>
 
-      <h1 className="mb-1 text-2xl font-bold">Escolha o serviço</h1>
-      <p className="mb-6 text-sm text-muted-foreground">Selecione o que deseja fazer hoje.</p>
+      <h1 className="mb-1.5 font-display text-2xl font-extrabold tracking-tight">
+        Escolha o serviço
+      </h1>
+      <p className="mb-6 text-sm text-subtle">Selecione um para continuar.</p>
 
-      <div className="mb-6 space-y-2">
+      <div className="mb-6 flex-1 space-y-2">
         {services.map((s) => {
           const isSelected = selected === s.id;
           return (
-            <Link key={s.id} href={`/${orgSlug}/agendar?serviceId=${s.id}`} replace>
-              <Card
-                className={`flex items-center justify-between p-4 transition ${
-                  isSelected ? "border-primary ring-2 ring-primary" : "hover:border-foreground/30"
-                }`}
-              >
-                <div className="flex items-center gap-3">
+            <Link
+              key={s.id}
+              href={`/${orgSlug}/agendar?serviceId=${s.id}`}
+              replace
+              className={cn(
+                "block rounded-md border bg-surface p-4 transition-all",
+                isSelected
+                  ? "border-brand bg-brand-soft shadow-glow"
+                  : "border-line hover:-translate-y-px hover:border-brand",
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                    isSelected ? "border-brand" : "border-line",
+                  )}
+                >
+                  {isSelected && (
+                    <span className="h-2 w-2 rounded-full bg-brand animate-pop-in" />
+                  )}
+                </span>
+                <div className="flex-1">
+                  <div className="font-semibold">{s.name}</div>
                   <div
-                    className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${
-                      isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
-                    }`}
+                    className={cn(
+                      "mono text-xs",
+                      isSelected ? "text-brand" : "text-subtle",
+                    )}
                   >
-                    {isSelected && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
-                  </div>
-                  <div>
-                    <div className="font-medium">{s.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDuration(s.durationMinutes)} · {formatBRL(s.priceCents)}
-                    </div>
+                    {formatDuration(s.durationMinutes)} · {formatBRL(s.priceCents)}
                   </div>
                 </div>
-              </Card>
+                {s.id === "svc-3" && (
+                  <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand">
+                    Popular
+                  </span>
+                )}
+              </div>
             </Link>
           );
         })}
       </div>
 
       <Link
-        href={
-          selected ? `/${orgSlug}/agendar/profissional?serviceId=${selected}` : "#"
-        }
+        href={selected ? `/${orgSlug}/agendar/profissional?serviceId=${selected}` : "#"}
         aria-disabled={!selected}
-        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-base font-semibold transition ${
+        className={cn(
+          "sticky bottom-4 flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all",
           selected
-            ? "bg-primary text-primary-foreground hover:bg-primary/90"
-            : "cursor-not-allowed bg-muted text-muted-foreground"
-        }`}
+            ? "bg-ink text-surface shadow-sm hover:-translate-y-px hover:shadow-md"
+            : "pointer-events-none cursor-not-allowed bg-surface-2 text-subtle",
+        )}
       >
         Continuar
-        <ArrowRight className="h-5 w-5" />
+        <ArrowRight className="h-4 w-4" />
       </Link>
     </main>
   );

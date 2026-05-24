@@ -92,9 +92,12 @@ docs/            # documentação técnica e de produto
 
 ## Documentação
 
-Toda documentação técnica e de produto está em [`docs/`](docs/). Comece pelo [overview](docs/00-overview.md).
+- 📚 **[Wiki](docs/wiki/)** — portal de navegação: por onde começar como humano novo ou como agente IA.
+- 📑 **[Docs canônicos](docs/)** (`01..11`) — fonte de verdade sobre produto, arquitetura, regras de negócio.
+- 🗺️ **[Diagramas](docs/diagramas/index.html)** — 4 SVGs visualizáveis no browser.
+- 🗂️ **[Board Trello](https://trello.com/b/hYZHvqGV/barbearia)** — 15 PBIs em Backlog/Doing/Review/Done.
 
-**Para agentes de IA:** leia [CLAUDE.md](CLAUDE.md) antes de propor mudanças.
+**Para agentes de IA:** leia [CLAUDE.md](CLAUDE.md) + [docs/wiki/bots/](docs/wiki/bots/) antes de propor mudanças.
 
 ## Licença
 

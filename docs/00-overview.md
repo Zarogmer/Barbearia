@@ -2,6 +2,8 @@
 
 Este diretório é a **fonte única de verdade** sobre o produto, a arquitetura e como trabalhamos. Atualize aqui antes (ou junto) das mudanças de código — docs desatualizado é pior que doc inexistente.
 
+> 💡 Se você está chegando ao projeto agora (humano ou agente), comece pela [**Wiki**](wiki/) — é o portal de navegação com trilhas por papel, FAQ, glossário e reading order pra agentes.
+
 ## Mapa dos documentos
 
 | # | Doc | Tema | Audiência primária |

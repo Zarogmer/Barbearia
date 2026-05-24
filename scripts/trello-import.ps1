@@ -62,13 +62,29 @@ $labelColors = @{
     'p2'        = 'yellow'
 }
 
-# Como mapear listas conceituais do JSON → listas reais do board
-# Usuário escolheu: manter "Task" e "Concluído", criar "Doing" e "Review", "Ideias" fica fora.
+# Como mapear listas conceituais do JSON → listas reais do board.
+# Usuário escolheu: manter "Task" (=Backlog) e "Concluído" (=Done),
+# criar "Doing" e "Review", "Ideias" fica como parking lot.
+# Strings são ASCII para evitar drama com encoding no Windows PowerShell 5.1.
+# O matching no board é por SLUG normalizado, então "concluido" bate "Concluído".
 $listMap = @{
-    'backlog' = 'Task'        # já existe
-    'doing'   = 'Doing'       # criar
-    'review'  = 'Review'      # criar
-    'done'    = 'Concluído'   # já existe
+    'backlog' = @{ trelloName = 'Task';       create = $false; matchSlug = 'task' }
+    'doing'   = @{ trelloName = 'Doing';      create = $true;  matchSlug = 'doing' }
+    'review'  = @{ trelloName = 'Review';     create = $true;  matchSlug = 'review' }
+    'done'    = @{ trelloName = 'Concluido';  create = $false; matchSlug = 'concluido' }
+}
+
+function ConvertTo-Slug {
+    param([string]$s)
+    # Remove acentos via normalização Unicode (FormD remove diacríticos)
+    $normalized = $s.Normalize([System.Text.NormalizationForm]::FormD)
+    $sb = New-Object System.Text.StringBuilder
+    foreach ($ch in $normalized.ToCharArray()) {
+        if ([System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($ch) -ne [System.Globalization.UnicodeCategory]::NonSpacingMark) {
+            [void]$sb.Append($ch)
+        }
+    }
+    return ($sb.ToString() -replace '[^a-zA-Z0-9]', '').ToLower()
 }
 
 function Invoke-Trello {
@@ -92,32 +108,54 @@ Write-Host ""
 Write-Host "=== Importando $JsonPath para board $BoardId ===" -ForegroundColor Cyan
 Write-Host ""
 
-# Carrega JSON
+# Carrega JSON (força UTF-8 — Get-Content em PS 5.1 default = ANSI)
 if (-not (Test-Path $JsonPath)) { throw "Arquivo não encontrado: $JsonPath" }
-$data = Get-Content -Raw -Path $JsonPath | ConvertFrom-Json
+$jsonText = [System.IO.File]::ReadAllText((Resolve-Path $JsonPath).Path, [System.Text.Encoding]::UTF8)
+$data = $jsonText | ConvertFrom-Json
 Write-Host "Cards no JSON: $($data.cards.Count)"
 
-# 1) Verifica board e lista listas existentes
+# 1) Verifica board, resolve ID completo (shortLink → 24-hex id)
 Write-Host ""
-Write-Host "[1/4] Lendo listas atuais do board..." -ForegroundColor Yellow
+Write-Host "[1/4] Resolvendo board e listando listas..." -ForegroundColor Yellow
+$boardInfo = Invoke-Trello -Method 'GET' -Path "/boards/$BoardId"
+if ($boardInfo.id -and $boardInfo.id -ne $BoardId) {
+    Write-Host "      → shortLink '$BoardId' resolvido para id '$($boardInfo.id)'"
+    $BoardId = $boardInfo.id
+}
+Write-Host "      board: $($boardInfo.name)"
+
 $existingLists = Invoke-Trello -Method 'GET' -Path "/boards/$BoardId/lists"
 foreach ($l in $existingLists) { Write-Host "      - $($l.name) ($($l.id))" }
 
-# Cria listas que faltam
-$listIdByName = @{}
-foreach ($l in $existingLists) { $listIdByName[$l.name] = $l.id }
-
-foreach ($conceptName in $listMap.Values) {
-    if (-not $listIdByName.ContainsKey($conceptName)) {
-        Write-Host "      + criando lista '$conceptName'..." -ForegroundColor Green
-        $newList = Invoke-Trello -Method 'POST' -Path "/lists?name=$([uri]::EscapeDataString($conceptName))&idBoard=$BoardId&pos=bottom"
-        $listIdByName[$conceptName] = $newList.id
-    }
+# Indexa existentes por slug (sem acento, alfanumerico, lowercase)
+$listIdBySlug = @{}
+foreach ($l in $existingLists) {
+    $slug = ConvertTo-Slug $l.name
+    $listIdBySlug[$slug] = $l.id
 }
 
-# Resolve JSON list id → Trello list id
+# Resolve JSON list id → Trello list id; cria as listas marcadas com create=$true se faltarem
 $jsonListToTrello = @{}
-foreach ($k in $listMap.Keys) { $jsonListToTrello[$k] = $listIdByName[$listMap[$k]] }
+foreach ($k in $listMap.Keys) {
+    $cfg = $listMap[$k]
+    $existingId = $listIdBySlug[$cfg.matchSlug]
+
+    if (-not $existingId) {
+        if ($cfg.create) {
+            Write-Host "      + criando lista '$($cfg.trelloName)'..." -ForegroundColor Green
+            # idBoard como BODY param resolve alguns 400 do endpoint /lists
+            $body = @{ name = $cfg.trelloName; idBoard = $BoardId; pos = 'bottom' }
+            $newList = Invoke-Trello -Method 'POST' -Path "/lists" -Body $body
+            $existingId = $newList.id
+            $listIdBySlug[$cfg.matchSlug] = $existingId
+        } else {
+            throw "Lista '$($cfg.trelloName)' (slug=$($cfg.matchSlug)) não encontrada no board e marcada como create=false. Crie manualmente ou ajuste o `$listMap."
+        }
+    } else {
+        Write-Host "      = lista '$($cfg.trelloName)' já existe ($existingId)"
+    }
+    $jsonListToTrello[$k] = $existingId
+}
 
 # 2) Labels — cria as que faltam
 Write-Host ""

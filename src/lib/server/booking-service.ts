@@ -227,6 +227,172 @@ export async function createBooking(args: CreateBookingArgs): Promise<CreateBook
   });
 }
 
+// ──────────────────────────────────────────────────────────────
+// Transições de estado — admin (PBI-09)
+// ──────────────────────────────────────────────────────────────
+
+export type CancelArgs = {
+  organizationId: string;
+  appointmentId: string;
+  reason?: string;
+  now?: Date;
+};
+
+const TWO_HOURS_MS = 2 * 60 * 60_000;
+
+/**
+ * Verifica se cancelar agora requer motivo (RN-07): < 2h antes do startsAt
+ * ou após o início.
+ */
+export function cancelRequiresReason(startsAtUtc: Date, now = new Date()): boolean {
+  return startsAtUtc.getTime() - now.getTime() < TWO_HOURS_MS;
+}
+
+/**
+ * Cancela appointment. RN-07: motivo é obrigatório quando < 2h antes do
+ * startsAt ou após o início.
+ */
+export async function cancelAppointment(args: CancelArgs): Promise<void> {
+  const { organizationId, appointmentId, reason, now = new Date() } = args;
+
+  await withTenant(organizationId, async (db) => {
+    const appt = await db.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: { startsAt: true, status: true },
+    });
+    if (appt.status !== "CONFIRMED") {
+      throw new BookingError(
+        `Agendamento já está ${appt.status.toLowerCase()}.`,
+        "VALIDATION",
+      );
+    }
+    if (cancelRequiresReason(appt.startsAt, now) && !reason) {
+      throw new BookingError(
+        "Motivo é obrigatório quando cancela < 2h antes ou após o início.",
+        "VALIDATION",
+      );
+    }
+    await db.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: "CANCELLED",
+        cancelledAt: now,
+        cancelReason: reason,
+      },
+    });
+  });
+}
+
+export type SimpleTransitionArgs = {
+  organizationId: string;
+  appointmentId: string;
+};
+
+export async function markCompleted(args: SimpleTransitionArgs): Promise<void> {
+  await withTenant(args.organizationId, async (db) => {
+    const appt = await db.appointment.findUniqueOrThrow({
+      where: { id: args.appointmentId },
+      select: { status: true },
+    });
+    if (appt.status !== "CONFIRMED") {
+      throw new BookingError(`Agendamento já está ${appt.status.toLowerCase()}.`, "VALIDATION");
+    }
+    await db.appointment.update({
+      where: { id: args.appointmentId },
+      data: { status: "COMPLETED" },
+    });
+  });
+}
+
+export async function markNoShow(args: SimpleTransitionArgs): Promise<void> {
+  await withTenant(args.organizationId, async (db) => {
+    const appt = await db.appointment.findUniqueOrThrow({
+      where: { id: args.appointmentId },
+      select: { status: true },
+    });
+    if (appt.status !== "CONFIRMED") {
+      throw new BookingError(`Agendamento já está ${appt.status.toLowerCase()}.`, "VALIDATION");
+    }
+    await db.appointment.update({
+      where: { id: args.appointmentId },
+      data: { status: "NO_SHOW" },
+    });
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// quickCreateBooking — encaixe admin (PBI-09, RN-11)
+// ──────────────────────────────────────────────────────────────
+
+export type QuickCreateBookingArgs = {
+  organizationId: string;
+  professionalId: string;
+  serviceId: string;
+  date: string;
+  time: string;
+  customerName: string;
+  customerPhone?: string;
+  notes?: string;
+};
+
+/**
+ * Cria appointment "forçado" (encaixe). Ignora RN-03/05/06 (granularidade,
+ * antecedência, janela 60d) mas RN-04 anti-conflito ainda barra via
+ * EXCLUDE constraint do Postgres.
+ *
+ * Não cria User — encaixe é registrado só com `customerName/Phone`
+ * copy-on-write (sem `userId`). Cliente pode reivindicar depois se logar
+ * com email match (v2).
+ */
+export async function quickCreateBooking(
+  args: QuickCreateBookingArgs,
+): Promise<{ appointmentId: string }> {
+  return withTenant(args.organizationId, async (db) => {
+    const [org, service] = await Promise.all([
+      db.organization.findUniqueOrThrow({
+        where: { id: args.organizationId },
+        select: { timezone: true },
+      }),
+      db.service.findUniqueOrThrow({
+        where: { id: args.serviceId },
+        select: { durationMinutes: true, active: true },
+      }),
+    ]);
+    if (!service.active) throw new BookingError("Serviço inativo.", "VALIDATION");
+
+    const startsAtUtc = fromZonedTime(`${args.date}T${args.time}:00`, org.timezone);
+    const endsAtUtc = new Date(startsAtUtc.getTime() + service.durationMinutes * 60_000);
+
+    try {
+      const created = await db.appointment.create({
+        data: {
+          organizationId: args.organizationId,
+          professionalId: args.professionalId,
+          serviceId: args.serviceId,
+          customerName: args.customerName,
+          customerPhone: args.customerPhone,
+          notes: args.notes,
+          startsAt: startsAtUtc,
+          endsAt: endsAtUtc,
+        },
+        select: { id: true },
+      });
+      return { appointmentId: created.id };
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        (err.code === "P2002" || /23P01|exclusion_violation/i.test(err.message))
+      ) {
+        throw new BookingError(
+          "Conflito com outro agendamento nesse horário.",
+          "SLOT_UNAVAILABLE",
+        );
+      }
+      throw err;
+    }
+  });
+}
+
 // Formata um instante UTC como "HH:MM" no fuso da org. Mesma lógica do
 // formatSlotLabel da page /horario, mantida aqui pra não acoplar UI ↔ server.
 function formatHHMMIn(utc: Date, timezone: string): string {

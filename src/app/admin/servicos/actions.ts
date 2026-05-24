@@ -14,13 +14,7 @@ import {
   updateServiceSchema,
 } from "@/lib/validators/service";
 
-export type ServiceActionState = {
-  ok?: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string>;
-};
-
-const EMPTY: ServiceActionState = {};
+import type { DeactivateResult, ServiceActionState } from "./state";
 
 async function requireOwnerOrgId(): Promise<{ orgId: string } | { error: string }> {
   const session = await auth();
@@ -97,12 +91,6 @@ export async function updateServiceAction(
   return { ok: true };
 }
 
-export type DeactivateResult = {
-  ok?: boolean;
-  deleted?: boolean;
-  error?: string;
-};
-
 export async function deactivateServiceAction(
   serviceId: string,
 ): Promise<DeactivateResult> {
@@ -119,4 +107,3 @@ export async function deactivateServiceAction(
   }
 }
 
-export const initialServiceState = EMPTY;

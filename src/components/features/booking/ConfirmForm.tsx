@@ -4,11 +4,11 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 
+import { confirmBookingAction } from "@/app/(public)/[orgSlug]/agendar/confirmar/actions";
 import {
-  confirmBookingAction,
   initialConfirmBookingState,
   type ConfirmBookingState,
-} from "@/app/(public)/[orgSlug]/agendar/confirmar/actions";
+} from "@/app/(public)/[orgSlug]/agendar/confirmar/state";
 import { cn } from "@/lib/utils";
 
 type Props = {

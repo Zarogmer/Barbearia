@@ -1,6 +1,9 @@
 import "server-only";
 
-import { withTenant } from "@/lib/db";
+import { Prisma } from "@prisma/client";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
+
+import { prismaAdmin, withTenant } from "@/lib/db";
 
 import {
   calculateAvailableSlots,
@@ -81,6 +84,156 @@ export async function getAvailableSlots(
       now,
     });
   });
+}
+
+// ──────────────────────────────────────────────────────────────
+// createBooking — fecha o fluxo cliente (PBI-08)
+// ──────────────────────────────────────────────────────────────
+
+export type CreateBookingArgs = {
+  organizationId: string;
+  professionalId: string; // já resolvido (não "any")
+  serviceId: string;
+  date: string; // 'YYYY-MM-DD' local
+  time: string; // 'HH:MM' local
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  userId?: string; // se cliente está logado
+  now?: Date;
+};
+
+export type CreateBookingResult = {
+  appointmentId: string;
+  startsAtUtc: Date;
+  endsAtUtc: Date;
+  isNewUser: boolean;
+};
+
+/**
+ * Erro com `code = "SLOT_UNAVAILABLE"` significa que o slot escolhido não
+ * está mais livre (perdido entre a tela e o submit, ou colisão concorrente
+ * caçada pela EXCLUDE constraint do Postgres).
+ */
+export class BookingError extends Error {
+  constructor(
+    message: string,
+    public code: "SLOT_UNAVAILABLE" | "VALIDATION" | "UNKNOWN",
+  ) {
+    super(message);
+    this.name = "BookingError";
+  }
+}
+
+export async function createBooking(args: CreateBookingArgs): Promise<CreateBookingResult> {
+  const { organizationId, professionalId, serviceId, date, time } = args;
+
+  // Carrega timezone primeiro para conseguir comparar slot por label local.
+  const orgTz = await prismaAdmin.organization
+    .findUniqueOrThrow({
+      where: { id: organizationId },
+      select: { timezone: true },
+    })
+    .then((o) => o.timezone);
+
+  // Re-confere disponibilidade no servidor — defesa contra race entre tela e submit.
+  // (EXCLUDE constraint do Postgres é o backstop final.)
+  const slots = await getAvailableSlots({
+    organizationId,
+    professionalId,
+    serviceId,
+    date,
+    now: args.now,
+  });
+  const chosen = slots.find((s) => formatHHMMIn(s.startUtc, orgTz) === time);
+  if (!chosen) {
+    throw new BookingError(
+      "Esse horário acabou de ser pego. Escolha outro.",
+      "SLOT_UNAVAILABLE",
+    );
+  }
+
+  return withTenant(organizationId, async (db) => {
+    const service = await db.service.findUniqueOrThrow({
+      where: { id: serviceId },
+      select: { durationMinutes: true, active: true },
+    });
+    if (!service.active) {
+      throw new BookingError("Serviço inativo.", "VALIDATION");
+    }
+
+    const startsAtUtc = fromZonedTime(`${date}T${time}:00`, orgTz);
+    const endsAtUtc = new Date(startsAtUtc.getTime() + service.durationMinutes * 60_000);
+
+    // Resolve user: usa session (se logado) ou cria/encontra por email.
+    // User vive na tabela global (sem RLS) — usa prismaAdmin.
+    let userId = args.userId ?? null;
+    let isNewUser = false;
+    if (!userId) {
+      const existing = await prismaAdmin.user.findUnique({
+        where: { email: args.customerEmail },
+        select: { id: true },
+      });
+      if (existing) {
+        userId = existing.id;
+      } else {
+        const created = await prismaAdmin.user.create({
+          data: {
+            email: args.customerEmail,
+            name: args.customerName,
+            phone: args.customerPhone,
+            // emailVerifiedAt = null → email de verificação será enviado em
+            // fluxo separado (PBI-03 quando integrar Resend de verdade).
+          },
+          select: { id: true },
+        });
+        userId = created.id;
+        isNewUser = true;
+      }
+    }
+
+    try {
+      const appointment = await db.appointment.create({
+        data: {
+          organizationId,
+          professionalId,
+          serviceId,
+          userId,
+          customerName: args.customerName,
+          customerPhone: args.customerPhone,
+          startsAt: startsAtUtc,
+          endsAt: endsAtUtc,
+        },
+        select: { id: true },
+      });
+      return {
+        appointmentId: appointment.id,
+        startsAtUtc,
+        endsAtUtc,
+        isNewUser,
+      };
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        (err.code === "P2002" || /23P01|exclusion_violation/i.test(err.message))
+      ) {
+        throw new BookingError(
+          "Esse horário acabou de ser pego. Escolha outro.",
+          "SLOT_UNAVAILABLE",
+        );
+      }
+      throw err;
+    }
+  });
+}
+
+// Formata um instante UTC como "HH:MM" no fuso da org. Mesma lógica do
+// formatSlotLabel da page /horario, mantida aqui pra não acoplar UI ↔ server.
+function formatHHMMIn(utc: Date, timezone: string): string {
+  const z = toZonedTime(utc, timezone);
+  const hh = String(z.getHours()).padStart(2, "0");
+  const mm = String(z.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
 }
 
 const DAY_MS = 86_400_000;

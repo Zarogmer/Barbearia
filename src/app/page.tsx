@@ -101,13 +101,11 @@ export default function HomePage() {
         <div className="mt-10 flex items-center gap-2 text-xs text-subtle">
           <Sparkles className="h-3.5 w-3.5" />
           <span>
-            Showcase do design system:{" "}
-            <a
-              href="/prototipo/"
-              className="text-brand underline-offset-4 hover:underline"
-            >
-              docs/prototipo
-            </a>
+            Design system{" "}
+            <code className="mono rounded bg-surface-2 px-1.5 py-0.5 text-[10px]">
+              Lustro
+            </code>{" "}
+            · paleta Charcoal Premium
           </span>
         </div>
       </div>

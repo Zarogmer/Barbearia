@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import {
   APPOINTMENTS,
   getProfessionalsByOrg,
@@ -17,7 +16,13 @@ const PX_PER_MINUTE = 1.5; // 90px per 60min
 export default function AgendaPage() {
   const org = ORGS[0]!;
   const professionals = getProfessionalsByOrg(org.id);
-  const today = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+  const today = new Date();
+  const todayShort = today.toLocaleDateString("pt-BR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   const hours: number[] = [];
   for (let h = HOUR_START; h <= HOUR_END; h++) hours.push(h);
@@ -30,44 +35,72 @@ export default function AgendaPage() {
     <div className="flex h-full flex-col p-4 lg:p-8">
       {/* Toolbar */}
       <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-2">
-          <button className="rounded-lg border bg-card p-2 hover:bg-accent">
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="rounded-lg border bg-card px-3 py-2 text-sm font-medium capitalize">
-            {today}
-          </div>
-          <button className="rounded-lg border bg-card p-2 hover:bg-accent">
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <button className="rounded-lg border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">
-            Hoje
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border bg-card text-sm">
-            <button className="bg-accent px-3 py-2 font-medium">Dia</button>
-            <button className="px-3 py-2 text-muted-foreground" disabled>
-              Semana (v2)
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 rounded-lg border border-line bg-surface p-1">
+            <button
+              type="button"
+              className="rounded-md p-1.5 transition-colors hover:bg-surface-2"
+              aria-label="Dia anterior"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="mono px-2 text-sm font-bold">{todayShort}</span>
+            <button
+              type="button"
+              className="rounded-md p-1.5 transition-colors hover:bg-surface-2"
+              aria-label="Próximo dia"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
-          <button className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4" />
-            Novo
+          <button
+            type="button"
+            className="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold transition-colors hover:bg-surface-2"
+          >
+            Hoje
           </button>
+          <div className="flex overflow-hidden rounded-lg border border-line bg-surface">
+            <button
+              type="button"
+              className="bg-ink px-3 py-1.5 text-xs font-semibold text-[hsl(var(--surface))]"
+            >
+              Dia
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1.5 text-xs font-semibold text-subtle transition-colors hover:bg-surface-2"
+              disabled
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              className="px-3 py-1.5 text-xs font-semibold text-subtle transition-colors hover:bg-surface-2"
+              disabled
+            >
+              Mês
+            </button>
+          </div>
         </div>
+        <button
+          type="button"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand px-3 text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Novo
+        </button>
       </div>
 
       {/* Grade */}
-      <Card className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden rounded-md border border-line bg-surface">
         <div className="flex h-full">
           {/* Coluna de horas */}
-          <div className="w-14 shrink-0 border-r text-xs text-muted-foreground">
-            <div className="h-10 border-b" />
+          <div className="w-14 shrink-0 border-r border-line">
+            <div className="h-12 border-b border-line bg-surface-2" />
             {hours.map((h) => (
               <div
                 key={h}
-                className="border-b pl-2 pt-1 font-medium tabular-nums"
+                className="mono border-b border-line pl-2 pt-1 text-[11px] font-medium text-subtle"
                 style={{ height: `${60 * PX_PER_MINUTE}px` }}
               >
                 {String(h).padStart(2, "0")}:00
@@ -76,16 +109,35 @@ export default function AgendaPage() {
           </div>
 
           {/* Colunas dos profissionais */}
-          <div className="grid flex-1 grid-cols-2 overflow-auto">
+          <div
+            className="grid flex-1 overflow-auto"
+            style={{ gridTemplateColumns: `repeat(${professionals.length}, minmax(0, 1fr))` }}
+          >
             {professionals.map((p) => {
               const apts = APPOINTMENTS.filter(
                 (a) => a.professionalId === p.id && a.status === "CONFIRMED",
               );
+              const initials = p.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
 
               return (
-                <div key={p.id} className="border-r last:border-r-0">
-                  <div className="sticky top-0 z-10 flex h-10 items-center justify-center border-b bg-muted/50 px-3 text-sm font-semibold">
-                    {p.name}
+                <div key={p.id} className="border-r border-line last:border-r-0">
+                  <div className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b border-line bg-surface-2 px-3">
+                    <span className="avatar-ring">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-3 text-[10px] font-bold">
+                        {initials}
+                      </span>
+                    </span>
+                    <div className="leading-tight">
+                      <div className="text-xs font-semibold">{p.name}</div>
+                      <div className="mono text-[10px] text-subtle">
+                        {apts.length} ag · ocup.
+                      </div>
+                    </div>
                   </div>
 
                   <div
@@ -99,7 +151,7 @@ export default function AgendaPage() {
                           key={`${h}-${m}`}
                           className={cn(
                             "absolute left-0 right-0 border-t",
-                            m === 0 ? "border-border" : "border-dashed border-border/50",
+                            m === 0 ? "border-line" : "border-dashed border-line/60",
                           )}
                           style={{
                             top: `${((h - HOUR_START) * 60 + m) * PX_PER_MINUTE}px`,
@@ -115,16 +167,19 @@ export default function AgendaPage() {
                         (a.endsAt.getTime() - a.startsAt.getTime()) / 60000 * PX_PER_MINUTE;
                       const svc = getServiceById(a.serviceId);
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={a.id}
-                          className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md border border-primary/30 bg-primary/15 p-1.5 text-xs hover:bg-primary/25"
+                          className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md bg-brand p-1.5 text-left text-[11px] text-brand-fg shadow-sm transition-transform hover:-translate-y-px hover:shadow-md"
                           style={{ top: `${top}px`, height: `${height}px` }}
                         >
-                          <div className="font-medium leading-tight">{a.customerName}</div>
-                          <div className="leading-tight text-muted-foreground">
+                          <div className="truncate text-[11px] font-semibold leading-tight">
+                            {a.customerName}
+                          </div>
+                          <div className="mono truncate text-[10px] leading-tight opacity-90">
                             {formatTime(a.startsAt)} · {svc?.name}
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -133,11 +188,11 @@ export default function AgendaPage() {
             })}
           </div>
         </div>
-      </Card>
+      </div>
 
-      <p className="mt-3 text-xs text-muted-foreground">
-        Legenda: <span className="rounded bg-primary/15 px-1.5 py-0.5">Confirmado</span> · clique em um
-        slot livre cria encaixe · clique num bloco abre detalhes (PBI-09 implementa interação).
+      <p className="mono mt-3 text-[10px] uppercase tracking-wider text-subtle">
+        Legenda · <span className="rounded bg-brand/15 px-1.5 py-0.5 text-ink">confirmado</span> ·
+        clique num bloco abre detalhes (PBI-09)
       </p>
     </div>
   );

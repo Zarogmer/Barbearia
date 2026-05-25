@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { forwardRef, useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Check, Loader2, Plus } from "lucide-react";
 
@@ -332,30 +332,42 @@ function ActiveToggle({ defaultActive }: { defaultActive: boolean }) {
   );
 }
 
-export function NewServiceTrigger() {
+// forwardRef + spread props é obrigatório pra Radix DialogTrigger asChild
+// conseguir injetar onClick/ref no <button>. Sem isso, click não dispara.
+export const NewServiceTrigger = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(function NewServiceTrigger(props, ref) {
   return (
     <button
+      ref={ref}
       type="button"
+      {...props}
       className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
     >
       <Plus className="h-4 w-4" />
       Novo serviço
     </button>
   );
-}
+});
 
-export function EditServiceTrigger({ name }: { name: string }) {
+export const EditServiceTrigger = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { name: string }
+>(function EditServiceTrigger({ name, ...props }, ref) {
   return (
     <button
+      ref={ref}
       type="button"
       aria-label={`Editar ${name}`}
+      {...props}
       className="rounded-md p-2 text-subtle transition-colors hover:bg-surface-2 hover:text-ink"
     >
       <span className="sr-only">Editar</span>
       <Pencil />
     </button>
   );
-}
+});
 
 function Pencil() {
   return (

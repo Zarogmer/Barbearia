@@ -134,12 +134,16 @@ Detalhes em [docs/02-arquitetura.md](docs/02-arquitetura.md).
 
 ## 6. Como pegar uma PBI
 
-1. Abra [docs/09-pbis.md](docs/09-pbis.md), encontre a PBI com status `pending` e sem dependência aberta.
+1. Abra [docs/09-pbis.md](docs/09-pbis.md) ou o board Trello (PBI-20+), encontre uma PBI com status `pending` e sem dependência aberta.
 2. Leia **todo** o bloco da PBI: contexto, AC, arquivos a tocar, DoD.
-3. Crie branch `feat/<slug>` ou `fix/<slug>` a partir de `main`.
-4. Implemente. Escreva testes na mesma PR (não em "PR de testes" depois).
-5. Verifique localmente: `pnpm lint && pnpm typecheck && pnpm test:run`.
-6. Abra PR usando o template. CI precisa passar verde antes de merge.
+3. **Se a PBI menciona feature inspirada em referência visual** (PBI-20..47 do gap MAAPP, PBI-48 mobile cliente), faça `Read` nas imagens antes de codar:
+   - [docs/newpbis/](docs/newpbis/) — 40 screenshots do app MAAPP que motivaram os PBIs do gap (CRM, comandas, comissão, relatórios, despesas etc.)
+   - [docs/mobiledesign/](docs/mobiledesign/) — 2 screenshots de inspiração mobile-app (dark theme, bottom nav, tela Agendar mobile-nativa) que motivaram o PBI-48
+   - Replicar UX fielmente reduz retrabalho. Se a desc textual conflitar com a imagem, **imagem ganha** (e atualize a desc na PR).
+4. Crie branch `feat/<slug>` ou `fix/<slug>` a partir de `main`.
+5. Implemente. Escreva testes na mesma PR (não em "PR de testes" depois).
+6. Verifique localmente: `pnpm lint && pnpm typecheck && pnpm test:run`.
+7. Abra PR usando o template. CI precisa passar verde antes de merge.
 
 ## 7. Convenções rápidas
 

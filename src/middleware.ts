@@ -25,5 +25,6 @@ export default function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // /admin/* (painel do dono) + /[orgSlug]/conta/* (painel do cliente — PBI-48)
+  matcher: ["/admin/:path*", "/:orgSlug/conta/:path*"],
 };

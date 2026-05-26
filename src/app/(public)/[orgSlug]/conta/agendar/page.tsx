@@ -1,25 +1,57 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Calendar, Scissors, User } from "lucide-react";
 
+import { BookingPickerMobile } from "@/components/features/customer/BookingPickerMobile";
+import { getAvailableSlots } from "@/lib/server/booking-service";
 import { getOrgBySlug } from "@/lib/server/orgs";
+import { listProfessionalsForService } from "@/lib/server/professionals";
+import { listActiveServices } from "@/lib/server/services-public";
+
+const MAX_DAYS_AHEAD = 60; // RN-06
 
 /**
- * PBI-48 Fase 3 (a fazer): single-screen com hero foto + 3 cards seletores
- * (barbeiro, serviço, data) + bottom sheets + CTA Agendar.
+ * Tela de agendamento mobile-app (PBI-48 Fase 3).
  *
- * Por enquanto: placeholder com 3 cards estáticos que linkam pro fluxo
- * existente /[orgSlug]/agendar (4 steps). Quando Fase 3 entrar, esse
- * file vira o single-screen real.
+ * Single-screen com 3 cards seletores que abrem Dialogs (servico,
+ * profissional, data+hora). Estado persistido em URL params pra refresh
+ * funcionar e deep-link ser possivel.
+ *
+ * CTA "Agendar" leva pra /[orgSlug]/agendar/confirmar (fluxo legacy)
+ * que ja tem ConfirmForm + Server Action createBooking.
  */
 export default async function AgendarTab({
   params,
+  searchParams,
 }: {
   params: Promise<{ orgSlug: string }>;
+  searchParams: Promise<{
+    serviceId?: string;
+    professionalId?: string;
+    date?: string;
+    time?: string;
+  }>;
 }) {
   const { orgSlug } = await params;
+  const sp = await searchParams;
   const org = await getOrgBySlug(orgSlug);
   if (!org) notFound();
+
+  const services = await listActiveServices(org.id);
+
+  // Carrega professionals só se serviço já foi escolhido
+  const professionals = sp.serviceId
+    ? await listProfessionalsForService(org.id, sp.serviceId)
+    : undefined;
+
+  // Carrega slots só se professional + date escolhidos
+  const slots =
+    sp.serviceId && sp.professionalId && sp.date
+      ? await getAvailableSlots({
+          organizationId: org.id,
+          professionalId: sp.professionalId,
+          serviceId: sp.serviceId,
+          date: sp.date,
+        })
+      : undefined;
 
   return (
     <div className="space-y-6">
@@ -29,62 +61,24 @@ export default async function AgendarTab({
           Agende seu horário
         </h1>
         <p className="text-sm text-subtle">
-          Escolha um serviço e horário em {org.name}.
+          Em {org.name} · escolha e confirme em 3 toques.
         </p>
       </header>
 
-      <div className="space-y-2">
-        <PlaceholderCard
-          icon={<User className="h-5 w-5" />}
-          label="Selecionar barbeiro"
-          hint="Em breve"
-        />
-        <PlaceholderCard
-          icon={<Scissors className="h-5 w-5" />}
-          label="Selecionar serviço"
-          hint="Em breve"
-        />
-        <PlaceholderCard
-          icon={<Calendar className="h-5 w-5" />}
-          label="Selecionar data e hora"
-          hint="Em breve"
-        />
-      </div>
-
-      <Link
-        href={`/${orgSlug}/agendar`}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
-      >
-        Usar fluxo atual (4 passos)
-        <ArrowRight className="h-4 w-4" />
-      </Link>
-
-      <p className="text-center mono text-[10px] uppercase tracking-wider text-subtle">
-        PBI-48 Fase 3 em construção · fluxo legacy disponível acima
-      </p>
-    </div>
-  );
-}
-
-function PlaceholderCard({
-  icon,
-  label,
-  hint,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  hint: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-md border border-dashed border-line bg-surface p-4 text-subtle">
-      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-2 text-ink">
-        {icon}
-      </span>
-      <div className="flex-1">
-        <div className="text-sm font-semibold text-ink">{label}</div>
-        <div className="mono text-[10px] uppercase tracking-wider">{hint}</div>
-      </div>
-      <ArrowRight className="h-4 w-4 opacity-40" />
+      <BookingPickerMobile
+        orgSlug={orgSlug}
+        timezone={org.timezone}
+        services={services}
+        selected={{
+          serviceId: sp.serviceId,
+          professionalId: sp.professionalId,
+          date: sp.date,
+          time: sp.time,
+        }}
+        professionals={professionals}
+        slots={slots}
+        maxDaysAhead={MAX_DAYS_AHEAD}
+      />
     </div>
   );
 }

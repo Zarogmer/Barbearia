@@ -6,6 +6,7 @@ import {
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
+  Receipt,
   Scissors,
   Settings,
   UserCircle2,
@@ -15,6 +16,7 @@ import {
 const NAV = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
+  { href: "/admin/comandas", label: "Comandas", icon: Receipt },
   { href: "/admin/clientes", label: "Clientes", icon: UserCircle2 },
   { href: "/admin/servicos", label: "Serviços", icon: Scissors },
   { href: "/admin/profissionais", label: "Profissionais", icon: Users },

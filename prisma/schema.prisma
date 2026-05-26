@@ -29,6 +29,7 @@ model Organization {
   reviews       Review[]
   posts         Post[]
   customerNotes CustomerNote[]
+  comandas      Comanda[]
 
   @@map("organizations")
 }
@@ -110,6 +111,7 @@ model Professional {
   timeBlocks           TimeBlock[]
   professionalServices ProfessionalService[]
   appointments         Appointment[]
+  comandas             Comanda[]
 
   @@index([organizationId, active])
   @@map("professionals")
@@ -244,6 +246,81 @@ model CustomerNote {
 
   @@index([organizationId, customerUserId, createdAt])
   @@map("customer_notes")
+}
+
+// ─── Comandas (PBI-21) ────────────────────────────────────
+
+enum ComandaStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+enum ComandaItemType {
+  SERVICE
+  PRODUCT
+}
+
+enum PaymentMethod {
+  CASH
+  PIX
+  CREDIT
+  DEBIT
+  CORTESIA
+}
+
+model Comanda {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String        @db.Uuid
+  customerUserId String?       @db.Uuid
+  customerName   String
+  professionalId String        @db.Uuid
+  appointmentId  String?       @db.Uuid
+  status         ComandaStatus @default(OPEN)
+  discountCents  Int           @default(0)
+  notes          String?
+  openedAt       DateTime      @default(now())
+  closedAt       DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  professional Professional     @relation(fields: [professionalId], references: [id])
+  items        ComandaItem[]
+  payments     ComandaPayment[]
+
+  @@index([organizationId, status, openedAt])
+  @@index([organizationId, customerUserId])
+  @@map("comandas")
+}
+
+model ComandaItem {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  comandaId      String          @db.Uuid
+  type           ComandaItemType
+  refId          String?         @db.Uuid
+  name           String
+  quantity       Int             @default(1)
+  unitPriceCents Int
+  createdAt      DateTime        @default(now())
+
+  comanda Comanda @relation(fields: [comandaId], references: [id], onDelete: Cascade)
+
+  @@index([comandaId])
+  @@map("comanda_items")
+}
+
+model ComandaPayment {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  comandaId   String        @db.Uuid
+  amountCents Int
+  method      PaymentMethod
+  paidAt      DateTime      @default(now())
+
+  comanda Comanda @relation(fields: [comandaId], references: [id], onDelete: Cascade)
+
+  @@index([comandaId])
+  @@map("comanda_payments")
 }
 
 // ─── NextAuth adapter ─────────────────────────────────────

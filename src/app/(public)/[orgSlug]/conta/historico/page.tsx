@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Calendar, Clock, History, User as UserIcon } from "lucide-react";
+import { Calendar, Clock, History, Star, User as UserIcon } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 
+import { ReviewDialog } from "@/components/features/customer/ReviewDialog";
 import { auth } from "@/lib/auth";
 import { getCustomerHistory } from "@/lib/server/customerHistory";
 import { getOrgBySlug } from "@/lib/server/orgs";
@@ -100,7 +101,7 @@ export default async function HistoricoTab({
 
           {history.byMonth.map((group) => (
             <section key={group.yearMonth}>
-              <h2 className="mb-3 mono text-[10px] font-semibold uppercase tracking-wider text-subtle capitalize">
+              <h2 className="mb-3 mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 {group.label}
               </h2>
               <div className="space-y-2">
@@ -109,6 +110,7 @@ export default async function HistoricoTab({
                     key={appt.id}
                     appt={appt}
                     timezone={org.timezone}
+                    orgSlug={orgSlug}
                   />
                 ))}
               </div>
@@ -174,6 +176,7 @@ function UpcomingCard({
 function HistoryCard({
   appt,
   timezone,
+  orgSlug,
 }: {
   appt: ReturnType<typeof getCustomerHistory> extends Promise<infer T>
     ? T extends { byMonth: { items: (infer U)[] }[] }
@@ -181,6 +184,7 @@ function HistoryCard({
       : never
     : never;
   timezone: string;
+  orgSlug: string;
 }) {
   return (
     <div className="rounded-md border border-line bg-surface p-4">
@@ -204,7 +208,7 @@ function HistoryCard({
         <Clock className="h-3 w-3" />
         {formatHHMM(appt.startsAt, timezone)} - {formatHHMM(appt.endsAt, timezone)}
       </div>
-      <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="mb-3 grid grid-cols-2 gap-2 text-sm">
         <div>
           <div className="mono text-[10px] uppercase tracking-wider text-subtle">
             Serviço
@@ -219,6 +223,43 @@ function HistoryCard({
           <div className="font-medium">{appt.professionalName}</div>
         </div>
       </div>
+
+      {appt.status === "COMPLETED" && (
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-3">
+          {appt.review ? (
+            <div className="flex items-center gap-2">
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star
+                    key={n}
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      n <= appt.review!.rating
+                        ? "fill-warn text-warn"
+                        : "fill-transparent text-line",
+                    )}
+                  />
+                ))}
+              </div>
+              <span className="mono text-[10px] uppercase tracking-wider text-subtle">
+                Avaliado
+              </span>
+            </div>
+          ) : (
+            <>
+              <span className="mono text-[10px] uppercase tracking-wider text-subtle">
+                Como foi?
+              </span>
+              <ReviewDialog
+                orgSlug={orgSlug}
+                appointmentId={appt.id}
+                serviceName={appt.serviceName}
+                professionalName={appt.professionalName}
+              />
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

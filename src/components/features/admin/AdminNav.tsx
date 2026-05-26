@@ -8,12 +8,14 @@ import {
   LayoutDashboard,
   Scissors,
   Settings,
+  UserCircle2,
   Users,
 } from "lucide-react";
 
 const NAV = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
+  { href: "/admin/clientes", label: "Clientes", icon: UserCircle2 },
   { href: "/admin/servicos", label: "Serviços", icon: Scissors },
   { href: "/admin/profissionais", label: "Profissionais", icon: Users },
   { href: "/admin/feed", label: "Feed", icon: ImageIcon },

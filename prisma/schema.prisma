@@ -28,6 +28,7 @@ model Organization {
   appointments  Appointment[]
   reviews       Review[]
   posts         Post[]
+  customerNotes CustomerNote[]
 
   @@map("organizations")
 }
@@ -229,6 +230,20 @@ model Post {
 
   @@index([organizationId, createdAt])
   @@map("posts")
+}
+
+model CustomerNote {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String   @db.Uuid
+  customerUserId    String   @db.Uuid
+  body              String
+  createdByUserId   String   @db.Uuid
+  createdAt         DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, customerUserId, createdAt])
+  @@map("customer_notes")
 }
 
 // ─── NextAuth adapter ─────────────────────────────────────

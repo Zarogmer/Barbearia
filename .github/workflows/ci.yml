@@ -81,6 +81,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:test@localhost:5433/barbearia_test?schema=public
       DIRECT_URL: postgresql://postgres:test@localhost:5433/barbearia_test?schema=public
+      # senha do role app_user (criado em setup-app-user.ts). Em CI é fixa
+      # — o DB sobe e morre no mesmo job, não é segredo.
+      APP_USER_PASSWORD: ci_app_user_password_not_secret
     steps:
       - uses: actions/checkout@v4
 
@@ -97,11 +100,14 @@ jobs:
 
       - run: pnpm db:generate
 
-      - name: Apply migrations
-        run: pnpm prisma migrate deploy
-
+      # app_user precisa existir ANTES das migrations rodarem, porque
+      # algumas migrations fazem GRANT ... TO app_user (PBI-48 review_and_post,
+      # PBI-20 customer_notes). Criar role antes, migrations depois.
       - name: Setup app_user role (RLS)
         run: pnpm tsx prisma/setup-app-user.ts
+
+      - name: Apply migrations
+        run: pnpm prisma migrate deploy
 
       - name: Integration tests
         run: pnpm tsx ./node_modules/vitest/dist/cli.js run tests/integration

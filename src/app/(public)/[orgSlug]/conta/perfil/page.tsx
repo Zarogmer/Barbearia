@@ -1,11 +1,9 @@
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut } from "lucide-react";
 
+import { CustomerProfileForm } from "@/components/features/customer/CustomerProfileForm";
 import { auth, signOut } from "@/lib/auth";
+import { prismaAdmin } from "@/lib/db";
 
-/**
- * Placeholder do tab Perfil — PBI-48 Fase 7 implementa edição completa
- * (nome, email, telefone, avatar). Por enquanto: dados read-only + sair.
- */
 export default async function PerfilTab({
   params,
 }: {
@@ -13,7 +11,14 @@ export default async function PerfilTab({
 }) {
   const session = await auth();
   const { orgSlug } = await params;
-  const user = session?.user;
+  // Re-busca o User pelo id da sessão pra ter phone atualizado (session só
+  // tem name/email — phone fica direto na tabela)
+  const user = session?.user?.id
+    ? await prismaAdmin.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true, phone: true },
+      })
+    : null;
 
   const initials =
     user?.name
@@ -44,13 +49,13 @@ export default async function PerfilTab({
         </div>
       </div>
 
-      <div className="rounded-md border border-dashed border-line bg-surface-2 p-8 text-center">
-        <UserIcon className="mx-auto mb-3 h-8 w-8 text-subtle" />
-        <p className="mb-2 font-display text-sm font-bold">Edição em breve</p>
-        <p className="text-xs text-subtle">
-          Editar nome, telefone e avatar virá no PBI-48 Fase 7.
-        </p>
-      </div>
+      <section className="rounded-md border border-line bg-surface p-5">
+        <h2 className="mb-4 font-display text-sm font-bold">Editar dados</h2>
+        <CustomerProfileForm
+          defaultName={user?.name ?? ""}
+          defaultPhone={user?.phone ?? ""}
+        />
+      </section>
 
       <form
         action={async () => {

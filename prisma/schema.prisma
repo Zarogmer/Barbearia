@@ -22,14 +22,16 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships   Membership[]
-  services      Service[]
-  professionals Professional[]
-  appointments  Appointment[]
-  reviews       Review[]
-  posts         Post[]
-  customerNotes CustomerNote[]
-  comandas      Comanda[]
+  memberships        Membership[]
+  services           Service[]
+  professionals      Professional[]
+  appointments       Appointment[]
+  reviews            Review[]
+  posts              Post[]
+  customerNotes      CustomerNote[]
+  comandas           Comanda[]
+  commissionRules    CommissionRule[]
+  commissionPayments CommissionPayment[]
 
   @@map("organizations")
 }
@@ -112,6 +114,8 @@ model Professional {
   professionalServices ProfessionalService[]
   appointments         Appointment[]
   comandas             Comanda[]
+  commissionRules      CommissionRule[]
+  commissionPayments   CommissionPayment[]
 
   @@index([organizationId, active])
   @@map("professionals")
@@ -321,6 +325,43 @@ model ComandaPayment {
 
   @@index([comandaId])
   @@map("comanda_payments")
+}
+
+// ─── Comissoes (PBI-22) ───────────────────────────────────
+
+model CommissionRule {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  professionalId String   @db.Uuid
+  serviceId      String?  @db.Uuid // null = regra default do profissional
+  percent        Int      // 0-100 (inteiro)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, serviceId])
+  @@index([organizationId])
+  @@map("commission_rules")
+}
+
+model CommissionPayment {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId       String   @db.Uuid
+  professionalId       String   @db.Uuid
+  periodStart          DateTime
+  periodEnd            DateTime
+  totalGrossCents      Int      // soma dos servicos atendidos no periodo
+  totalCommissionCents Int      // valor pago ao profissional
+  notes                String?
+  paidAt               DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id])
+
+  @@index([organizationId, professionalId, paidAt])
+  @@map("commission_payments")
 }
 
 // ─── NextAuth adapter ─────────────────────────────────────

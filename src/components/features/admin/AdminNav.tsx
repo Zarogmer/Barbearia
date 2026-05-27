@@ -6,6 +6,7 @@ import {
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
+  Percent,
   Receipt,
   Scissors,
   Settings,
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/admin/clientes", label: "Clientes", icon: UserCircle2 },
   { href: "/admin/servicos", label: "Serviços", icon: Scissors },
   { href: "/admin/profissionais", label: "Profissionais", icon: Users },
+  { href: "/admin/comissoes", label: "Comissões", icon: Percent },
   { href: "/admin/feed", label: "Feed", icon: ImageIcon },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];

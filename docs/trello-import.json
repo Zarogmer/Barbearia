@@ -848,10 +848,77 @@
           ]
         }
       ]
+    },
+    {
+      "id": "PBI-23",
+      "name": "PBI-23 — Agendamento anônimo confirmado por SMS OTP",
+      "idList": "backlog",
+      "idLabels": ["backend", "frontend", "seguranca", "p1"],
+      "pos": 23,
+      "estimateHours": 8,
+      "dependsOn": ["PBI-08"],
+      "desc": "**Estimativa:** 8h · **Depende:** PBI-08 (createBooking)\n\n## 🎯 Objetivo\nPermitir que visitantes anônimos confirmem agendamento via código SMS de 6 dígitos enviado pro telefone, sem precisar criar conta. Substitui a captura manual de nome/email no passo /agendar/confirmar por um fluxo de duas etapas: (1) request OTP → SMS enviado, (2) verify OTP → cria Appointment + retorna ID público.\n\n## 💡 Contexto\nAgendamento de barbearia tem barreira de conta zero. Usuário decidiu (2026-05-27) que vamos com OTP no telefone em vez de forçar login. App cliente /conta/* continua existindo pra quem QUER painel pessoal (histórico, reviews, feed) — mas o fluxo principal é anônimo.\n\n## 🔐 Considerações de segurança\n- Rate limit por IP + por telefone (3 OTPs / 10min / telefone, 10 OTPs / hora / IP)\n- TTL do OTP: 5 minutos\n- Máximo 3 tentativas de verificação antes de invalidar\n- LGPD: aviso explícito antes de enviar SMS ('Vamos enviar um código pro número informado')\n- Provider: Twilio (default) ou Vonage / AWS SNS — abstrair via interface SmsProvider\n- Custo: ~$0.01/SMS BR — atenção a abuse (DoS por SMS bombing)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "prisma: model OtpToken (id, phone, codeHash bcrypt, attempts Int default 0, consumedAt DateTime?, expiresAt DateTime, ip String?, createdAt) — SEM organizationId (cross-tenant, telefone é global)",
+            "Migration com índice em phone + expiresAt + RLS bypass (tabela de sessão, não tenant)",
+            "src/lib/server/sms.ts: interface SmsProvider { send(phone, body): Promise<void> } + TwilioProvider lendo TWILIO_ACCOUNT_SID/AUTH_TOKEN/FROM",
+            "src/lib/server/otp.ts: requestOtp(phone, ip) — gera código 6 dígitos, salva hash, dispara SMS via provider, aplica rate limits",
+            "src/lib/server/otp.ts: verifyOtp(phone, code) — busca último não-consumido não-expirado, compara hash, incrementa attempts, devolve OK/FAIL",
+            "Server Action requestOtpAction (/agendar/confirmar/actions.ts) — wrapper validado por Zod",
+            "Server Action verifyOtpAction — ao OK, cria Appointment via createBooking existente (passa phone como customerPhone)",
+            "Job de limpeza: cron diário deleta OtpToken expiredAt > 24h (ou via Postgres trigger NOTIFY)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "ConfirmForm.tsx: refatorar pra 2 etapas — etapa A captura nome + telefone + termo LGPD, dispara requestOtpAction",
+            "Etapa B: input de 6 caracteres (mascarado, autoFocus, paste support), botão Confirmar dispara verifyOtpAction",
+            "Estado UI: countdown 5min após envio, botão 'Reenviar código' habilita após 60s",
+            "Feedback de erro: 'Código inválido (X de 3 tentativas)', 'Código expirou — reenvie'",
+            "Sucesso: redireciona pra /[orgSlug]/agendamento/<id> (página pública existente do agendamento)",
+            "Fallback offline: se SMS falhar, mostra 'Falha ao enviar — tente outro número ou crie conta'"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Telefone normalizado pra E.164 (+5511999998888) antes de salvar/comparar",
+            "Telefone duplicado: aceita múltiplos agendamentos no mesmo telefone (sem unique constraint em Customer)",
+            "Se telefone já existe vinculado a User (PBI-20 CustomerProfile), agendamento atrela automaticamente ao userId existente",
+            "OTP nunca exposto em logs/email/UI após gerado — só o SMS conhece o código em claro",
+            "Em dev sem provider: TwilioProvider fake imprime código no console (gate por NODE_ENV !== 'production')"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: requestOtp gera código de 6 dígitos numéricos + salva hash bcrypt (não plaintext)",
+            "Unit: verifyOtp marca consumedAt no sucesso, incrementa attempts no erro, retorna FAIL se attempts >= 3",
+            "Integration: rate limit — 4ª chamada em 10min pro mesmo telefone retorna 429",
+            "Integration: TTL expirado — verifyOtp 6min após requestOtp retorna EXPIRED",
+            "E2E: visitante anônimo agenda → recebe SMS mock → digita código → vê tela de sucesso com ID do agendamento",
+            "Mock do SmsProvider em testes (vi.mock) — nunca chamar Twilio real"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Adicionar TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM no .env.example",
+            "Configurar variáveis no Railway service (Variables tab)",
+            "Garantir provider Twilio comprou número BR (+55) com SMS habilitado",
+            "Smoke test pós-deploy: agendar via mobile real → SMS recebido em <30s → confirmar funciona",
+            "Monitorar custo Twilio no dashboard nos primeiros 7 dias (alerta acima de $5/dia)"
+          ]
+        }
+      ]
     }
   ],
   "metadata": {
-    "totalCards": 18,
+    "totalCards": 19,
     "totalEstimatedHours": 86,
     "mvpEstimatedHours": 66,
     "v2EstimatedHours": 20,
@@ -881,7 +948,8 @@
     "checklistsPerCard": 5,
     "changeLog": [
       { "date": "2026-05-23", "change": "Initial 15 cards with 4 checklists (back/front/regra/testes)" },
-      { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" }
+      { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" },
+      { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" }
     ]
   }
 }

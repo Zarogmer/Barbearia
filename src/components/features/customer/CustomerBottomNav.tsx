@@ -22,7 +22,7 @@ export function CustomerBottomNav({ orgSlug }: Props) {
   const base = `/${orgSlug}/conta`;
 
   const items: NavItem[] = [
-    { key: "agendar", label: "Agendar", href: `${base}/agendar`, Icon: Calendar },
+    { key: "agendar", label: "Agendar", href: `/${orgSlug}/agendar`, Icon: Calendar },
     { key: "historico", label: "Histórico", href: `${base}/historico`, Icon: History },
     { key: "feed", label: "Feed", href: `${base}/feed`, Icon: ImageIcon },
     { key: "perfil", label: "Perfil", href: `${base}/perfil`, Icon: User },

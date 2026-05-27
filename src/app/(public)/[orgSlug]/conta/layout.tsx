@@ -28,7 +28,7 @@ export default async function CustomerAccountLayout({
 
   if (!org) notFound();
   if (!session?.user) {
-    redirect(`/login?next=/${orgSlug}/conta/agendar`);
+    redirect(`/login?next=/${orgSlug}/conta/historico`);
   }
 
   return (

@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ConfirmForm } from "@/components/features/booking/ConfirmForm";
-import { StepIndicator } from "@/components/features/booking/StepIndicator";
 import { auth } from "@/lib/auth";
 import { getOrgBySlug } from "@/lib/server/orgs";
 import {
@@ -40,7 +39,7 @@ export default async function ConfirmPage({
   if (sp.professionalId === "any") {
     const candidates = await listProfessionalsForService(org.id, sp.serviceId);
     if (candidates.length === 0) {
-      redirect(`/${orgSlug}/agendar/profissional?serviceId=${sp.serviceId}`);
+      redirect(`/${orgSlug}/agendar?serviceId=${sp.serviceId}`);
     }
     professionalDisplay = { name: `${candidates[0]!.name} (qualquer)` };
   } else {
@@ -58,13 +57,12 @@ export default async function ConfirmPage({
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
       <header className="mb-6 flex items-center justify-between">
         <Link
-          href={`/${orgSlug}/agendar/horario?serviceId=${sp.serviceId}&professionalId=${sp.professionalId}&date=${sp.date}`}
+          href={`/${orgSlug}/agendar?serviceId=${sp.serviceId}&professionalId=${sp.professionalId}&date=${sp.date}&time=${sp.time}`}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-subtle hover:text-ink"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Voltar
         </Link>
-        <StepIndicator current={4} total={4} />
       </header>
 
       <h1 className="mb-1.5 font-display text-2xl font-extrabold tracking-tight">Quase lá</h1>

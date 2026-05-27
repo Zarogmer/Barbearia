@@ -6,5 +6,5 @@ export default async function ContaIndex({
   params: Promise<{ orgSlug: string }>;
 }) {
   const { orgSlug } = await params;
-  redirect(`/${orgSlug}/conta/agendar`);
+  redirect(`/${orgSlug}/conta/historico`);
 }

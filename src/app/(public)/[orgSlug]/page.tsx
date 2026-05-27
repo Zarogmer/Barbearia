@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, LogIn, MapPin } from "lucide-react";
 
+import { auth } from "@/lib/auth";
 import { listActiveProfessionals } from "@/lib/server/professionals";
 import { listActiveServices } from "@/lib/server/services-public";
 import { getOrgBySlug } from "@/lib/server/orgs";
@@ -16,10 +17,12 @@ export default async function OrgLandingPage({
   const org = await getOrgBySlug(orgSlug);
   if (!org) notFound();
 
-  const [services, professionals] = await Promise.all([
+  const [services, professionals, session] = await Promise.all([
     listActiveServices(org.id),
     listActiveProfessionals(org.id),
+    auth(),
   ]);
+  const isLoggedIn = !!session?.user;
 
   return (
     <main className="mx-auto max-w-md px-5 py-5 sm:max-w-2xl">
@@ -43,14 +46,27 @@ export default async function OrgLandingPage({
         </div>
       </section>
 
-      {/* CTA primário */}
-      <Link
-        href={`/${orgSlug}/agendar`}
-        className="mb-8 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
-      >
-        Agendar agora
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      {/* CTAs */}
+      <div className="mb-8 space-y-2">
+        <Link
+          href={`/${orgSlug}/agendar`}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
+        >
+          Agendar agora
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+        <Link
+          href={
+            isLoggedIn
+              ? `/${orgSlug}/conta/historico`
+              : `/login?next=/${orgSlug}/conta/historico`
+          }
+          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-sm font-medium text-subtle transition-colors hover:border-brand hover:text-ink"
+        >
+          <LogIn className="h-3.5 w-3.5" />
+          {isLoggedIn ? "Acessar minha conta" : "Já tem conta? Entrar"}
+        </Link>
+      </div>
 
       {/* Serviços */}
       <section className="mb-8">

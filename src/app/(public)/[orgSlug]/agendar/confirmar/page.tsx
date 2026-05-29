@@ -44,7 +44,7 @@ export default async function ConfirmPage({
     professionalDisplay = { name: `${candidates[0]!.name} (qualquer)` };
   } else {
     const p = await getProfessionalById(org.id, sp.professionalId);
-    if (!p) redirect(`/${orgSlug}/agendar/profissional?serviceId=${sp.serviceId}`);
+    if (!p) redirect(`/${orgSlug}/agendar?serviceId=${sp.serviceId}`);
     professionalDisplay = { name: p.name };
   }
 
@@ -93,7 +93,6 @@ export default async function ConfirmPage({
           time: sp.time,
         }}
         defaultName={session?.user?.name ?? undefined}
-        defaultEmail={session?.user?.email ?? undefined}
       />
     </main>
   );

@@ -18,11 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { cn } from "@/lib/utils";
 
 export function NewPostDialog() {
   const [open, setOpen] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState("");
   const [state, dispatch] = useActionState<PostActionState, FormData>(
     createPostAction,
     initialPostState,
@@ -31,7 +31,6 @@ export function NewPostDialog() {
   useEffect(() => {
     if (state.ok) {
       setOpen(false);
-      setPreviewUrl("");
     }
   }, [state.ok]);
 
@@ -55,8 +54,8 @@ export function NewPostDialog() {
             Publicar no feed
           </DialogTitle>
           <DialogDescription className="text-xs text-subtle">
-            Cole a URL de uma imagem (Instagram, Imgur, Drive, etc.). Upload
-            direto virá em versão futura.
+            Envie uma imagem ou cole uma URL externa. Aparece no feed dos
+            clientes.
           </DialogDescription>
         </DialogHeader>
 
@@ -71,49 +70,12 @@ export function NewPostDialog() {
             </div>
           )}
 
-          <div>
-            <label
-              htmlFor="imageUrl"
-              className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
-            >
-              URL da imagem *
-            </label>
-            <input
-              id="imageUrl"
-              name="imageUrl"
-              type="url"
-              required
-              placeholder="https://..."
-              value={previewUrl}
-              onChange={(e) => setPreviewUrl(e.target.value)}
-              aria-invalid={!!state.fieldErrors?.imageUrl}
-              className={cn(
-                "h-11 w-full rounded-lg border bg-surface px-3.5 mono text-sm outline-none transition-all",
-                state.fieldErrors?.imageUrl
-                  ? "border-danger focus:shadow-[0_0_0_4px_hsl(var(--danger)/0.18)]"
-                  : "border-line focus:border-brand focus:shadow-glow",
-              )}
-            />
-            {state.fieldErrors?.imageUrl && (
-              <p className="mt-1 text-[11px] text-danger">
-                {state.fieldErrors.imageUrl}
-              </p>
-            )}
-          </div>
-
-          {previewUrl && /^https?:\/\/.+/.test(previewUrl) && (
-            <div className="overflow-hidden rounded-md border border-line bg-surface-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewUrl}
-                alt="Preview"
-                className="aspect-square w-full object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
-          )}
+          <ImageUpload
+            name="imageUrl"
+            label="Imagem do post"
+            aspectRatio={1}
+            hint="Quadrada (1:1) fica melhor no feed."
+          />
 
           <div>
             <label

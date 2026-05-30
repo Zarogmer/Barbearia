@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
@@ -99,13 +100,12 @@ export function ProfessionalFormDialog({ mode, services, defaults, trigger }: Pr
             placeholder="Especialidades, anos de experiência (opcional)"
             error={state.fieldErrors?.bio}
           />
-          <Field
-            id="photoUrl"
-            label="URL da foto"
-            type="url"
-            defaultValue={defaults?.photoUrl ?? ""}
-            placeholder="https://..."
-            error={state.fieldErrors?.photoUrl}
+          <ImageUpload
+            name="photoUrl"
+            label="Foto do profissional"
+            defaultValue={defaults?.photoUrl ?? null}
+            aspectRatio={1}
+            hint="Aparece na vitrine + agenda. Quadrada (1:1) fica melhor."
           />
 
           <ServicesMultiSelect

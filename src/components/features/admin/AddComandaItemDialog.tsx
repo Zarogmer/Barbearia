@@ -26,14 +26,26 @@ type ServiceOption = {
   priceCents: number;
 };
 
+type ProductOption = {
+  id: string;
+  name: string;
+  priceCents: number;
+  currentStock: number;
+};
+
 type Props = {
   comandaId: string;
   services: ServiceOption[];
+  products?: ProductOption[];
 };
 
-export function AddComandaItemDialog({ comandaId, services }: Props) {
+export function AddComandaItemDialog({
+  comandaId,
+  services,
+  products = [],
+}: Props) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<"SERVICE" | "MANUAL">("SERVICE");
+  const [tab, setTab] = useState<"SERVICE" | "PRODUCT" | "MANUAL">("SERVICE");
   const action = addItemAction.bind(null, comandaId);
   const [state, dispatch] = useActionState<ComandaActionState, FormData>(
     action,
@@ -61,16 +73,19 @@ export function AddComandaItemDialog({ comandaId, services }: Props) {
             Adicionar item
           </DialogTitle>
           <DialogDescription className="text-xs text-subtle">
-            Serviço do catálogo ou item livre (produto sem cadastro).
+            Serviço do catálogo, produto do estoque ou item livre.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mb-3 flex gap-2 rounded-lg border border-line bg-surface-2 p-1">
+        <div className="mb-3 flex gap-1 rounded-lg border border-line bg-surface-2 p-1">
           <TabBtn active={tab === "SERVICE"} onClick={() => setTab("SERVICE")}>
             Serviço
           </TabBtn>
+          <TabBtn active={tab === "PRODUCT"} onClick={() => setTab("PRODUCT")}>
+            Produto
+          </TabBtn>
           <TabBtn active={tab === "MANUAL"} onClick={() => setTab("MANUAL")}>
-            Item livre
+            Livre
           </TabBtn>
         </div>
 
@@ -87,7 +102,7 @@ export function AddComandaItemDialog({ comandaId, services }: Props) {
             </div>
           )}
 
-          {tab === "SERVICE" ? (
+          {tab === "SERVICE" && (
             <>
               {services.length === 0 ? (
                 <p className="rounded-md border border-dashed border-line bg-surface-2 p-3 text-center text-xs text-subtle">
@@ -113,12 +128,46 @@ export function AddComandaItemDialog({ comandaId, services }: Props) {
                 </div>
               )}
             </>
-          ) : (
+          )}
+
+          {tab === "PRODUCT" && (
+            <>
+              {products.length === 0 ? (
+                <p className="rounded-md border border-dashed border-line bg-surface-2 p-3 text-center text-xs text-subtle">
+                  Nenhum produto cadastrado em /admin/estoque.
+                </p>
+              ) : (
+                <div>
+                  <label className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+                    Produto *
+                  </label>
+                  <select
+                    name="productId"
+                    required
+                    defaultValue={products[0]?.id}
+                    className="h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm outline-none transition-all focus:border-brand focus:shadow-glow"
+                  >
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} · {formatBRL(p.priceCents)} (estoque:{" "}
+                        {p.currentStock})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mono mt-1 text-[10px] text-subtle">
+                    Adicionar gera saída automática no estoque.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "MANUAL" && (
             <>
               <Field
                 id="name"
                 label="Nome do item *"
-                placeholder="Ex: Pomada modeladora"
+                placeholder="Ex: Pomada importada"
                 required
                 error={state.fieldErrors?.name}
               />

@@ -265,6 +265,39 @@ export async function addItem(
           unitPriceCents: service.priceCents,
         },
       });
+    } else if (input.type === "PRODUCT") {
+      // PBI-18 fase 2: produto do catálogo → cria item + movimento OUT atômico
+      const product = await db.product.findUnique({
+        where: { id: input.productId },
+        select: { name: true, salePriceCents: true, active: true },
+      });
+      if (!product) {
+        throw new ComandaError("Produto inválido.", "VALIDATION");
+      }
+      if (!product.active) {
+        throw new ComandaError("Produto inativo.", "VALIDATION");
+      }
+      await db.comandaItem.create({
+        data: {
+          comandaId,
+          type: "PRODUCT",
+          refId: input.productId,
+          name: product.name,
+          quantity: input.quantity,
+          unitPriceCents: product.salePriceCents,
+        },
+      });
+      // Movimento OUT — userId null porque é automático via comanda
+      await db.inventoryMovement.create({
+        data: {
+          organizationId,
+          productId: input.productId,
+          type: "OUT",
+          quantity: input.quantity,
+          reason: `Venda na comanda ${comandaId.slice(0, 8)}`,
+          userId: null,
+        },
+      });
     } else {
       // MANUAL → item livre (não tipa como PRODUCT pra não confundir com PBI-37)
       await db.comandaItem.create({
@@ -287,7 +320,27 @@ export async function removeItem(
 ): Promise<void> {
   await withTenant(organizationId, async (db) => {
     await ensureOpen(db, comandaId);
-    await db.comandaItem.deleteMany({ where: { id: itemId, comandaId } });
+    // PBI-18 fase 2: se for produto do catálogo, gera movimento IN compensatório
+    const item = await db.comandaItem.findUnique({
+      where: { id: itemId },
+      select: { type: true, refId: true, quantity: true, comandaId: true },
+    });
+    if (!item || item.comandaId !== comandaId) return;
+
+    await db.comandaItem.delete({ where: { id: itemId } });
+
+    if (item.type === "PRODUCT" && item.refId) {
+      await db.inventoryMovement.create({
+        data: {
+          organizationId,
+          productId: item.refId,
+          type: "IN",
+          quantity: item.quantity,
+          reason: `Reverso de item removido da comanda ${comandaId.slice(0, 8)}`,
+          userId: null,
+        },
+      });
+    }
   });
 }
 
@@ -392,15 +445,37 @@ export async function cancelComanda(
   await withTenant(organizationId, async (db) => {
     const c = await db.comanda.findUnique({
       where: { id: comandaId },
-      select: { status: true },
+      select: {
+        status: true,
+        items: {
+          where: { type: "PRODUCT", refId: { not: null } },
+          select: { refId: true, quantity: true },
+        },
+      },
     });
     if (!c) throw new ComandaError("Comanda não encontrada.", "NOT_FOUND");
     if (c.status !== "OPEN") {
       throw new ComandaError("Só dá pra cancelar comanda aberta.", "NOT_OPEN");
     }
+
     await db.comanda.update({
       where: { id: comandaId },
       data: { status: "CANCELLED", closedAt: new Date() },
     });
+
+    // PBI-18 fase 2: cancelamento gera IN compensatório pra cada produto do catálogo
+    for (const it of c.items) {
+      if (!it.refId) continue;
+      await db.inventoryMovement.create({
+        data: {
+          organizationId,
+          productId: it.refId,
+          type: "IN",
+          quantity: it.quantity,
+          reason: `Cancelamento da comanda ${comandaId.slice(0, 8)}`,
+          userId: null,
+        },
+      });
+    }
   });
 }

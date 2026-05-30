@@ -20,6 +20,7 @@ import {
 } from "@/components/features/admin/ComandaActionButtons";
 import { auth } from "@/lib/auth";
 import { getComandaDetail } from "@/lib/server/comandas";
+import { listProducts } from "@/lib/server/products";
 import { listActiveServices } from "@/lib/server/services-public";
 import { cn, formatBRL } from "@/lib/utils";
 
@@ -68,9 +69,10 @@ export default async function ComandaDetailPage({
   }
   const orgId = membership.organizationId;
 
-  const [comanda, services] = await Promise.all([
+  const [comanda, services, products] = await Promise.all([
     getComandaDetail(orgId, id),
     listActiveServices(orgId),
+    listProducts(orgId, { activeOnly: true }),
   ]);
 
   if (!comanda) notFound();
@@ -139,6 +141,12 @@ export default async function ComandaDetailPage({
                 id: s.id,
                 name: s.name,
                 priceCents: s.priceCents,
+              }))}
+              products={products.map((p) => ({
+                id: p.id,
+                name: p.name,
+                priceCents: p.salePriceCents,
+                currentStock: p.currentStock,
               }))}
             />
           )}

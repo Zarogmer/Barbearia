@@ -1131,6 +1131,166 @@
       ]
     },
     {
+      "id": "PBI-19",
+      "name": "PBI-19 — Dashboard admin com KPIs reais (mock removido)",
+      "idList": "done",
+      "idLabels": ["frontend", "backend", "p1"],
+      "pos": 19,
+      "estimateHours": 3,
+      "dependsOn": ["PBI-09"],
+      "desc": "**Estimativa:** 3h · **Depende:** PBI-09\n\n## 🎯 Objetivo\nSubstituir o último mock do /admin/dashboard por KPIs calculados via SQL real: agendamentos do dia, faturamento estimado, ocupação %, no-shows 7d.\n\n## ✅ Status: feito (commit c47b04e em main)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/server/dashboard.ts: getDashboardStats(orgId) — 4 KPIs + próximos agendamentos do dia"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/dashboard: 4 KpiCards (com barra de progresso + tone semântico)",
+            "Lista de próximos agendamentos com horário/cliente/serviço/profissional"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-20",
+      "name": "PBI-20 — CRM Clientes (lista + perfil + anotações)",
+      "idList": "done",
+      "idLabels": ["frontend", "backend", "p1"],
+      "pos": 20,
+      "estimateHours": 6,
+      "dependsOn": ["PBI-08"],
+      "desc": "**Estimativa:** 6h · **Depende:** PBI-08 (booking gera customer)\n\n## 🎯 Objetivo\nLista paginada de clientes da org (auto-cadastrados ao agendar) + página de perfil com stats (atendimentos, ticket médio, última visita) + bloco de CustomerNotes (anotações internas do owner/staff).\n\n## ✅ Status: feito (commit 4920f76 em main)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "model CustomerNote (organizationId, customerUserId, body, createdByUserId)",
+            "src/lib/server/customers.ts: listCustomersAdmin (paginada, busca por nome/email/phone), getCustomerDetail",
+            "Migration customer_notes + RLS + GRANT app_user"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/clientes: tabela paginada com busca",
+            "/admin/clientes/[id]: header com stats + histórico + bloco anotações"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-21",
+      "name": "PBI-21 — Comandas (PDV/balcão) com itens, descontos e split de pagamentos",
+      "idList": "done",
+      "idLabels": ["frontend", "backend", "p1"],
+      "pos": 21,
+      "estimateHours": 10,
+      "dependsOn": ["PBI-09"],
+      "desc": "**Estimativa:** 10h · **Depende:** PBI-09\n\n## 🎯 Objetivo\nPDV embutido: comanda aberta acumula itens (serviços + produtos avulsos), aceita desconto e fecha com 1+ pagamentos (CASH/PIX/CREDIT/DEBIT/CORTESIA).\n\n## ✅ Status: feito (commit a61a3b8 em main)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "models Comanda, ComandaItem, ComandaPayment + enums (ComandaStatus, ComandaItemType, PaymentMethod)",
+            "src/lib/server/comandas.ts: abrir, adicionar item, aplicar desconto, registrar pagamento, fechar",
+            "Migration comandas + RLS + GRANT app_user"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/comandas: lista com filtro OPEN/CLOSED/CANCELLED",
+            "/admin/comandas/[id]: detalhe com itens + pagamentos + ações"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-22",
+      "name": "PBI-22 — Comissões (regras por prof/serviço + cálculo + pagamento)",
+      "idList": "done",
+      "idLabels": ["frontend", "backend", "p1"],
+      "pos": 22,
+      "estimateHours": 8,
+      "dependsOn": ["PBI-21"],
+      "desc": "**Estimativa:** 8h · **Depende:** PBI-21\n\n## 🎯 Objetivo\nDefinir percentual de comissão por profissional (com override por serviço), calcular comissão devida num período e registrar pagamento.\n\n## ✅ Status: feito (commit 9b487a0 em main)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "models CommissionRule + CommissionPayment",
+            "src/lib/server/commissions.ts: listRules, calculate, recordPayment, history",
+            "Migration commissions + RLS + GRANT app_user"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/comissoes: 3 tabs (Regras, Calcular, Histórico)",
+            "CommissionRulesEditor + CommissionCalculator + tabela de histórico"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-30",
+      "name": "PBI-30 — Tema persistido por Organization (default da barbearia)",
+      "idList": "done",
+      "idLabels": ["frontend", "backend", "p2"],
+      "pos": 30,
+      "estimateHours": 2,
+      "dependsOn": ["PBI-28"],
+      "desc": "**Estimativa:** 2h · **Depende:** PBI-28\n\n## 🎯 Objetivo\nPersistir paleta + dark mode em Organization.theme/darkMode. Cookie continua sendo preview por sessão; org default vale pra todos da equipe e visitantes anônimos da vitrine.\n\n## ✅ Status: feito (commit 5e99ad8 em main)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Schema: Organization.theme String? + darkMode Boolean default false",
+            "Migration org_theme + GRANT app_user",
+            "getOrgTheme/persistOrgTheme via prismaAdmin (cross-tenant pelo id)",
+            "getThemeState resolve cookie > org > charcoal-light"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "ThemeSelector ganha checkbox 'Salvar como tema da barbearia' (OWNER-gated)",
+            "(public)/[orgSlug]/layout.tsx: wrapper data-theme aplica tema da org pra visitantes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-48",
+      "name": "PBI-48 — App cliente mobile-native /[orgSlug]/conta/* (7 fases)",
+      "idList": "done",
+      "idLabels": ["frontend", "backend", "p1"],
+      "pos": 48,
+      "estimateHours": 18,
+      "dependsOn": ["PBI-08"],
+      "desc": "**Estimativa:** 18h (entregue em 7 fases) · **Depende:** PBI-08\n\n## 🎯 Objetivo\nExperiência mobile-native pro cliente logado: shell com bottom nav, agendamento single-screen, histórico, feed da barbearia, perfil, avaliações pós-atendimento.\n\n## ✅ Status: feito (7 commits em main: 195fb6c..a75259a)\n\n## Fases entregues\n- Fase 2: shell /[orgSlug]/conta + bottom nav mobile-app (195fb6c)\n- Fase 3: tela Agendar single-screen mobile-app (01a2dfc)\n- Fase 4: histórico do cliente plugado em DB real (c35951b)\n- Fase 5: avaliações 5 estrelas pós-atendimento (fba1aad)\n- Fase 6: feed da barbearia (admin upload + cliente render) (360a653)\n- Fase 7: perfil do cliente editável (a75259a)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "models Review + Post + CustomerNote (migrations + RLS)",
+            "src/lib/server/{reviews,posts,customer-profile}.ts"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "src/app/(public)/[orgSlug]/conta/layout.tsx (shell mobile + bottom nav)",
+            "/conta + /conta/agendar + /conta/historico + /conta/feed + /conta/perfil"
+          ]
+        }
+      ]
+    },
+    {
       "id": "PBI-29",
       "name": "PBI-29 — Refinar tipografia (Playfair Display) + paleta Tattoo Studio",
       "idList": "backlog",
@@ -1217,10 +1377,12 @@
     }
   ],
   "metadata": {
-    "totalCards": 23,
-    "totalEstimatedHours": 86,
+    "totalCards": 31,
+    "totalEstimatedHours": 133,
     "mvpEstimatedHours": 66,
+    "mvpExtraHoursDelivered": 47,
     "v2EstimatedHours": 20,
+    "mvpStatus": "FECHADO 2026-05-30 — 23 cards do MVP entregues + 6 features extras + 1 hotfix RLS + 1 hotfix server-only imports",
     "criticalPath": "PBI-01 → PBI-02 → PBI-04 → PBI-05 → PBI-06 → PBI-07 → PBI-08 → PBI-09",
     "parallelizable": ["PBI-03 (após 02)", "PBI-10 (após 02)", "PBI-15 (após 08)", "PBI-16 (após 02 — paralelo a 04-09)", "PBI-04 + PBI-06 (após 02 — se prof seedado)"],
     "diagramRefs": [
@@ -1251,7 +1413,9 @@
       { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" },
       { "date": "2026-05-30", "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states" },
       { "date": "2026-05-30", "change": "Added PBI-25/26/27 Layout pra vender — landing comercial Lustro, vitrine do tenant, empty states + onboarding" },
-      { "date": "2026-05-30", "change": "Added PBI-28 Sistema de temas — 6 paletas por nicho (Charcoal, Old School Barber, Viking, Salão, Manicure, Maquiagem Luxo) + dark mode" }
+      { "date": "2026-05-30", "change": "Added PBI-28 Sistema de temas — 6 paletas por nicho (Charcoal, Old School Barber, Viking, Salão, Manicure, Maquiagem Luxo) + dark mode" },
+      { "date": "2026-05-30", "change": "Added PBI-29 — Playfair Display em --font-display + paleta Tattoo Studio (7ª paleta)" },
+      { "date": "2026-05-30", "change": "MVP FECHADO. Retroativamente documentados 6 cards que foram entregues sem entry no JSON: PBI-19 (dashboard KPIs reais), PBI-20 (CRM Clientes), PBI-21 (Comandas/PDV), PBI-22 (Comissões), PBI-30 (tema por org), PBI-48 (app cliente mobile-native, 7 fases). Movidos pra lista 'done'." }
     ]
   }
 }

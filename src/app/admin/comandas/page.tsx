@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Receipt } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { OpenComandaDialog } from "@/components/features/admin/OpenComandaDialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ComandaIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import { listComandas } from "@/lib/server/comandas";
 import { listProfessionalsAdmin } from "@/lib/server/professionals";
@@ -79,17 +81,16 @@ export default async function ComandasListPage({
       </div>
 
       {comandas.length === 0 ? (
-        <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-          <Receipt className="mx-auto mb-3 h-8 w-8 text-subtle" />
-          <p className="mb-2 font-display text-base font-bold">
-            {filter === "OPEN" ? "Nenhuma comanda aberta" : "Nada por aqui"}
-          </p>
-          <p className="text-xs text-subtle">
-            {filter === "OPEN"
-              ? "Clique em Abrir comanda pra criar a primeira."
-              : "Comandas aparecerão aqui após criadas."}
-          </p>
-        </div>
+        <EmptyState
+          icon={<ComandaIllustration />}
+          title={filter === "OPEN" ? "Nenhuma comanda aberta" : "Nada por aqui"}
+          description={
+            filter === "OPEN"
+              ? "Abra uma comanda pra começar a registrar serviços, produtos e pagamentos do balcão."
+              : "Quando você fechar ou cancelar comandas, elas aparecem nessa aba."
+          }
+          cta={null}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-line bg-surface">
           <div className="hidden border-b border-line bg-surface-2 px-5 py-3 mono text-[10px] font-semibold uppercase tracking-wider text-subtle md:grid md:grid-cols-[1fr_1fr_120px_140px_100px] md:items-center md:gap-4">

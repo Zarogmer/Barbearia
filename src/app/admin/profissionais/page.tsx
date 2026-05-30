@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import {
   EditProfessionalTrigger,
   NewProfessionalTrigger,
   ProfessionalFormDialog,
 } from "@/components/features/admin/ProfessionalFormDialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ProfessionalIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import {
   listActiveServicesForProfessionalEditor,
@@ -61,15 +63,12 @@ export default async function ProfessionalsPage() {
       </header>
 
       {professionals.length === 0 ? (
-        <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-          <Users className="mx-auto mb-3 h-8 w-8 text-subtle" />
-          <p className="mb-2 font-display text-base font-bold">
-            Nenhum profissional cadastrado
-          </p>
-          <p className="text-xs text-subtle">
-            Clique em <span className="font-semibold">+ Novo profissional</span> pra começar.
-          </p>
-        </div>
+        <EmptyState
+          icon={<ProfessionalIllustration />}
+          title="Adicione seu primeiro profissional"
+          description="Cada profissional tem agenda, horários e serviços que executa. O cliente escolhe um deles ao agendar."
+          cta={null}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-line bg-surface">
           <div className="hidden border-b border-line bg-surface-2 px-5 py-3 mono text-[10px] font-semibold uppercase tracking-wider text-subtle md:grid md:grid-cols-[1fr_1.4fr_1.6fr_100px_120px] md:items-center md:gap-4">

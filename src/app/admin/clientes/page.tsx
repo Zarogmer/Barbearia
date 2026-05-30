@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Search, Users } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 
+import { EmptyState } from "@/components/ui/empty-state";
+import { CustomersIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import { listCustomersAdmin } from "@/lib/server/customers";
 
@@ -67,17 +69,16 @@ export default async function CustomersListPage({
       </form>
 
       {result.items.length === 0 ? (
-        <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-          <Users className="mx-auto mb-3 h-8 w-8 text-subtle" />
-          <p className="mb-2 font-display text-base font-bold">
-            {query ? "Nenhum cliente encontrado" : "Ainda sem clientes"}
-          </p>
-          <p className="text-xs text-subtle">
-            {query
+        <EmptyState
+          icon={<CustomersIllustration />}
+          title={query ? "Nenhum cliente encontrado" : "Ainda sem clientes"}
+          description={
+            query
               ? "Tente outra busca ou limpe o filtro."
-              : "Clientes aparecem aqui depois do primeiro agendamento."}
-          </p>
-        </div>
+              : "Clientes aparecem aqui automaticamente após o primeiro agendamento. Não precisa cadastrar manualmente."
+          }
+          cta={null}
+        />
       ) : (
         <>
           <div className="overflow-hidden rounded-md border border-line bg-surface">

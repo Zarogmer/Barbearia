@@ -6,6 +6,8 @@ import {
   NewServiceTrigger,
   ServiceFormDialog,
 } from "@/components/features/admin/ServiceFormDialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ScissorsIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import { listProfessionalsForPicker, listServices } from "@/lib/server/services";
 import { formatBRL, formatDuration } from "@/lib/utils";
@@ -59,14 +61,12 @@ export default async function ServicesPage() {
       </header>
 
       {services.length === 0 ? (
-        <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-          <p className="mb-2 font-display text-base font-bold">
-            Nenhum serviço cadastrado
-          </p>
-          <p className="text-xs text-subtle">
-            Clique em <span className="font-semibold">+ Novo serviço</span> pra começar.
-          </p>
-        </div>
+        <EmptyState
+          icon={<ScissorsIllustration />}
+          title="Crie seu primeiro serviço"
+          description="Defina nome, duração e preço. Clientes só conseguem agendar depois que você cadastra pelo menos um."
+          cta={null}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-line bg-surface">
           <div className="hidden border-b border-line bg-surface-2 px-5 py-3 mono text-[10px] font-semibold uppercase tracking-wider text-subtle sm:grid sm:grid-cols-[1fr_120px_120px_140px_80px_80px] sm:items-center sm:gap-4">

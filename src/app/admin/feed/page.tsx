@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { Image as ImageIcon } from "lucide-react";
 
 import { DeletePostButton } from "@/components/features/admin/DeletePostButton";
 import { NewPostDialog } from "@/components/features/admin/NewPostDialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FeedIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import { listPosts } from "@/lib/server/posts";
 
@@ -46,16 +47,12 @@ export default async function AdminFeedPage() {
       </header>
 
       {posts.length === 0 ? (
-        <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-          <ImageIcon className="mx-auto mb-3 h-8 w-8 text-subtle" />
-          <p className="mb-2 font-display text-base font-bold">
-            Nenhum post ainda
-          </p>
-          <p className="text-xs text-subtle">
-            Publique fotos da barbearia, trabalhos recentes ou novidades. Os
-            clientes vêem no app deles.
-          </p>
-        </div>
+        <EmptyState
+          icon={<FeedIllustration />}
+          title="Publique seu primeiro post"
+          description="Cole uma URL de imagem (Instagram, CDN, qualquer host HTTPS). Aparece pra cliente no feed dele."
+          cta={null}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (

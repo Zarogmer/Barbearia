@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   MoreHorizontal,
+  Package,
   Percent,
   Receipt,
   Scissors,
@@ -38,6 +39,7 @@ const PRIMARY: NavItem[] = [
 const SECONDARY: NavItem[] = [
   { href: "/admin/clientes", label: "Clientes", Icon: UserCircle2 },
   { href: "/admin/servicos", label: "Serviços", Icon: Scissors },
+  { href: "/admin/estoque", label: "Estoque", Icon: Package },
   { href: "/admin/profissionais", label: "Profissionais", Icon: Users },
   { href: "/admin/comissoes", label: "Comissões", Icon: Percent },
   { href: "/admin/feed", label: "Feed", Icon: ImageIcon },

@@ -49,6 +49,12 @@ export default async function SettingsPage() {
             slug: org.slug,
             timezone: org.timezone,
             allowGuestBooking: org.allowGuestBooking,
+            coverImageUrl: org.coverImageUrl,
+            tagline: org.tagline,
+            address: org.address,
+            instagram: org.instagram,
+            whatsapp: org.whatsapp,
+            businessHours: org.businessHours,
           }}
         />
       </div>

@@ -3,6 +3,10 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { prismaAdmin, withTenant } from "@/lib/db";
+import {
+  parseBusinessHours,
+  type BusinessHours,
+} from "@/lib/server/business-hours";
 import type { UpdateOrganizationInput } from "@/lib/validators/organization";
 
 export type AdminOrganization = {
@@ -11,6 +15,12 @@ export type AdminOrganization = {
   name: string;
   timezone: string;
   allowGuestBooking: boolean;
+  coverImageUrl: string | null;
+  tagline: string | null;
+  address: string | null;
+  instagram: string | null;
+  whatsapp: string | null;
+  businessHours: BusinessHours | null;
 };
 
 /**
@@ -21,7 +31,7 @@ export async function getOrganizationForAdmin(
   organizationId: string,
 ): Promise<AdminOrganization> {
   return withTenant(organizationId, async (db) => {
-    return db.organization.findUniqueOrThrow({
+    const org = await db.organization.findUniqueOrThrow({
       where: { id: organizationId },
       select: {
         id: true,
@@ -29,8 +39,18 @@ export async function getOrganizationForAdmin(
         name: true,
         timezone: true,
         allowGuestBooking: true,
+        coverImageUrl: true,
+        tagline: true,
+        address: true,
+        instagram: true,
+        whatsapp: true,
+        businessHours: true,
       },
     });
+    return {
+      ...org,
+      businessHours: parseBusinessHours(org.businessHours),
+    };
   });
 }
 
@@ -70,12 +90,21 @@ export async function updateOrganization(
 
   return withTenant(organizationId, async (db) => {
     try {
-      return await db.organization.update({
+      const org = await db.organization.update({
         where: { id: organizationId },
         data: {
           name: input.name,
           slug: input.slug,
           allowGuestBooking: input.allowGuestBooking,
+          coverImageUrl: input.coverImageUrl ?? null,
+          tagline: input.tagline ?? null,
+          address: input.address ?? null,
+          instagram: input.instagram ?? null,
+          whatsapp: input.whatsapp ?? null,
+          businessHours:
+            input.businessHours === undefined
+              ? undefined
+              : (input.businessHours as Prisma.InputJsonValue | null) ?? Prisma.JsonNull,
         },
         select: {
           id: true,
@@ -83,8 +112,18 @@ export async function updateOrganization(
           name: true,
           timezone: true,
           allowGuestBooking: true,
+          coverImageUrl: true,
+          tagline: true,
+          address: true,
+          instagram: true,
+          whatsapp: true,
+          businessHours: true,
         },
       });
+      return {
+        ...org,
+        businessHours: parseBusinessHours(org.businessHours),
+      };
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&

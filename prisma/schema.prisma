@@ -19,6 +19,13 @@ model Organization {
   name      String
   timezone  String   @default("America/Sao_Paulo")
   allowGuestBooking Boolean @default(true)
+  // PBI-26: vitrine pública
+  coverImageUrl String?
+  tagline       String?
+  address       String?
+  instagram     String?
+  whatsapp      String?
+  businessHours Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

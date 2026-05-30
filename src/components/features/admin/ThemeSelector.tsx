@@ -10,11 +10,17 @@ import { cn } from "@/lib/utils";
 type Props = {
   initialTheme: ThemeId;
   initialDark: boolean;
+  canSaveAsOrgDefault?: boolean;
 };
 
-export function ThemeSelector({ initialTheme, initialDark }: Props) {
+export function ThemeSelector({
+  initialTheme,
+  initialDark,
+  canSaveAsOrgDefault = false,
+}: Props) {
   const [selected, setSelected] = useState<ThemeId>(initialTheme);
   const [dark, setDark] = useState(initialDark);
+  const [saveAsOrgDefault, setSaveAsOrgDefault] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
@@ -37,7 +43,11 @@ export function ThemeSelector({ initialTheme, initialDark }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      const r = await setThemeAction({ theme: selected, dark });
+      const r = await setThemeAction({
+        theme: selected,
+        dark,
+        saveAsOrgDefault: canSaveAsOrgDefault && saveAsOrgDefault,
+      });
       if (r.ok) setSavedAt(Date.now());
     });
   }
@@ -131,6 +141,26 @@ export function ThemeSelector({ initialTheme, initialDark }: Props) {
           </button>
         </div>
       </div>
+
+      {canSaveAsOrgDefault && (
+        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-line bg-surface-2 p-3">
+          <input
+            type="checkbox"
+            checked={saveAsOrgDefault}
+            onChange={(e) => setSaveAsOrgDefault(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-brand"
+          />
+          <span className="text-sm">
+            <span className="block font-semibold">
+              Salvar como tema da barbearia
+            </span>
+            <span className="block text-[11px] text-subtle">
+              Aplica pra todos da equipe e clientes que abrirem a vitrine.
+              Sem isso, só você vê (preview por sessão).
+            </span>
+          </span>
+        </label>
+      )}
 
       <div className="flex items-center justify-between gap-3">
         <p className="mono text-[11px] text-subtle">

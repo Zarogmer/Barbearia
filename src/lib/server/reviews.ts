@@ -70,6 +70,57 @@ export async function createReview(
   });
 }
 
+export type OrgReviewSummary = {
+  average: number;
+  count: number;
+  latest3: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: Date;
+    customerName: string;
+  }>;
+};
+
+/**
+ * Agregado das reviews de uma org pra vitrine pública (PBI-26).
+ * Cacheado por 60s no caller — landing pública é rota quente.
+ */
+export async function getOrgReviewSummary(
+  organizationId: string,
+): Promise<OrgReviewSummary> {
+  return withTenant(organizationId, async (db) => {
+    const [aggregate, latest] = await Promise.all([
+      db.review.aggregate({
+        _avg: { rating: true },
+        _count: { _all: true },
+      }),
+      db.review.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          createdAt: true,
+          appointment: { select: { customerName: true } },
+        },
+      }),
+    ]);
+    return {
+      average: aggregate._avg.rating ?? 0,
+      count: aggregate._count._all,
+      latest3: latest.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt,
+        customerName: r.appointment.customerName,
+      })),
+    };
+  });
+}
+
 /**
  * Lista reviews por ID de appointment em batch. Usado pra UI mostrar
  * estrelas no histórico do cliente.

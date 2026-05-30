@@ -1131,6 +1131,41 @@
       ]
     },
     {
+      "id": "PBI-29",
+      "name": "PBI-29 — Refinar tipografia (Playfair Display) + paleta Tattoo Studio",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p2"],
+      "pos": 29,
+      "estimateHours": 1,
+      "dependsOn": ["PBI-28"],
+      "desc": "**Estimativa:** 1h · **Depende:** PBI-28 (sistema de temas)\n\n## 🎯 Objetivo\nRefinar duas frentes do PBI-28: (1) trocar fonte display Plus Jakarta Sans por Playfair Display, dando ar editorial/sofisticado que combina tanto com salões femininos quanto com barbearias premium; (2) adicionar uma 7ª paleta 'Tattoo Studio' (preto profundo + amarelo neon #FFD700) pra cobrir nicho de estúdio de tatuagem.\n\n## 💡 Contexto\nApós PBI-28 (6 paletas + dark mode), Plus Jakarta Sans é sans-serif moderna porém genérica. Playfair Display, transitional serif, eleva tone pra premium sem perder legibilidade em UI density.",
+      "checklists": [
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "src/app/layout.tsx: trocar Plus_Jakarta_Sans por Playfair_Display de next/font/google em --font-display",
+            "src/lib/server/theme.ts: adicionar entry 'tattoo' ao catálogo THEMES com swatch preto + amarelo + branco",
+            "src/app/globals.css: adicionar bloco [data-theme=tattoo] light + dark com brand 51 100% 50% (amarelo neon) sobre ink quase-preto"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Mantém contraste AA: preto sobre amarelo neon → ratio > 13:1",
+            "Dark mode: amarelo neon ainda é a brand, mas ink+surface invertem pro fundo preto profundo (estética tattoo shop)",
+            "ThemeSelector já itera THEMES dinamicamente, então paleta nova aparece sem mexer no componente"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Manual: trocar pra tattoo + dark mode → fundo preto, CTAs amarelo neon",
+            "pnpm typecheck + pnpm lint passa"
+          ]
+        }
+      ]
+    },
+    {
       "id": "PBI-28",
       "name": "PBI-28 — Sistema de temas (6 paletas por nicho) + dark mode",
       "idList": "backlog",

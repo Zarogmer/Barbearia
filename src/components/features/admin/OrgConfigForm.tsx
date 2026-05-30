@@ -9,6 +9,7 @@ import {
   initialOrgConfigState,
   type OrgConfigState,
 } from "@/app/admin/configuracoes/state";
+import { BusinessHoursEditor } from "@/components/features/admin/BusinessHoursEditor";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import type { BusinessHours } from "@/lib/server/business-hours";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -26,6 +28,12 @@ type Props = {
     slug: string;
     timezone: string;
     allowGuestBooking: boolean;
+    coverImageUrl: string | null;
+    tagline: string | null;
+    address: string | null;
+    instagram: string | null;
+    whatsapp: string | null;
+    businessHours: BusinessHours | null;
   };
 };
 
@@ -161,6 +169,68 @@ export function OrgConfigForm({ defaults }: Props) {
           />
         </div>
 
+        {/* Vitrine pública (PBI-26) */}
+        <div className="space-y-4 rounded-lg border border-line bg-surface-2 p-4">
+          <div>
+            <div className="mb-1 font-display text-base font-bold">Vitrine pública</div>
+            <p className="text-xs text-subtle">
+              Estes campos aparecem no link público{" "}
+              <span className="mono text-ink">/{slug}</span>.
+            </p>
+          </div>
+
+          <Field
+            id="tagline"
+            label="Subtítulo (tagline)"
+            defaultValue={defaults.tagline ?? ""}
+            placeholder="Ex: Barbearia clássica desde 2010"
+            error={state.fieldErrors?.tagline}
+          />
+
+          <Field
+            id="coverImageUrl"
+            label="URL da imagem de capa"
+            defaultValue={defaults.coverImageUrl ?? ""}
+            placeholder="https://… (cole link de Cloudinary, Imgur, etc.)"
+            error={state.fieldErrors?.coverImageUrl}
+            mono
+          />
+
+          <Field
+            id="address"
+            label="Endereço"
+            defaultValue={defaults.address ?? ""}
+            placeholder="Rua Exemplo, 123 — Bairro, Cidade/UF"
+            error={state.fieldErrors?.address}
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              id="instagram"
+              label="Instagram (sem @)"
+              defaultValue={defaults.instagram ?? ""}
+              placeholder="barbeariadovini"
+              error={state.fieldErrors?.instagram}
+              mono
+            />
+            <Field
+              id="whatsapp"
+              label="WhatsApp (com DDD)"
+              defaultValue={defaults.whatsapp ?? ""}
+              placeholder="11999998888"
+              error={state.fieldErrors?.whatsapp}
+              mono
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+              Horário de funcionamento
+            </label>
+            <BusinessHoursEditor initial={defaults.businessHours} />
+          </div>
+        </div>
+
         <SaveButton />
       </form>
 
@@ -251,12 +321,16 @@ function Field({
   defaultValue,
   required,
   error,
+  placeholder,
+  mono,
 }: {
   id: string;
   label: string;
   defaultValue?: string;
   required?: boolean;
   error?: string;
+  placeholder?: string;
+  mono?: boolean;
 }) {
   return (
     <div>
@@ -271,9 +345,11 @@ function Field({
         name={id}
         defaultValue={defaultValue}
         required={required}
+        placeholder={placeholder}
         aria-invalid={!!error}
         className={cn(
           "h-11 w-full rounded-lg border bg-surface px-3.5 text-sm outline-none transition-all",
+          mono && "mono",
           error
             ? "border-danger focus:shadow-[0_0_0_4px_hsl(var(--danger)/0.18)]"
             : "border-line focus:border-brand focus:shadow-glow",

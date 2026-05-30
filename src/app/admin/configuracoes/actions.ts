@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { auth } from "@/lib/auth";
 import {
@@ -57,6 +57,8 @@ export async function updateOrganizationAction(
   }
 
   revalidatePath("/admin/configuracoes");
+  // Vitrine pública é cacheada com tag — invalida explicitamente.
+  revalidateTag("org-public-profile");
   // Revalida rota pública pra refletir mudança de slug imediatamente
   revalidatePath("/", "layout");
   return { ok: true };

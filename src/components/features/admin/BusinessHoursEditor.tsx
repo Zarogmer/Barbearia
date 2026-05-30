@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import type { BusinessHours, HoursBlock, Weekday } from "@/lib/server/business-hours";
-import { WEEKDAYS, WEEKDAY_LABEL } from "@/lib/server/business-hours";
+import type { BusinessHours, HoursBlock, Weekday } from "@/lib/business-hours";
+import { WEEKDAYS, WEEKDAY_LABEL } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 
 type Props = {

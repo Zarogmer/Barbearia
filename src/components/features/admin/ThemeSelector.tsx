@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Check, Loader2, Moon, Sun } from "lucide-react";
 
 import { setThemeAction } from "@/app/admin/configuracoes/theme-action";
-import { THEMES, type ThemeId } from "@/lib/server/theme";
+import { THEMES, type ThemeId } from "@/lib/themes-catalog";
 import { cn } from "@/lib/utils";
 
 type Props = {

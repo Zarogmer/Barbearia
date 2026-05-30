@@ -3,10 +3,10 @@ import "server-only";
 import { cookies } from "next/headers";
 
 /**
- * Sistema de temas (PBI-28).
+ * Sistema de temas (PBI-28 + PBI-29 tattoo).
  *
  * Persistência: cookies `theme` e `dark`.
- * - `theme`: charcoal | oldschool | viking | salao | manicure | luxe
+ * - `theme`: charcoal | oldschool | viking | salao | manicure | luxe | tattoo
  * - `dark`: "1" se ativo, ausente caso contrário
  *
  * Default sem cookie: charcoal-light.
@@ -48,6 +48,12 @@ export const THEMES = [
     label: "Maquiagem Luxo",
     description: "Bronze + dourado nude",
     swatch: { brand: "#C58128", ink: "#2A1E14", surface: "#FBF6EE" },
+  },
+  {
+    id: "tattoo",
+    label: "Tattoo Studio",
+    description: "Preto profundo + amarelo neon, atitude underground",
+    swatch: { brand: "#FFD700", ink: "#0A0A0A", surface: "#F5F5F5" },
   },
 ] as const;
 

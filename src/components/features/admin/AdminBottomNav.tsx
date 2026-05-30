@@ -68,7 +68,7 @@ export function AdminBottomNav({ userName }: { userName: string }) {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] transition-colors",
+                    "tap flex flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] transition-colors",
                     active ? "text-brand" : "text-subtle hover:text-ink",
                   )}
                 >
@@ -94,7 +94,7 @@ export function AdminBottomNav({ userName }: { userName: string }) {
               aria-haspopup="dialog"
               aria-expanded={open}
               className={cn(
-                "flex w-full flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] transition-colors",
+                "tap flex w-full flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] transition-colors",
                 moreActive ? "text-brand" : "text-subtle hover:text-ink",
               )}
             >
@@ -151,7 +151,7 @@ export function AdminBottomNav({ userName }: { userName: string }) {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all",
+                        "tap flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all",
                         active
                           ? "border-brand bg-brand-soft text-brand"
                           : "border-line bg-surface text-ink hover:-translate-y-px hover:border-brand hover:shadow-sm",

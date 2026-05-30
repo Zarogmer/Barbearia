@@ -5,6 +5,7 @@ import { logoutAction } from "@/app/admin/_logout-action";
 import { AdminBottomNav } from "@/components/features/admin/AdminBottomNav";
 import { AdminMobileTopBar } from "@/components/features/admin/AdminMobileTopBar";
 import { AdminNav } from "@/components/features/admin/AdminNav";
+import { PageTransition } from "@/components/ui/page-transition";
 import { auth } from "@/lib/auth";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -69,7 +70,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <AdminMobileTopBar userName={userName} />
 
       {/* Main content */}
-      <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+      <main className="flex-1 pb-20 lg:pb-0">
+        <PageTransition>{children}</PageTransition>
+      </main>
 
       {/* Mobile bottom nav */}
       <AdminBottomNav userName={userName} />

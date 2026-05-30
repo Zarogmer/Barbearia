@@ -183,9 +183,9 @@ export function BookingPickerMobile({
         disabled={!allReady || isPending}
         onClick={goConfirm}
         className={cn(
-          "mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all",
+          "tap mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all",
           allReady && !isPending
-            ? "bg-brand text-brand-fg shadow-sm hover:-translate-y-px hover:shadow-lg active:translate-y-0"
+            ? "bg-brand text-brand-fg shadow-sm hover:-translate-y-px hover:shadow-lg"
             : "cursor-not-allowed bg-surface-2 text-subtle",
         )}
       >
@@ -392,7 +392,7 @@ function SelectorCard({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-3 rounded-md border bg-surface p-4 text-left transition-all",
+        "tap flex w-full items-center gap-3 rounded-md border bg-surface p-4 text-left transition-all",
         disabled
           ? "cursor-not-allowed border-line opacity-60"
           : "border-line hover:-translate-y-px hover:border-brand hover:shadow-sm",

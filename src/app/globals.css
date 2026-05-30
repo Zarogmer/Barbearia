@@ -389,6 +389,71 @@
     --input: 25 15% 20%;
     --ring: 35 78% 62%;
   }
+
+  /* ── 7. TATTOO STUDIO (preto profundo + amarelo neon ouro) ── */
+  [data-theme="tattoo"] {
+    --brand: 51 100% 50%;
+    --brand-fg: 0 0% 4%;
+    --brand-soft: 51 100% 92%;
+    --ink: 0 0% 6%;
+    --surface: 0 0% 98%;
+    --surface-2: 0 0% 94%;
+    --surface-3: 0 0% 89%;
+    --subtle: 0 0% 38%;
+    --line: 0 0% 84%;
+    --ok: 145 60% 40%;
+    --warn: 35 95% 50%;
+    --danger: 0 80% 50%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 6%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 6%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 6%;
+    --primary: 0 0% 6%;
+    --primary-foreground: 51 100% 50%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 6%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 38%;
+    --accent: 51 100% 92%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 84%;
+    --input: 0 0% 84%;
+    --ring: 51 100% 50%;
+  }
+  [data-theme="tattoo"].dark {
+    --brand: 51 100% 55%;
+    --brand-fg: 0 0% 4%;
+    --brand-soft: 51 80% 18%;
+    --ink: 0 0% 96%;
+    --surface: 0 0% 5%;
+    --surface-2: 0 0% 8%;
+    --surface-3: 0 0% 13%;
+    --subtle: 0 0% 60%;
+    --line: 0 0% 18%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 51 100% 55%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 13%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 13%;
+    --accent-foreground: 51 100% 55%;
+    --destructive: 0 85% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 51 100% 55%;
+  }
 }
 
 @layer base {

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { CustomerBottomNav } from "@/components/features/customer/CustomerBottomNav";
+import { PageTransition } from "@/components/ui/page-transition";
 import { auth } from "@/lib/auth";
 import { getOrgBySlug } from "@/lib/server/orgs";
 
@@ -33,7 +34,9 @@ export default async function CustomerAccountLayout({
 
   return (
     <div className="min-h-screen bg-surface-2 pb-[88px]">
-      <main className="mx-auto max-w-md px-5 py-5 sm:max-w-2xl">{children}</main>
+      <main className="mx-auto max-w-md px-5 py-5 sm:max-w-2xl">
+        <PageTransition>{children}</PageTransition>
+      </main>
       <CustomerBottomNav orgSlug={orgSlug} />
     </div>
   );

@@ -915,10 +915,63 @@
           ]
         }
       ]
+    },
+    {
+      "id": "PBI-24",
+      "name": "PBI-24 — Polimento UX: tap feedback, page transitions, skeletons",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p1"],
+      "pos": 24,
+      "estimateHours": 4,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 4h · **Depende:** nenhum (cosmético, puro frontend)\n\n## 🎯 Objetivo\nDeixar o app com sensação de app nativo em vez de site responsivo. Três frentes específicas com alto ROI: feedback tátil ao tocar botões, transições suaves entre rotas, skeleton states em listagens densas.\n\n## 💡 Contexto\nUsuário (2026-05-30) avaliou que cores estão sólidas mas animações são conservadoras demais pra 'app intuitivo'. Hoje botões mobile não dão feedback tátil ao tocar, troca de rota é corte seco sem transição, e quando servidor demora 2s a tela fica em branco (sensação de quebrado).\n\n## ⚙️ Decisões técnicas\n- Reusar `motion` (12.40, já em deps) — zero peso novo\n- Tap feedback puro CSS (active:scale-[0.98]) — sem JS, respeitando prefers-reduced-motion já configurado\n- Skeletons via Suspense + loading.tsx por rota (idiomático Next 15)",
+      "checklists": [
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "globals.css: classe utility .tap-feedback com active:scale-[0.98] + transition-transform 100ms",
+            "Aplicar .tap-feedback em todos botões/links interativos primários (CTAs, bottom nav items, selector cards)",
+            "Criar src/components/ui/page-transition.tsx — wrapper client com motion AnimatePresence + usePathname key",
+            "Plugar PageTransition no /admin/layout.tsx (children dentro) e /[orgSlug]/conta/layout.tsx",
+            "Variantes: enter slide horizontal sutil (16px) + fade, exit fade — duration ~180ms",
+            "loading.tsx custom em /admin/comandas (lista de linhas skeleton)",
+            "loading.tsx custom em /admin/clientes (lista paginada)",
+            "loading.tsx custom em /[orgSlug]/conta/historico (cards mensais)",
+            "loading.tsx custom em /[orgSlug]/conta/feed (grid de posts)",
+            "Bottom sheet do AdminBottomNav 'Mais': coordenar timing overlay+sheet (overlay fade 100ms, sheet sobe com delay 50ms)"
+          ]
+        },
+        {
+          "name": "📜 Regra de cuidado",
+          "items": [
+            "Respeitar @media (prefers-reduced-motion: reduce) — já configurado em globals.css linha 221, garantir que motion components também respeitem (motion lê isso automaticamente)",
+            "Não animar elementos críticos de input (ex: input field não pode ter delay ao receber foco)",
+            "Page transitions só em layouts logados (admin + conta), não em landing pública (visitante quer ver conteúdo rápido)",
+            "Skeleton deve ter shape/dimensão próxima do conteúdo real — evita reflow visual no carregamento"
+          ]
+        },
+        {
+          "name": "🧪 Testes manuais",
+          "items": [
+            "iPhone Safari: tap em botão CTA dispara feedback visual e não dispara duplo",
+            "Android Chrome: bottom nav transição entre tabs é suave",
+            "Desktop: page transitions não atrapalham scroll/scroll restoration",
+            "Mode prefers-reduced-motion: nenhuma animação dispara, transições viram instantâneas",
+            "Listagem com >50 itens: skeleton aparece em <100ms, conteúdo entra em <2s"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Verificar bundle size com `pnpm build` — motion não devia aumentar mais que 30kb gzipped",
+            "Lighthouse mobile pós-deploy: animation performance score deve ficar >85"
+          ]
+        }
+      ]
     }
   ],
   "metadata": {
-    "totalCards": 19,
+    "totalCards": 20,
     "totalEstimatedHours": 86,
     "mvpEstimatedHours": 66,
     "v2EstimatedHours": 20,
@@ -949,7 +1002,8 @@
     "changeLog": [
       { "date": "2026-05-23", "change": "Initial 15 cards with 4 checklists (back/front/regra/testes)" },
       { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" },
-      { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" }
+      { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" },
+      { "date": "2026-05-30", "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states" }
     ]
   }
 }

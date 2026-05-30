@@ -162,6 +162,9 @@
   .chip-slot:hover:not(:disabled):not([data-state="disabled"]) {
     @apply -translate-y-px border-brand;
   }
+  .chip-slot:active:not(:disabled):not([data-state="disabled"]) {
+    transform: scale(0.97);
+  }
   .chip-slot[data-state="active"] {
     @apply border-ink bg-ink text-surface;
   }
@@ -195,6 +198,20 @@
   }
   .card-i:hover {
     @apply -translate-y-px border-brand shadow-md;
+  }
+  .card-i:active {
+    transform: scale(0.99);
+  }
+
+  /* Tap feedback tátil (PBI-24).
+     Aplica em botões e links primários pra dar sensação de app nativo no
+     touch. prefers-reduced-motion já anula via regra global no final
+     deste arquivo. */
+  .tap {
+    @apply transition-transform duration-100 will-change-transform;
+  }
+  .tap:active:not(:disabled) {
+    transform: scale(0.97);
   }
 
   /* Grid background (decorativo) */

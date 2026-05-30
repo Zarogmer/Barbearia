@@ -50,7 +50,7 @@ export default async function OrgLandingPage({
       <div className="mb-8 space-y-2">
         <Link
           href={`/${orgSlug}/agendar`}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
+          className="tap flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg"
         >
           Agendar agora
           <ArrowRight className="h-4 w-4" />
@@ -61,7 +61,7 @@ export default async function OrgLandingPage({
               ? `/${orgSlug}/conta/historico`
               : `/login?next=/${orgSlug}/conta/historico`
           }
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-sm font-medium text-subtle transition-colors hover:border-brand hover:text-ink"
+          className="tap flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-sm font-medium text-subtle transition-colors hover:border-brand hover:text-ink"
         >
           <LogIn className="h-3.5 w-3.5" />
           {isLoggedIn ? "Acessar minha conta" : "Já tem conta? Entrar"}

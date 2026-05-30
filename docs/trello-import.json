@@ -968,10 +968,171 @@
           ]
         }
       ]
+    },
+    {
+      "id": "PBI-25",
+      "name": "PBI-25 — Landing comercial Lustro em /",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p1"],
+      "pos": 25,
+      "estimateHours": 6,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 6h · **Depende:** nenhum\n\n## 🎯 Objetivo\nSubstituir a landing dev atual ('Protótipo · MVP em 7 dias') por uma landing comercial que converte prospect (dono de barbearia/salão) em cadastro. Hoje quem chega em / vê linguagem técnica e links pra demo — perde a venda.\n\n## 💡 Contexto\nUsuário (2026-05-30) avaliou que falta material de venda. Antes de qualquer feature nova, é prioridade fazer prospect comprar pelo layout. Foco: hero impactante + 3 features-chave + pricing claro + CTA cadastro.\n\n## 📐 Estrutura proposta\n1. Hero: título + subtítulo + CTA primário + screenshot/mockup\n2. Features (3 colunas): Agendamento mobile, PDV/Comandas, Comissões automáticas\n3. Screenshots reais do produto (admin + cliente)\n4. Pricing simples (Plano único ou 2 tiers)\n5. Depoimentos (3 placeholders com aviso 'em breve clientes reais')\n6. CTA final + footer com links",
+      "checklists": [
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "src/app/page.tsx: reescrever totalmente — landing comercial, drop 'MVP em 7 dias' e 'PBIs no backlog'",
+            "Hero: H1 'Sua barbearia merece um sistema premium' + sub + CTA 'Começar agora' (→/cadastro) e secundário 'Ver demo' (→/barbearia-demo)",
+            "Seção Features: 3 cards (Agendamento online 24/7, PDV de balcão, Comissões automáticas) com ícone + título + 1-2 linhas",
+            "Seção Como funciona: 3 passos (Cadastre serviços → Adicione profissionais → Compartilhe link) com numeração visual",
+            "Seção Screenshots: mockup do mobile (single-screen agendar) e do admin (dashboard) — pode ser screenshot real exportado",
+            "Pricing: 1 ou 2 tiers (Starter grátis até X agendamentos/mês + Pro R$XX/mês com tudo) — placeholder se ainda sem decidir",
+            "Depoimentos: 3 cards com nome, papel, quote — placeholder mas com estilo final",
+            "Footer: links institucionais (Termos, Privacidade, Contato), copyright Lustro",
+            "Responsive: hero quebra em coluna em mobile, cards features ficam em coluna",
+            "Animações fade-up em scroll (motion.section whileInView)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Toda CTA principal aponta pra /cadastro (não /login)",
+            "Demo button aponta pra /barbearia-demo (existe e funciona como vitrine)",
+            "Pricing real depende de PBI-24-billing — por enquanto valores ilustrativos com nota '*em breve sistema de billing'",
+            "Depoimentos placeholder devem deixar claro que são fictícios pra evitar processo legal"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Mobile Safari/Chrome: hero não corta, CTA primário aparece sem scroll",
+            "Desktop: max-width adequado, não fica esticado em monitor wide",
+            "A11y: hierarquia H1>H2>H3 correta, contraste OK, links acessíveis"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Smoke test: visitar / em prod após deploy, verificar fold sem layout shift",
+            "Lighthouse Performance ≥85, SEO ≥95 (meta tags + structured data)",
+            "Adicionar meta tags OG (og:title, og:description, og:image)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-26",
+      "name": "PBI-26 — Vitrine do tenant /[orgSlug] (cover + fotos + reviews + endereço)",
+      "idList": "backlog",
+      "idLabels": ["backend", "frontend", "p1"],
+      "pos": 26,
+      "estimateHours": 8,
+      "dependsOn": ["PBI-04", "PBI-05", "PBI-48-fase-5"],
+      "desc": "**Estimativa:** 8h · **Depende:** Services, Professionals, Reviews\n\n## 🎯 Objetivo\nTransformar a landing pública do tenant (/[orgSlug]) de 'lista funcional' em 'vitrine que vende'. Hoje avatares são iniciais, sem foto da barbearia, sem reviews agregadas, sem endereço. Parece template. Precisamos sentir IDENTIDADE da barbearia ao chegar lá.\n\n## 💡 Contexto\nCliente final compartilha o link da sua barbearia (ex: lustro.app/barbearia-vini) com clientes pelo WhatsApp. Esse link É o cartão de visitas. Hoje cliente abre e vê algo genérico.\n\n## 📐 Estrutura proposta\n- Hero com cover image (uploaded) ou gradient como fallback\n- Stats agregadas: ⭐ 4.8 (32 avaliações) | 📍 Av. Paulista 1000\n- Galeria de profissionais com fotos reais\n- 3 reviews mais recentes destacadas\n- Mapa/endereço com link 'Como chegar'\n- Horário de funcionamento com indicador 'Aberto agora'",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "prisma schema: adicionar coverImageUrl String? em Organization",
+            "prisma schema: adicionar avatarUrl String? em Professional",
+            "prisma schema: adicionar address (String?), addressCoords (Json? = {lat, lng}), instagram (String?), whatsapp (String?) em Organization",
+            "prisma schema: adicionar businessHours (Json? = {mon: {open: 9, close: 19}, ...}) em Organization",
+            "Migration de schema + GRANTs",
+            "src/lib/server/reviews.ts: getOrgReviewSummary(orgId) → {average, count, latest3} agregado",
+            "src/lib/server/orgs.ts: getOrgPublicProfile(slug) retornando TUDO acima em 1 query"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/[orgSlug]/page.tsx: redesign com hero cover (imagem ou gradient brand→ink fallback)",
+            "Strip de stats: estrelas + contagem reviews + endereço curto + status aberto/fechado",
+            "Sessão Profissionais: cards com foto (avatarUrl) ou avatar-ring com iniciais fallback",
+            "Sessão Avaliações: 3 cards de review (5 estrelas + nome + texto + 'há X dias')",
+            "Sessão Localização: card com endereço + botão 'Abrir no maps' (link maps:// ou googlemaps web)",
+            "Sessão Horário: tabela compacta dom-sáb com indicador 'Aberto agora'",
+            "Footer com links sociais (Instagram, WhatsApp, telefone)",
+            "Admin: /admin/configuracoes ganha aba 'Vitrine' pra subir cover + endereço + horário + sociais",
+            "/admin/profissionais [id]/editar ganha upload de avatar"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Upload de imagem: validar tipo (jpg/png/webp) + tamanho máx 5MB",
+            "Stocks de cover: usar Cloudinary OU Vercel Blob OU upload pro próprio Railway storage. Decidir antes de codar",
+            "Fallback gracioso: sem cover → hero gradient. Sem avatar → avatar-ring iniciais. Sem endereço → esconde seção",
+            "Status 'Aberto agora' calculado server-side com timezone da org",
+            "Reviews aggregate cacheado por 60s (queries pesadas em landing pública)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: getOrgReviewSummary com 0 reviews retorna média=0 e count=0",
+            "Unit: status 'aberto' considera timezone corretamente (UTC vs local)",
+            "Integration: upload de cover persiste URL no banco",
+            "E2E: visitar tenant sem reviews → seção avaliações esconde graciosamente"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Configurar provider de upload (Cloudinary free tier ou Vercel Blob) + env vars",
+            "Migrar covers/avatars existentes (se houver) ou começar do zero",
+            "Smoke test: subir cover de barbearia-demo, verificar render em prod"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-27",
+      "name": "PBI-27 — Empty states bonitos + onboarding wizard pós-cadastro",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p1"],
+      "pos": 27,
+      "estimateHours": 5,
+      "dependsOn": ["PBI-04", "PBI-05", "PBI-10"],
+      "desc": "**Estimativa:** 5h · **Depende:** Services, Professionals, Configurações\n\n## 🎯 Objetivo\nDono que cria conta hoje cai num /admin/dashboard vazio sem direção. Perde em <2 minutos. Precisamos guiá-lo pelos cadastros essenciais (serviços, profissionais, horários) e fazer cada tela vazia parecer convite pra ação, não 'app quebrado'.\n\n## 💡 Contexto\nDuas frentes complementares:\n1. **Onboarding wizard** — primeira vez que loga, vê checklist visual 3-passos\n2. **Empty states** — toda tela com 0 itens vira convite ('Crie seu primeiro serviço', com ilustração + CTA)\n\n## 🎨 Visual\n- Empty states com SVG ilustração inline (tema brand+ink, low-poly minimalista)\n- Wizard como banner no /admin/dashboard até completar os 3 passos\n- Cada step do wizard linka pra tela de cadastro com pré-preenchido (se possível)",
+      "checklists": [
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "src/components/ui/empty-state.tsx: componente reutilizável com icon/svg + título + descrição + CTA opcional",
+            "Empty state em /admin/servicos: 'Sem serviços ainda' + ilustração tesoura + CTA 'Cadastrar primeiro serviço'",
+            "Empty state em /admin/profissionais: 'Sem profissionais' + ilustração pessoa + CTA",
+            "Empty state em /admin/clientes: 'Sem clientes cadastrados' + ilustração + dica 'Eles aparecem aqui após primeiro agendamento'",
+            "Empty state em /admin/comandas: 'Sem comandas abertas' + CTA 'Abrir comanda'",
+            "Empty state em /admin/feed: 'Nenhum post ainda' + CTA 'Publicar primeiro post'",
+            "Empty state em /admin/comissoes: 'Sem regras de comissão' + CTA 'Adicionar regra'",
+            "src/components/features/admin/OnboardingChecklist.tsx: card no topo do dashboard com 3 steps (Serviços, Profissionais, Horários) com checkmarks + progresso",
+            "Lógica: server-side conta entidades por org, marca step como done/pending. Esconde banner quando 3/3 done",
+            "Banner é dismissible (cookie ou flag em UserSettings) — usuário pode esconder mesmo sem completar"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Steps são: ≥1 serviço, ≥1 profissional, businessHours setado em Configurações",
+            "Onboarding sempre visível enquanto faltam steps. Dismissible só esconde até logout/refresh",
+            "Empty states devem ter tom acolhedor (não 'erro' ou 'vazio') — usar verbos de ação (Crie, Adicione)",
+            "Ilustrações inline SVG (sem image hosting) pra zero peso/rede"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Component: EmptyState renderiza CTA quando ctaHref passado, esconde quando ausente",
+            "Integration: dashboard de org com 0 serviços mostra OnboardingChecklist com step 1 pendente",
+            "Manual: criar conta nova → ver wizard, cadastrar serviço → step 1 vira ✓"
+          ]
+        }
+      ]
     }
   ],
   "metadata": {
-    "totalCards": 20,
+    "totalCards": 23,
     "totalEstimatedHours": 86,
     "mvpEstimatedHours": 66,
     "v2EstimatedHours": 20,
@@ -1003,7 +1164,8 @@
       { "date": "2026-05-23", "change": "Initial 15 cards with 4 checklists (back/front/regra/testes)" },
       { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" },
       { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" },
-      { "date": "2026-05-30", "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states" }
+      { "date": "2026-05-30", "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states" },
+      { "date": "2026-05-30", "change": "Added PBI-25/26/27 Layout pra vender — landing comercial Lustro, vitrine do tenant, empty states + onboarding" }
     ]
   }
 }

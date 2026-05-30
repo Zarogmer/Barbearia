@@ -2,14 +2,16 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { prismaAdmin } from "@/lib/db";
+
 /**
- * Sistema de temas (PBI-28 + PBI-29 tattoo).
+ * Sistema de temas (PBI-28 + PBI-29 + PBI-30).
  *
- * Persistência: cookies `theme` e `dark`.
- * - `theme`: charcoal | oldschool | viking | salao | manicure | luxe | tattoo
- * - `dark`: "1" se ativo, ausente caso contrário
+ * Resolução: cookie (preview) > org default (PBI-30) > charcoal-light.
+ * - Cookie `theme` + `dark`: sobrescreve por sessão, vive 1 ano
+ * - Org `theme` + `darkMode` (PBI-30): default da barbearia
  *
- * Default sem cookie: charcoal-light.
+ * Themes: charcoal | oldschool | viking | salao | manicure | luxe | tattoo
  */
 
 export const THEMES = [
@@ -72,14 +74,53 @@ export type ThemeState = {
   dark: boolean;
 };
 
-export async function getThemeState(): Promise<ThemeState> {
+/**
+ * Estado de tema efetivo. Cookie tem prioridade sobre org (PBI-30).
+ *
+ * @param orgId opcional. Se passado, busca tema persistido na org via
+ *              prismaAdmin (bypass RLS — query global cross-tenant pelo id).
+ *              Usado quando o usuário tem membership ativa.
+ */
+export async function getThemeState(orgId?: string | null): Promise<ThemeState> {
   const c = await cookies();
-  const rawTheme = c.get(COOKIE_THEME)?.value;
-  const theme = THEME_IDS.includes(rawTheme as ThemeId)
-    ? (rawTheme as ThemeId)
-    : DEFAULT_THEME;
-  const dark = c.get(COOKIE_DARK)?.value === "1";
-  return { theme, dark };
+  const cookieTheme = c.get(COOKIE_THEME)?.value;
+  const cookieDark = c.get(COOKIE_DARK)?.value;
+
+  if (cookieTheme && THEME_IDS.includes(cookieTheme as ThemeId)) {
+    return { theme: cookieTheme as ThemeId, dark: cookieDark === "1" };
+  }
+
+  if (orgId) {
+    const orgTheme = await getOrgTheme(orgId);
+    if (orgTheme) return orgTheme;
+  }
+
+  return { theme: DEFAULT_THEME, dark: false };
+}
+
+/**
+ * Carrega tema persistido numa org (PBI-30). Null se org não setou.
+ * Usa prismaAdmin porque essa lookup acontece no layout root, fora de
+ * withTenant — mesma justificativa de getOrgBySlug.
+ */
+export async function getOrgTheme(orgId: string): Promise<ThemeState | null> {
+  const org = await prismaAdmin.organization.findUnique({
+    where: { id: orgId },
+    select: { theme: true, darkMode: true },
+  });
+  if (!org?.theme || !THEME_IDS.includes(org.theme as ThemeId)) return null;
+  return { theme: org.theme as ThemeId, dark: org.darkMode };
+}
+
+/** Salva tema como default da org (PBI-30). Owner-gated na action. */
+export async function persistOrgTheme(
+  orgId: string,
+  state: ThemeState,
+): Promise<void> {
+  await prismaAdmin.organization.update({
+    where: { id: orgId },
+    data: { theme: state.theme, darkMode: state.dark },
+  });
 }
 
 export function isValidTheme(id: string): id is ThemeId {

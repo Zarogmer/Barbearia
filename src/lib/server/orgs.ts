@@ -44,6 +44,8 @@ export type PublicOrgProfile = PublicOrg & {
   instagram: string | null;
   whatsapp: string | null;
   businessHours: BusinessHours | null;
+  theme: string | null;
+  darkMode: boolean;
 };
 
 /**
@@ -67,6 +69,8 @@ export const getOrgPublicProfile = unstable_cache(
         instagram: true,
         whatsapp: true,
         businessHours: true,
+        theme: true,
+        darkMode: true,
       },
     });
     if (!org) return null;
@@ -75,6 +79,6 @@ export const getOrgPublicProfile = unstable_cache(
       businessHours: parseBusinessHours(org.businessHours),
     };
   },
-  ["org-public-profile-v1"],
+  ["org-public-profile-v2"],
   { revalidate: 60, tags: ["org-public-profile"] },
 );

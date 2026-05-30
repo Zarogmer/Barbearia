@@ -26,6 +26,9 @@ model Organization {
   instagram     String?
   whatsapp      String?
   businessHours Json?
+  // PBI-30: tema persistido por org. Cookie ainda sobrescreve (preview).
+  theme         String?
+  darkMode      Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

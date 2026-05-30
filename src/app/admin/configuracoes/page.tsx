@@ -29,7 +29,7 @@ export default async function SettingsPage() {
 
   const [org, themeState] = await Promise.all([
     getOrganizationForAdmin(ownerMembership.organizationId),
-    getThemeState(),
+    getThemeState(ownerMembership.organizationId),
   ]);
 
   return (
@@ -63,6 +63,7 @@ export default async function SettingsPage() {
         <ThemeSelector
           initialTheme={themeState.theme}
           initialDark={themeState.dark}
+          canSaveAsOrgDefault
         />
       </div>
     </div>

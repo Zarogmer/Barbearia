@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 
 import { ServiceWorkerRegister } from "@/components/features/common/ServiceWorkerRegister";
+import { auth } from "@/lib/auth";
 import { getThemeState } from "@/lib/server/theme";
 
 import "./globals.css";
@@ -89,7 +90,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { theme, dark } = await getThemeState();
+  const session = await auth();
+  const orgId = session?.user.memberships[0]?.organizationId ?? null;
+  const { theme, dark } = await getThemeState(orgId);
   const htmlClass = [
     inter.variable,
     playfair.variable,

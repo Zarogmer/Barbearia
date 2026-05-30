@@ -46,6 +46,9 @@ type Props = {
   professionals?: Professional[]; // só carregado se serviceId presente
   slots?: AvailableSlot[]; // só carregado se professionalId+date presentes
   maxDaysAhead: number;
+  // Rota onde este picker está renderizado (ex: "/barbearia-demo/agendar" ou
+  // "/barbearia-demo/conta/agendar"). Usada pra pushar URL params da seleção.
+  basePath: string;
 };
 
 function buildQuery(params: Record<string, string | undefined>) {
@@ -76,6 +79,7 @@ export function BookingPickerMobile({
   professionals,
   slots,
   maxDaysAhead,
+  basePath,
 }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -105,7 +109,7 @@ export function BookingPickerMobile({
     if (next.date && next.date !== selected.date) merged.time = undefined;
 
     const qs = buildQuery(merged);
-    startTransition(() => router.replace(`/${orgSlug}/conta/agendar?${qs}`));
+    startTransition(() => router.replace(`${basePath}?${qs}`));
     setOpenSheet(null);
   }
 

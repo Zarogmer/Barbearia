@@ -73,7 +73,7 @@ export default async function HistoricoTab({
             Faça seu primeiro agendamento em {org.name}.
           </p>
           <Link
-            href={`/${orgSlug}/conta/agendar`}
+            href={`/${orgSlug}/agendar`}
             className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
           >
             Agendar agora

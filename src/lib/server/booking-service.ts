@@ -97,7 +97,8 @@ export type CreateBookingArgs = {
   date: string; // 'YYYY-MM-DD' local
   time: string; // 'HH:MM' local
   customerName: string;
-  customerEmail: string;
+  /** Opcional desde PBI-23 (agendamento anonimo via SMS OTP nao captura email). */
+  customerEmail?: string;
   customerPhone?: string;
   userId?: string; // se cliente está logado
   now?: Date;
@@ -167,9 +168,11 @@ export async function createBooking(args: CreateBookingArgs): Promise<CreateBook
 
     // Resolve user: usa session (se logado) ou cria/encontra por email.
     // User vive na tabela global (sem RLS) — usa prismaAdmin.
+    // PBI-23: agendamento anonimo via SMS OTP nao tem email, pula resolucao
+    // de User (Appointment fica com userId=null + customerName/Phone soltos).
     let userId = args.userId ?? null;
     let isNewUser = false;
-    if (!userId) {
+    if (!userId && args.customerEmail) {
       const existing = await prismaAdmin.user.findUnique({
         where: { email: args.customerEmail },
         select: { id: true },

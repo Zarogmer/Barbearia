@@ -1,25 +1,47 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
-import { StepIndicator } from "@/components/features/booking/StepIndicator";
+import { BookingPickerMobile } from "@/components/features/customer/BookingPickerMobile";
+import { getAvailableSlots } from "@/lib/server/booking-service";
 import { getOrgBySlug } from "@/lib/server/orgs";
+import { listProfessionalsForService } from "@/lib/server/professionals";
 import { listActiveServices } from "@/lib/server/services-public";
-import { cn, formatBRL, formatDuration } from "@/lib/utils";
 
-export default async function ChooseServicePage({
+const MAX_DAYS_AHEAD = 60; // RN-06
+
+export default async function AgendarPage({
   params,
   searchParams,
 }: {
   params: Promise<{ orgSlug: string }>;
-  searchParams: Promise<{ serviceId?: string }>;
+  searchParams: Promise<{
+    serviceId?: string;
+    professionalId?: string;
+    date?: string;
+    time?: string;
+  }>;
 }) {
   const { orgSlug } = await params;
-  const { serviceId: selected } = await searchParams;
+  const sp = await searchParams;
   const org = await getOrgBySlug(orgSlug);
   if (!org) notFound();
 
   const services = await listActiveServices(org.id);
+
+  const professionals = sp.serviceId
+    ? await listProfessionalsForService(org.id, sp.serviceId)
+    : undefined;
+
+  const slots =
+    sp.serviceId && sp.professionalId && sp.date
+      ? await getAvailableSlots({
+          organizationId: org.id,
+          professionalId: sp.professionalId,
+          serviceId: sp.serviceId,
+          date: sp.date,
+        })
+      : undefined;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
@@ -31,76 +53,33 @@ export default async function ChooseServicePage({
           <ArrowLeft className="h-3.5 w-3.5" />
           Voltar
         </Link>
-        <StepIndicator current={1} total={4} />
       </header>
 
-      <h1 className="mb-1.5 font-display text-2xl font-extrabold tracking-tight">
-        Escolha o serviço
-      </h1>
-      <p className="mb-6 text-sm text-subtle">Selecione um para continuar.</p>
-
-      <div className="mb-6 flex-1 space-y-2">
-        {services.length === 0 ? (
-          <p className="mono text-xs text-subtle">
-            Nenhum serviço disponível no momento.
-          </p>
-        ) : (
-          services.map((s) => {
-            const isSelected = selected === s.id;
-            return (
-              <Link
-                key={s.id}
-                href={`/${orgSlug}/agendar?serviceId=${s.id}`}
-                replace
-                className={cn(
-                  "block rounded-md border bg-surface p-4 transition-all",
-                  isSelected
-                    ? "border-brand bg-brand-soft shadow-glow"
-                    : "border-line hover:-translate-y-px hover:border-brand",
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                      isSelected ? "border-brand" : "border-line",
-                    )}
-                  >
-                    {isSelected && (
-                      <span className="h-2 w-2 rounded-full bg-brand animate-pop-in" />
-                    )}
-                  </span>
-                  <div className="flex-1">
-                    <div className="font-semibold">{s.name}</div>
-                    <div
-                      className={cn(
-                        "mono text-xs",
-                        isSelected ? "text-brand" : "text-subtle",
-                      )}
-                    >
-                      {formatDuration(s.durationMinutes)} · {formatBRL(s.priceCents)}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            );
-          })
-        )}
+      <div className="mb-6">
+        <div className="eyebrow mb-3">Agendamento</div>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">
+          Agende seu horário
+        </h1>
+        <p className="text-sm text-subtle">
+          Em {org.name} · escolha e confirme em 3 toques.
+        </p>
       </div>
 
-      <Link
-        href={selected ? `/${orgSlug}/agendar/profissional?serviceId=${selected}` : "#"}
-        aria-disabled={!selected}
-        className={cn(
-          "sticky bottom-4 flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all",
-          selected
-            ? "bg-ink text-surface shadow-sm hover:-translate-y-px hover:shadow-md"
-            : "pointer-events-none cursor-not-allowed bg-surface-2 text-subtle",
-        )}
-      >
-        Continuar
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      <BookingPickerMobile
+        orgSlug={orgSlug}
+        timezone={org.timezone}
+        services={services}
+        selected={{
+          serviceId: sp.serviceId,
+          professionalId: sp.professionalId,
+          date: sp.date,
+          time: sp.time,
+        }}
+        professionals={professionals}
+        slots={slots}
+        maxDaysAhead={MAX_DAYS_AHEAD}
+        basePath={`/${orgSlug}/agendar`}
+      />
     </main>
   );
 }

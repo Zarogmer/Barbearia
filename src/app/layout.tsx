@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 
 import { ServiceWorkerRegister } from "@/components/features/common/ServiceWorkerRegister";
+import { getThemeState } from "@/lib/server/theme";
 
 import "./globals.css";
 
@@ -83,17 +84,23 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { theme, dark } = await getThemeState();
+  const htmlClass = [
+    inter.variable,
+    jakarta.variable,
+    jetbrains.variable,
+    instrument.variable,
+    dark ? "dark" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
-    <html
-      lang="pt-BR"
-      data-theme="charcoal"
-      className={`${inter.variable} ${jakarta.variable} ${jetbrains.variable} ${instrument.variable}`}
-    >
+    <html lang="pt-BR" data-theme={theme} className={htmlClass}>
       <body
         className="min-h-screen bg-surface font-sans text-ink antialiased"
         suppressHydrationWarning

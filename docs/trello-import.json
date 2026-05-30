@@ -1129,6 +1129,56 @@
           ]
         }
       ]
+    },
+    {
+      "id": "PBI-28",
+      "name": "PBI-28 — Sistema de temas (6 paletas por nicho) + dark mode",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p1"],
+      "pos": 28,
+      "estimateHours": 6,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 6h · **Depende:** nenhum (puro CSS + Server Action + cookie)\n\n## 🎯 Objetivo\nPermitir que cada barbearia/salão escolha uma paleta visual adequada ao seu nicho (Old School Barber, Viking, Salão Sofisticado, Manicure Pastel, Maquiagem Luxo) e ative dark mode. Hoje só existe a paleta Charcoal Premium (default). Identidade visual flexível vira diferencial de venda.\n\n## 🎨 Paletas propostas\n1. **Charcoal Premium** (default, existente) — Cinza+âmbar, barbearia masculina genérica\n2. **Old School Barber** — Vinho+dourado+marrom, retro/classic\n3. **Viking Barber** — Preto+vermelho metalico, agressivo\n4. **Salão Sofisticado** — Rose+coral+nude, salão feminino premium\n5. **Manicure Pastel** — Lilás+rosa+candy, manicure/pedicure\n6. **Maquiagem Luxo** — Bronze+nude+dourado, salão de maquiagem premium\n\nCada uma com variante **light** e **dark** (12 variants totais).\n\n## ⚙️ Decisões técnicas\n- CSS variables via [data-theme] em globals.css (extende padrão existente)\n- Persistência: cookie `theme` + `dark` (sem schema change), TTL 1 ano\n- Server Action setThemeAction seta cookie e revalida path\n- Root layout (server) lê cookies via next/headers, aplica data-theme + class='dark' no <body>\n- Preview live no seletor (estado local antes de salvar)",
+      "checklists": [
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "globals.css: adicionar 5 paletas novas (light + dark cada) — Old School Barber, Viking, Salão, Manicure, Maquiagem",
+            "globals.css: ajustar paleta charcoal pra ter variante .dark (já existe light)",
+            "src/lib/server/theme.ts: helpers getThemeFromCookies + setThemeAction (Server Action)",
+            "src/app/layout.tsx: ler cookies no Server Component, aplicar data-theme + class='dark' no <body>",
+            "src/components/features/admin/ThemeSelector.tsx: client component com grid de 6 cards (preview de cada paleta) + toggle dark + Server Action save",
+            "Plugar ThemeSelector em /admin/configuracoes",
+            "Cards do seletor mostram preview real: pequeno chip da brand color, surface, ink — sample mini"
+          ]
+        },
+        {
+          "name": "📜 Regra de cuidado",
+          "items": [
+            "Cookie httpOnly=false (precisa ser legível no client se quiser toggle imediato sem reload)",
+            "Default sem cookie: charcoal-light",
+            "Dark mode é toggle separado da paleta — pode misturar (ex: viking + dark)",
+            "Acessibilidade: todas as paletas devem manter contraste WCAG AA mínimo (text+bg)",
+            "Não persistir em Organization no MVP — cookie por sessão é suficiente; futuro PBI pode amarrar ao tenant"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Manual: trocar paleta no seletor → ver mudança instantânea + persistir refresh",
+            "Manual: ativar dark mode → todas as superfícies invertem corretamente",
+            "Manual: cada paleta + dark verificada visualmente (12 combos)",
+            "A11y: rodar Lighthouse em pelo menos 3 paletas pra confirmar contraste"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Verificar bundle size: 12 paletas em CSS = ~3kb a mais — aceitável",
+            "Smoke test pós-deploy: trocar tema em prod, refresh, persistência OK"
+          ]
+        }
+      ]
     }
   ],
   "metadata": {
@@ -1165,7 +1215,8 @@
       { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" },
       { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" },
       { "date": "2026-05-30", "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states" },
-      { "date": "2026-05-30", "change": "Added PBI-25/26/27 Layout pra vender — landing comercial Lustro, vitrine do tenant, empty states + onboarding" }
+      { "date": "2026-05-30", "change": "Added PBI-25/26/27 Layout pra vender — landing comercial Lustro, vitrine do tenant, empty states + onboarding" },
+      { "date": "2026-05-30", "change": "Added PBI-28 Sistema de temas — 6 paletas por nicho (Charcoal, Old School Barber, Viking, Salão, Manicure, Maquiagem Luxo) + dark mode" }
     ]
   }
 }

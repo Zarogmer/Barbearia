@@ -42,6 +42,8 @@ model Organization {
   comandas           Comanda[]
   commissionRules    CommissionRule[]
   commissionPayments CommissionPayment[]
+  products           Product[]
+  inventoryMovements InventoryMovement[]
 
   @@map("organizations")
 }
@@ -372,6 +374,57 @@ model CommissionPayment {
 
   @@index([organizationId, professionalId, paidAt])
   @@map("commission_payments")
+}
+
+// ─── Estoque (PBI-18 fase 1) ──────────────────────────────
+// Catalogo de produtos vendidos no balcao + historico de
+// movimentacao (IN entrada, OUT saida/venda, ADJUST ajuste manual).
+// Estoque atual = SUM(quantity assinada) por produto.
+// Pode ficar negativo (RN: barbearia pequena vende "o que chega amanha").
+
+enum InventoryMovementType {
+  IN
+  OUT
+  ADJUST
+}
+
+model Product {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  name           String
+  sku            String?
+  description    String?
+  salePriceCents Int
+  costPriceCents Int      @default(0)
+  minStock       Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  movements    InventoryMovement[]
+
+  @@unique([organizationId, sku])
+  @@index([organizationId, active])
+  @@map("products")
+}
+
+model InventoryMovement {
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String                @db.Uuid
+  productId      String                @db.Uuid
+  type           InventoryMovementType
+  quantity       Int                   // sempre positivo; tipo decide se soma/subtrai
+  reason         String?
+  // userId opcional pra rastrear quem mexeu (NULL em movimento automatico de venda)
+  userId         String?               @db.Uuid
+  createdAt      DateTime              @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, productId, createdAt])
+  @@map("inventory_movements")
 }
 
 // ─── SMS OTP (PBI-23) ─────────────────────────────────────

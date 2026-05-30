@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 
+import { OnboardingChecklist } from "@/components/features/admin/OnboardingChecklist";
 import { auth } from "@/lib/auth";
 import { getDashboardStats } from "@/lib/server/dashboard";
+import { getOnboardingState } from "@/lib/server/onboarding";
 import { formatBRL, formatDuration } from "@/lib/utils";
 
 function formatTimeIn(utc: Date, timezone: string): string {
@@ -27,7 +29,11 @@ export default async function DashboardPage() {
     );
   }
 
-  const stats = await getDashboardStats(membership.organizationId);
+  const [stats, onboarding] = await Promise.all([
+    getDashboardStats(membership.organizationId),
+    getOnboardingState(membership.organizationId),
+  ]);
+  const showOnboarding = !onboarding.allDone && !onboarding.dismissed;
 
   const todayLocal = toZonedTime(new Date(), stats.timezone);
   const todayLabel = todayLocal.toLocaleDateString("pt-BR", {
@@ -62,6 +68,14 @@ export default async function DashboardPage() {
           Novo agendamento
         </Link>
       </header>
+
+      {showOnboarding && (
+        <OnboardingChecklist
+          steps={onboarding.steps}
+          completed={onboarding.completed}
+          total={onboarding.total}
+        />
+      )}
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Percent } from "lucide-react";
 
 import { CommissionCalculator } from "@/components/features/admin/CommissionCalculator";
 import { CommissionRulesEditor } from "@/components/features/admin/CommissionRulesEditor";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  CommissionIllustration,
+  ProfessionalIllustration,
+} from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import {
   calculateCommission,
@@ -84,15 +88,12 @@ export default async function ComissoesPage({
       </div>
 
       {profList.length === 0 ? (
-        <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-          <Percent className="mx-auto mb-3 h-8 w-8 text-subtle" />
-          <p className="mb-2 font-display text-base font-bold">
-            Cadastre profissionais primeiro
-          </p>
-          <p className="text-xs text-subtle">
-            Vá em <Link href="/admin/profissionais" className="underline">Profissionais</Link>.
-          </p>
-        </div>
+        <EmptyState
+          icon={<ProfessionalIllustration />}
+          title="Cadastre profissionais primeiro"
+          description="Comissões são definidas por profissional. Não dá pra abrir esta tela sem ter pelo menos um."
+          cta={{ href: "/admin/profissionais", label: "Ir para Profissionais" }}
+        />
       ) : tab === "regras" ? (
         <RulesTab orgId={orgId} professionals={profList} services={serviceList} />
       ) : tab === "calcular" ? (
@@ -167,15 +168,12 @@ async function HistoryTab({ orgId }: { orgId: string }) {
   const payments = await listCommissionPayments(orgId);
   if (payments.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-line bg-surface-2 p-10 text-center">
-        <Percent className="mx-auto mb-3 h-8 w-8 text-subtle" />
-        <p className="mb-2 font-display text-base font-bold">
-          Sem pagamentos registrados
-        </p>
-        <p className="text-xs text-subtle">
-          Calcule e pague na aba Calcular pra começar o histórico.
-        </p>
-      </div>
+      <EmptyState
+        icon={<CommissionIllustration />}
+        title="Sem pagamentos registrados"
+        description="Use a aba Calcular pra apurar comissão por período e profissional, depois registre o pagamento aqui."
+        cta={null}
+      />
     );
   }
 

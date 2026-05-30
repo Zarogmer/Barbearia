@@ -15,6 +15,7 @@
 import { PrismaClient } from "@prisma/client";
 
 const DB_URL = process.env.DATABASE_URL;
+const APP_USER_PASSWORD = process.env.APP_USER_PASSWORD;
 
 if (!DB_URL) {
   throw new Error(
@@ -22,30 +23,53 @@ if (!DB_URL) {
       "(usa .env.test) ou exporte manualmente apontando pro Postgres de teste.",
   );
 }
+if (!APP_USER_PASSWORD) {
+  throw new Error(
+    "APP_USER_PASSWORD não setado. Necessário pra simular RLS em integration " +
+      "tests (cliente app_user com NOBYPASSRLS). Ver .env.test.",
+  );
+}
 
 /**
- * Cliente "admin" (bypass RLS). Usar em fixtures e cleanup. Conecta como
- * postgres do docker-compose.test.yml, sem app_user.
+ * Substitui o user/senha numa URL de conexão Postgres mantendo host/db/params.
+ * Usado pra derivar a URL de `app_user` a partir da `DATABASE_URL` de teste
+ * (que conecta como `postgres` superuser pra fixtures).
+ */
+function rewriteCredentials(url: string, user: string, password: string): string {
+  // postgresql://USER:PASS@host:port/db?params
+  return url.replace(
+    /^(postgres(?:ql)?:\/\/)[^:]+:[^@]+@/,
+    `$1${user}:${encodeURIComponent(password)}@`,
+  );
+}
+
+const APP_USER_URL = rewriteCredentials(DB_URL, "app_user", APP_USER_PASSWORD);
+
+/**
+ * Cliente "admin" (bypass RLS). Conecta como `postgres` superuser pra
+ * setup de fixtures e cleanup. Postgres faz superusers ignorarem RLS por
+ * default, então NÃO use isso pra testar isolamento.
  */
 export const adminPrisma = new PrismaClient({ datasourceUrl: DB_URL });
 
 /**
- * Cliente "app" (com RLS forçado). Em produção conecta como `app_user`,
- * mas no DB de teste do docker o user é postgres sem RLS aplicado por
- * default. Pra simular RLS, usamos `withTenantCtx` que define
- * `app.current_org_id` em transação.
+ * Cliente "app" (RLS forçado). Conecta como `app_user` (criado por
+ * prisma/setup-app-user.ts com NOBYPASSRLS) — mesma role que a app usa
+ * em produção. Tem que ser este cliente em `withTenantCtx` pra que as
+ * policies de RLS sejam realmente avaliadas; superuser as ignora.
  */
-export const appPrisma = adminPrisma; // Mesmo cliente em teste; RLS via SET LOCAL.
+export const appPrisma = new PrismaClient({ datasourceUrl: APP_USER_URL });
 
 /**
  * Roda fn dentro de uma transação com `app.current_org_id` setado.
- * Espelha `withTenant` da app, mas usando o cliente de teste.
+ * Espelha `withTenant` da app, usando o cliente `app_user` pra que RLS
+ * realmente atue (postgres superuser bypassa policies — não exerce nada).
  */
 export async function withTenantCtx<T>(
   organizationId: string,
   fn: (tx: PrismaClient) => Promise<T>,
 ): Promise<T> {
-  return adminPrisma.$transaction(async (tx) => {
+  return appPrisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe(
       `SET LOCAL app.current_org_id = '${organizationId}'`,
     );

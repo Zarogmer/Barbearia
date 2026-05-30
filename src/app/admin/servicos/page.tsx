@@ -85,20 +85,91 @@ export default async function ServicesPage() {
               const showAll = linkedProfs.slice(0, 3);
               const overflow = Math.max(0, linkedProfs.length - showAll.length);
 
+              const editDialog = (
+                <ServiceFormDialog
+                  mode="edit"
+                  professionals={professionals}
+                  defaults={{
+                    id: s.id,
+                    name: s.name,
+                    description: s.description,
+                    durationMinutes: s.durationMinutes,
+                    priceCents: s.priceCents,
+                    active: s.active,
+                    professionalIds: s.professionalIds,
+                  }}
+                  trigger={<EditServiceTrigger name={s.name} />}
+                />
+              );
+              const deactivateBtn = (
+                <DeactivateServiceButton serviceId={s.id} serviceName={s.name} />
+              );
               return (
                 <div
                   key={s.id}
-                  className="flex flex-col gap-2 px-5 py-4 transition-colors hover:bg-surface-2 sm:grid sm:grid-cols-[1fr_120px_120px_140px_80px_80px] sm:items-center sm:gap-4"
+                  className="px-4 py-3 transition-colors hover:bg-surface-2 sm:grid sm:grid-cols-[1fr_120px_120px_140px_80px_80px] sm:items-center sm:gap-4 sm:px-5 sm:py-4"
                 >
-                  <div className="min-w-0">
+                  {/* Mobile: layout denso 2 linhas */}
+                  <div className="sm:hidden">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold">{s.name}</div>
+                        {s.description && (
+                          <div className="truncate text-[11px] text-subtle">
+                            {s.description}
+                          </div>
+                        )}
+                      </div>
+                      <div className="mono shrink-0 text-sm font-semibold">
+                        {formatBRL(s.priceCents)}
+                      </div>
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="mono text-[11px] text-subtle">
+                          {formatDuration(s.durationMinutes)}
+                        </span>
+                        {linkedProfs.length > 0 ? (
+                          <span className="mono text-[11px] text-subtle">
+                            · {linkedProfs.length} prof
+                            {linkedProfs.length !== 1 && "s"}
+                          </span>
+                        ) : (
+                          <span className="mono text-[10px] text-warn">
+                            · sem prof
+                          </span>
+                        )}
+                        <span
+                          className={
+                            s.active
+                              ? "rounded-full bg-ok/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-ok"
+                              : "rounded-full bg-surface-3 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-subtle"
+                          }
+                        >
+                          {s.active ? "Ativo" : "Inativo"}
+                        </span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {editDialog}
+                        {deactivateBtn}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop: grid original */}
+                  <div className="hidden min-w-0 sm:block">
                     <div className="truncate font-semibold">{s.name}</div>
                     {s.description && (
                       <div className="truncate text-xs text-subtle">{s.description}</div>
                     )}
                   </div>
-                  <div className="mono text-sm">{formatDuration(s.durationMinutes)}</div>
-                  <div className="mono text-sm font-semibold">{formatBRL(s.priceCents)}</div>
-                  <div className="flex -space-x-2">
+                  <div className="hidden mono text-sm sm:block">
+                    {formatDuration(s.durationMinutes)}
+                  </div>
+                  <div className="hidden mono text-sm font-semibold sm:block">
+                    {formatBRL(s.priceCents)}
+                  </div>
+                  <div className="hidden -space-x-2 sm:flex">
                     {showAll.map((p) => {
                       const ini = p.name
                         .split(" ")
@@ -120,12 +191,10 @@ export default async function ServicesPage() {
                       </span>
                     )}
                     {linkedProfs.length === 0 && (
-                      <span className="mono text-[10px] text-subtle">
-                        nenhum
-                      </span>
+                      <span className="mono text-[10px] text-subtle">nenhum</span>
                     )}
                   </div>
-                  <div>
+                  <div className="hidden sm:block">
                     <span
                       className={
                         s.active
@@ -136,22 +205,9 @@ export default async function ServicesPage() {
                       {s.active ? "Ativo" : "Inativo"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-end gap-1">
-                    <ServiceFormDialog
-                      mode="edit"
-                      professionals={professionals}
-                      defaults={{
-                        id: s.id,
-                        name: s.name,
-                        description: s.description,
-                        durationMinutes: s.durationMinutes,
-                        priceCents: s.priceCents,
-                        active: s.active,
-                        professionalIds: s.professionalIds,
-                      }}
-                      trigger={<EditServiceTrigger name={s.name} />}
-                    />
-                    <DeactivateServiceButton serviceId={s.id} serviceName={s.name} />
+                  <div className="hidden items-center justify-end gap-1 sm:flex">
+                    {editDialog}
+                    {deactivateBtn}
                   </div>
                 </div>
               );

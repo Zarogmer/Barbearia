@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 
+import { BirthDateEditor } from "@/components/features/admin/BirthDateEditor";
 import { DeleteNoteButton } from "@/components/features/admin/DeleteNoteButton";
 import { NewNoteDialog } from "@/components/features/admin/NewNoteDialog";
 import { auth } from "@/lib/auth";
@@ -125,6 +126,9 @@ export default async function CustomerDetailPage({
                   {detail.phone}
                 </span>
               )}
+            </div>
+            <div className="mt-2">
+              <BirthDateEditor userId={detail.userId} initial={detail.birthDate} />
             </div>
           </div>
         </div>

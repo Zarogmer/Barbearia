@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Cake,
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
@@ -21,6 +22,7 @@ const NAV = [
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
   { href: "/admin/comandas", label: "Comandas", icon: Receipt },
   { href: "/admin/clientes", label: "Clientes", icon: UserCircle2 },
+  { href: "/admin/aniversariantes", label: "Aniversariantes", icon: Cake },
   { href: "/admin/servicos", label: "Serviços", icon: Scissors },
   { href: "/admin/estoque", label: "Estoque", icon: Package },
   { href: "/admin/profissionais", label: "Profissionais", icon: Users },

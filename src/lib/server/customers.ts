@@ -106,6 +106,7 @@ export type CustomerDetail = {
   name: string;
   email: string;
   phone: string | null;
+  birthDate: Date | null;
   stats: CustomerStats;
 };
 
@@ -118,7 +119,7 @@ export async function getCustomerDetail(
   // pra appointments (respeitando RLS).
   const user = await prismaAdmin.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, email: true, phone: true, birthDate: true },
   });
   if (!user) return null;
 
@@ -177,6 +178,7 @@ export async function getCustomerDetail(
     name: user.name,
     email: user.email,
     phone: user.phone,
+    birthDate: user.birthDate,
     stats: {
       totalAppointments: appts.length,
       completedCount,

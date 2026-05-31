@@ -37,9 +37,11 @@ export function isCloudinaryConfigured(): boolean {
  * Cloudinary valida que o folder/timestamp não foram alterados.
  */
 export function signUpload(folder: string): UploadSignature {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  // .trim() defende contra copy-paste de env var com espaço/newline acidental.
+  // Cloudinary retorna "Invalid Signature" 401 se houver whitespace no secret.
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error("Cloudinary não configurado (ver .env)");
   }

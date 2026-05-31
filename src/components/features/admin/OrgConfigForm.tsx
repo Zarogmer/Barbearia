@@ -37,6 +37,8 @@ type Props = {
     businessHours: BusinessHours | null;
     allowMultipleSimultaneousBookings: boolean;
     allowOverbookEncaixe: boolean;
+    creditCardFeeBp: number;
+    debitCardFeeBp: number;
   };
 };
 
@@ -224,6 +226,59 @@ export function OrgConfigForm({ defaults }: Props) {
               name="allowOverbookEncaixe"
               value={allowOverbook ? "true" : "false"}
             />
+          </div>
+        </div>
+
+        {/* Taxas do cartão (PBI-45) */}
+        <div className="space-y-3 rounded-lg border border-line bg-surface-2 p-4">
+          <div>
+            <div className="mb-1 font-display text-base font-bold">
+              Taxa do cartão
+            </div>
+            <p className="text-xs text-subtle">
+              Taxa cobrada pela maquininha. Usada pra calcular receita líquida
+              nos relatórios. Deixe 0 se não usa cartão ou não quer descontar.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="creditCardFeePercent"
+                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+              >
+                Crédito (%)
+              </label>
+              <input
+                id="creditCardFeePercent"
+                name="creditCardFeePercent"
+                type="number"
+                step="0.01"
+                min={0}
+                max={50}
+                defaultValue={(defaults.creditCardFeeBp / 100).toFixed(2)}
+                placeholder="4.99"
+                className="mono h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:shadow-glow"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="debitCardFeePercent"
+                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+              >
+                Débito (%)
+              </label>
+              <input
+                id="debitCardFeePercent"
+                name="debitCardFeePercent"
+                type="number"
+                step="0.01"
+                min={0}
+                max={50}
+                defaultValue={(defaults.debitCardFeeBp / 100).toFixed(2)}
+                placeholder="1.99"
+                className="mono h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:shadow-glow"
+              />
+            </div>
           </div>
         </div>
 

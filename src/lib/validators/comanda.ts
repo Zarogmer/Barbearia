@@ -24,6 +24,11 @@ export const addItemSchema = z.discriminatedUnion("type", [
     quantity: z.coerce.number().int().min(1).default(1),
   }),
   z.object({
+    type: z.literal("PRODUCT"),
+    productId: UUID,
+    quantity: z.coerce.number().int().min(1).default(1),
+  }),
+  z.object({
     type: z.literal("MANUAL"),
     name: z.string().trim().min(2).max(120),
     unitPriceCents: z.coerce.number().int().min(0).max(10_000_000),
@@ -62,6 +67,13 @@ export function addItemFormDataToInput(formData: FormData): unknown {
     return {
       type: "SERVICE",
       serviceId: formData.get("serviceId"),
+      quantity: formData.get("quantity"),
+    };
+  }
+  if (type === "PRODUCT") {
+    return {
+      type: "PRODUCT",
+      productId: formData.get("productId"),
       quantity: formData.get("quantity"),
     };
   }

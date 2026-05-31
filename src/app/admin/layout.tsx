@@ -7,12 +7,20 @@ import { AdminMobileTopBar } from "@/components/features/admin/AdminMobileTopBar
 import { AdminNav } from "@/components/features/admin/AdminNav";
 import { PageTransition } from "@/components/ui/page-transition";
 import { auth } from "@/lib/auth";
+import { maybeRunDailyJob } from "@/lib/server/notifications";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) {
     redirect("/login?next=/admin/dashboard");
   }
+
+  // Self-trigger fire-and-forget: cada admin que abre o painel dispara
+  // o job diário se passaram >=23h desde o último run. Sem cron externo.
+  // Não bloqueia o render — erro é só logado.
+  void maybeRunDailyJob().catch((e) => {
+    console.error("[maybeRunDailyJob] falhou silenciosamente:", e);
+  });
 
   const userName = session?.user?.name ?? "Admin";
   const initials = userName

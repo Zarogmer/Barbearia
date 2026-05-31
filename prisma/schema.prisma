@@ -33,6 +33,10 @@ model Organization {
   // Shape: { confirmed: "#hex", completed: "#hex", cancelled: "#hex", noShow: "#hex" }
   // Null = usa defaults do tema.
   appointmentColors Json?
+  // PBI-46: template do lembrete SMS/WhatsApp 24h antes do agendamento.
+  // Aceita placeholders: {nome}, {servico}, {profissional}, {data}, {hora}, {barbearia}
+  // Null = usa default em src/lib/reminder-template.ts
+  reminderTemplate String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

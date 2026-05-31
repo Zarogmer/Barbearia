@@ -21,6 +21,7 @@ export type AdminOrganization = {
   instagram: string | null;
   whatsapp: string | null;
   businessHours: BusinessHours | null;
+  reminderTemplate: string | null;
 };
 
 /**
@@ -45,6 +46,7 @@ export async function getOrganizationForAdmin(
         instagram: true,
         whatsapp: true,
         businessHours: true,
+        reminderTemplate: true,
       },
     });
     return {
@@ -118,6 +120,7 @@ export async function updateOrganization(
           instagram: true,
           whatsapp: true,
           businessHours: true,
+          reminderTemplate: true,
         },
       });
       return {

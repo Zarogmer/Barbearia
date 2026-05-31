@@ -56,6 +56,7 @@ const SECONDARY: NavItem[] = [
   { href: "/admin/relatorios", label: "Relatórios", Icon: BarChart3 },
   { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
   { href: "/admin/mensagens", label: "Mensagens", Icon: MessageCircle },
+  { href: "/admin/pacotes", label: "Pacotes", Icon: Package },
   { href: "/admin/configuracoes", label: "Configurações", Icon: Settings },
 ];
 

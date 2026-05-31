@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, Manrope, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 
 import { ServiceWorkerRegister } from "@/components/features/common/ServiceWorkerRegister";
 import { auth } from "@/lib/auth";
-import { getThemeState } from "@/lib/server/theme";
+import { getOrgPublicProfile } from "@/lib/server/orgs";
+import { DEFAULT_THEME, getThemeState, isValidTheme } from "@/lib/server/theme";
 
 import "./globals.css";
 
@@ -91,9 +93,29 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-  const orgId = session?.user.memberships[0]?.organizationId ?? null;
-  const { theme, dark } = await getThemeState(orgId);
+  const hdrs = await headers();
+  const publicOrgSlug = hdrs.get("x-org-slug");
+
+  // Em rota pública /[slug]/* o tema vem da org dona da vitrine
+  // (independente de quem está visitando). Senão usa a logica antiga
+  // (membership do user logado > cookie > default).
+  let theme: string;
+  let dark: boolean;
+  if (publicOrgSlug) {
+    const publicOrg = await getOrgPublicProfile(publicOrgSlug);
+    theme =
+      publicOrg?.theme && isValidTheme(publicOrg.theme)
+        ? publicOrg.theme
+        : DEFAULT_THEME;
+    dark = !!publicOrg?.darkMode;
+  } else {
+    const session = await auth();
+    const orgId = session?.user.memberships[0]?.organizationId ?? null;
+    const state = await getThemeState(orgId);
+    theme = state.theme;
+    dark = state.dark;
+  }
+
   const htmlClass = [
     inter.variable,
     manrope.variable,

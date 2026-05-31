@@ -1,18 +1,17 @@
 import { getOrgPublicProfile } from "@/lib/server/orgs";
 import { DEFAULT_THEME, isValidTheme } from "@/lib/server/theme";
+import { cn } from "@/lib/utils";
 
 /**
  * Layout segment do tenant público (PBI-30).
- * Aplica o tema persistido da org num wrapper, sobrescrevendo o tema do
- * root layout (que cai em cookie/default pra rotas anônimas).
  *
- * Custom properties em CSS cascadeiam por DOM ancestry, então
- * [data-theme="X"] dentro do <body> override o tema do <html>.
+ * Desde a integração do middleware com header `x-org-slug`, o ROOT layout
+ * já aplica `data-theme` + `.dark` no <html> pra rotas /[slug]/* — o que
+ * garante que background da viewport inteira pinta com a cor da org.
  *
- * Nota: o root layout já cuida do .dark no <html>. Aqui só aplicamos
- * data-theme; modo escuro de visitante anônimo continua sendo o do
- * sistema (root) — orgs que ativam dark mode no admin precisarão de
- * iteração futura pra forçar dark na vitrine pública.
+ * Este wrapper aqui serve como fallback (caso o header não chegue, ex:
+ * SSG/ISR) e isola o subtree do segment caso futuras telas queiram
+ * sobrescrever o tema localmente.
  */
 export default async function OrgPublicLayout({
   children,
@@ -26,7 +25,13 @@ export default async function OrgPublicLayout({
   const theme =
     org?.theme && isValidTheme(org.theme) ? org.theme : DEFAULT_THEME;
   return (
-    <div data-theme={theme} className={org?.darkMode ? "dark" : undefined}>
+    <div
+      data-theme={theme}
+      className={cn(
+        "min-h-screen bg-surface text-ink",
+        org?.darkMode && "dark",
+      )}
+    >
       {children}
     </div>
   );

@@ -1,12 +1,17 @@
 /**
  * Edge-safe middleware: NÃO importa `@/lib/auth` (que arrasta Prisma + bcrypt).
  *
- * Cobertura: checa apenas a PRESENÇA do cookie de sessão Auth.js — autenticação
- * real (validar JWT, carregar memberships, autorizar por role) acontece em
- * `src/app/admin/layout.tsx` que roda no runtime Node completo.
+ * Duas responsabilidades:
  *
- * Como middleware roda em todas as requests `/admin/*`, ele bloqueia o caso
- * trivial (sem cookie) sem cold-starting Prisma — economiza latência.
+ * 1) AUTH GATE em /admin/* e /[slug]/conta/* — checa só a PRESENÇA do cookie
+ *    de sessão Auth.js. Autenticação real (JWT, memberships, role) é feita
+ *    em layouts admin que rodam em Node completo. Aqui só corta o caso
+ *    trivial (sem cookie) sem cold-starting Prisma.
+ *
+ * 2) SLUG HEADER em rotas públicas /[slug]/* — extrai o slug da org no path
+ *    e passa pro server via header `x-org-slug`. O root layout usa pra
+ *    aplicar o tema da org no <html> ANTES do paint (pra cores cobrirem a
+ *    viewport inteira, não só o subtree do segment layout).
  */
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -15,16 +20,52 @@ const SESSION_COOKIES = [
   "__Secure-authjs.session-token", // prod (HTTPS)
 ];
 
+// Top-level segments que NÃO são slug de org. Tudo fora dessa lista
+// (e que não tem "." no nome, sinal de arquivo) é tratado como slug.
+const RESERVED_TOP_SEGMENTS = new Set([
+  "admin",
+  "api",
+  "login",
+  "cadastro",
+  "recuperar",
+  "auth",
+  "_next",
+  "icons",
+]);
+
 export default function middleware(req: NextRequest) {
-  const hasSession = SESSION_COOKIES.some((name) => req.cookies.has(name));
-  if (!hasSession) {
-    const next = encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search);
-    return NextResponse.redirect(new URL(`/login?next=${next}`, req.nextUrl));
+  const { pathname } = req.nextUrl;
+
+  // ──── 1) AUTH GATE ────
+  const isAdminPath = pathname.startsWith("/admin");
+  const isCustomerAccount = /^\/[^/]+\/conta(\/|$)/.test(pathname);
+  if (isAdminPath || isCustomerAccount) {
+    const hasSession = SESSION_COOKIES.some((name) => req.cookies.has(name));
+    if (!hasSession) {
+      const next = encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search);
+      return NextResponse.redirect(new URL(`/login?next=${next}`, req.nextUrl));
+    }
   }
+
+  // ──── 2) SLUG HEADER pra rotas públicas /[slug]/* ────
+  const firstSegment = pathname.split("/")[1] ?? "";
+  const looksLikeSlug =
+    firstSegment.length > 0 &&
+    !RESERVED_TOP_SEGMENTS.has(firstSegment) &&
+    !firstSegment.includes(".");
+  if (looksLikeSlug) {
+    // Reescreve a request adicionando o header — server components leem
+    // via headers() do next/headers.
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-org-slug", firstSegment);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  // /admin/* (painel do dono) + /[orgSlug]/conta/* (painel do cliente — PBI-48)
-  matcher: ["/admin/:path*", "/:orgSlug/conta/:path*"],
+  // Cobre tudo exceto assets/internals do Next + favicon.
+  // Auth gate continua aplicando só nos paths específicos checados acima.
+  matcher: ["/((?!_next/|favicon|manifest|sw\\.js|icons/).*)"],
 };

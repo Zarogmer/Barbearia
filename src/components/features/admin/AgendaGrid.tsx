@@ -99,9 +99,10 @@ export function AgendaGrid({
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
-      {/* Tabs mobile (esconde no desktop) */}
+      {/* Tabs mobile: apenas avatar (foto/iniciais) com badge de count.
+          Esconde no desktop (>= lg) onde o grid completo mostra todos. */}
       <div className="border-b border-line bg-surface-2 lg:hidden">
-        <div className="flex gap-1 overflow-x-auto px-2 py-2">
+        <div className="flex gap-2 overflow-x-auto px-3 py-2.5">
           {professionals.map((p) => {
             const active = p.id === activeId;
             const initials = p.name
@@ -115,36 +116,49 @@ export function AgendaGrid({
                 key={p.id}
                 type="button"
                 onClick={() => setActiveId(p.id)}
+                aria-label={`Ver agenda de ${p.name}`}
+                aria-current={active ? "true" : undefined}
+                title={p.name}
                 className={cn(
-                  "tap flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
+                  "tap relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all",
                   active
-                    ? "border-brand bg-brand text-brand-fg shadow-sm"
-                    : "border-line bg-surface text-subtle hover:border-brand/60",
+                    ? "bg-brand text-brand-fg shadow-md ring-2 ring-brand ring-offset-2 ring-offset-surface-2"
+                    : "bg-surface text-ink ring-1 ring-line hover:ring-brand/60",
                 )}
               >
-                <span
-                  className={cn(
-                    "inline-flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold",
-                    active ? "bg-brand-fg/20" : "bg-surface-3",
-                  )}
-                >
-                  {initials}
-                </span>
-                <span className="max-w-[100px] truncate">
-                  {p.name.split(" ")[0]}
-                </span>
-                <span
-                  className={cn(
-                    "mono rounded-full px-1.5 text-[9px]",
-                    active ? "bg-brand-fg/20 text-brand-fg" : "text-subtle",
-                  )}
-                >
-                  {p.appointmentsCount}
-                </span>
+                {initials}
+                {p.appointmentsCount > 0 && (
+                  <span
+                    className={cn(
+                      "mono absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold",
+                      active
+                        ? "bg-ink text-surface"
+                        : "bg-brand text-brand-fg",
+                    )}
+                  >
+                    {p.appointmentsCount}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
+        {/* Header com nome do prof ativo (substitui texto truncado nas tabs) */}
+        {(() => {
+          const active = professionals.find((p) => p.id === activeId);
+          if (!active) return null;
+          return (
+            <div className="flex items-center justify-between border-t border-line bg-surface px-4 py-2">
+              <div className="leading-tight">
+                <div className="text-sm font-semibold">{active.name}</div>
+                <div className="mono text-[10px] text-subtle">
+                  {active.appointmentsCount} agendamento
+                  {active.appointmentsCount !== 1 ? "s" : ""} hoje
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Timeline content */}

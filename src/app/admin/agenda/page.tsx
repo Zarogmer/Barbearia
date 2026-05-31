@@ -3,20 +3,13 @@ import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 
-import { AppointmentDetailDialog } from "@/components/features/admin/AppointmentDetailDialog";
+import { AgendaGrid } from "@/components/features/admin/AgendaGrid";
 import { QuickBookingDialog } from "@/components/features/admin/QuickBookingDialog";
-import { colorForStatus, readableTextColor } from "@/lib/appointment-colors";
 import { auth } from "@/lib/auth";
 import { getAppointmentColors } from "@/lib/server/appointment-colors";
-import { cancelRequiresReason } from "@/lib/server/booking-service";
 import { getDayAgenda } from "@/lib/server/agenda";
 import { listActiveServices } from "@/lib/server/services-public";
-import { cn } from "@/lib/utils";
 
-const HOUR_START = 9;
-const HOUR_END = 19;
-const SLOT_MINUTES = 30;
-const PX_PER_MINUTE = 1.5;
 
 function todayIsoIn(timezone: string): string {
   const now = toZonedTime(new Date(), timezone);
@@ -39,11 +32,6 @@ function isoAddDays(iso: string, days: number): string {
 function localMinutesIn(utc: Date, timezone: string): number {
   const z = toZonedTime(utc, timezone);
   return z.getHours() * 60 + z.getMinutes();
-}
-
-function formatHHMMIn(utc: Date, timezone: string): string {
-  const z = toZonedTime(utc, timezone);
-  return `${String(z.getHours()).padStart(2, "0")}:${String(z.getMinutes()).padStart(2, "0")}`;
 }
 
 function formatDateLabel(iso: string, timezone: string): string {
@@ -116,9 +104,6 @@ export default async function AgendaPage({
       : Promise.resolve([]),
     getAppointmentColors(membership.organizationId),
   ]);
-
-  const hours: number[] = [];
-  for (let h = HOUR_START; h <= HOUR_END; h++) hours.push(h);
 
   const prevDate = isoAddDays(date, -1);
   const nextDate = isoAddDays(date, 1);
@@ -197,174 +182,37 @@ export default async function AgendaPage({
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden rounded-md border border-line bg-surface">
-        <div className="flex h-full">
-          <div className="w-14 shrink-0 border-r border-line">
-            <div className="h-12 border-b border-line bg-surface-2" />
-            {hours.map((h) => (
-              <div
-                key={h}
-                className="mono border-b border-line pl-2 pt-1 text-[11px] font-medium text-subtle"
-                style={{ height: `${60 * PX_PER_MINUTE}px` }}
-              >
-                {String(h).padStart(2, "0")}:00
-              </div>
-            ))}
-          </div>
-
-          {visibleProfessionals.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center p-6">
-              <p className="mono text-[11px] uppercase tracking-wider text-subtle">
-                Nenhum profissional ativo
-              </p>
-            </div>
-          ) : (
-            <div
-              className="grid flex-1 overflow-auto"
-              style={{
-                gridTemplateColumns: `repeat(${visibleProfessionals.length}, minmax(0, 1fr))`,
-              }}
-            >
-              {visibleProfessionals.map((p) => {
-                const apts = finalAgenda.appointments.filter(
-                  (a) => a.professionalId === p.id,
-                );
-                const blocks = finalAgenda.blocks.filter(
-                  (b) => b.professionalId === p.id,
-                );
-                const initials = p.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .slice(0, 2)
-                  .join("")
-                  .toUpperCase();
-                return (
-                  <div key={p.id} className="border-r border-line last:border-r-0">
-                    <div className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b border-line bg-surface-2 px-3">
-                      <span className="avatar-ring">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-3 text-[10px] font-bold">
-                          {initials}
-                        </span>
-                      </span>
-                      <div className="leading-tight">
-                        <div className="text-xs font-semibold">{p.name}</div>
-                        <div className="mono text-[10px] text-subtle">
-                          {p.appointmentsCount} ag
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      className="relative"
-                      style={{
-                        height: `${(HOUR_END - HOUR_START + 1) * 60 * PX_PER_MINUTE}px`,
-                      }}
-                    >
-                      {hours.flatMap((h) =>
-                        [0, SLOT_MINUTES].map((m) => (
-                          <div
-                            key={`${h}-${m}`}
-                            className={cn(
-                              "absolute left-0 right-0 border-t",
-                              m === 0 ? "border-line" : "border-dashed border-line/60",
-                            )}
-                            style={{
-                              top: `${((h - HOUR_START) * 60 + m) * PX_PER_MINUTE}px`,
-                            }}
-                          />
-                        )),
-                      )}
-
-                      {nowMinutes >= 0 &&
-                        nowMinutes >= HOUR_START * 60 &&
-                        nowMinutes <= HOUR_END * 60 && (
-                          <div
-                            className="absolute left-0 right-0 z-[5] h-px bg-danger"
-                            style={{
-                              top: `${(nowMinutes - HOUR_START * 60) * PX_PER_MINUTE}px`,
-                            }}
-                          >
-                            <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-danger" />
-                          </div>
-                        )}
-
-                      {blocks.map((b) => {
-                        const startMin = localMinutesIn(b.startsAt, finalAgenda.timezone);
-                        const endMin = localMinutesIn(b.endsAt, finalAgenda.timezone);
-                        const visStart = Math.max(startMin, HOUR_START * 60);
-                        const visEnd = Math.min(endMin, HOUR_END * 60 + 60);
-                        if (visEnd <= visStart) return null;
-                        const top = (visStart - HOUR_START * 60) * PX_PER_MINUTE;
-                        const height = (visEnd - visStart) * PX_PER_MINUTE;
-                        return (
-                          <div
-                            key={b.id}
-                            className="absolute left-1 right-1 overflow-hidden rounded-md border border-line bg-[repeating-linear-gradient(45deg,hsl(var(--surface-3))_0,hsl(var(--surface-3))_6px,hsl(var(--surface-2))_6px,hsl(var(--surface-2))_12px)] p-1.5 text-[10px] text-subtle"
-                            style={{ top: `${top}px`, height: `${height}px` }}
-                          >
-                            <div className="mono uppercase tracking-wider">Bloqueio</div>
-                            {b.reason && <div className="truncate">{b.reason}</div>}
-                          </div>
-                        );
-                      })}
-
-                      {apts.map((a) => {
-                        const startMin = localMinutesIn(a.startsAt, finalAgenda.timezone);
-                        const endMin = localMinutesIn(a.endsAt, finalAgenda.timezone);
-                        const visStart = Math.max(startMin, HOUR_START * 60);
-                        const visEnd = Math.min(endMin, HOUR_END * 60 + 60);
-                        if (visEnd <= visStart) return null;
-                        const top = (visStart - HOUR_START * 60) * PX_PER_MINUTE;
-                        const height = (visEnd - visStart) * PX_PER_MINUTE;
-                        const requires = cancelRequiresReason(a.startsAt);
-
-                        return (
-                          <AppointmentDetailDialog
-                            key={a.id}
-                            appointment={{
-                              id: a.id,
-                              customerName: a.customerName,
-                              customerPhone: a.customerPhone,
-                              serviceName: a.serviceName,
-                              serviceDurationMinutes: a.serviceDurationMinutes,
-                              servicePriceCents: a.servicePriceCents,
-                              professionalName: a.professionalName,
-                              status: a.status,
-                              startsAtLabel: formatHHMMIn(a.startsAt, finalAgenda.timezone),
-                              endsAtLabel: formatHHMMIn(a.endsAt, finalAgenda.timezone),
-                            }}
-                            requiresCancelReason={requires}
-                            trigger={
-                              <button
-                                type="button"
-                                className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md p-1.5 text-left text-[11px] shadow-sm transition-transform hover:-translate-y-px hover:shadow-md"
-                                style={{
-                                  top: `${top}px`,
-                                  height: `${height}px`,
-                                  backgroundColor: colorForStatus(apptColors, a.status),
-                                  color: readableTextColor(
-                                    colorForStatus(apptColors, a.status),
-                                  ),
-                                }}
-                              >
-                                <div className="truncate font-semibold leading-tight">
-                                  {a.customerName}
-                                </div>
-                                <div className="mono truncate text-[10px] leading-tight opacity-90">
-                                  {formatHHMMIn(a.startsAt, finalAgenda.timezone)} · {a.serviceName}
-                                </div>
-                              </button>
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+      <div className="flex flex-1 overflow-hidden rounded-md border border-line bg-surface">
+        <AgendaGrid
+          professionals={visibleProfessionals.map((p) => ({
+            id: p.id,
+            name: p.name,
+            appointmentsCount: p.appointmentsCount,
+          }))}
+          appointments={finalAgenda.appointments.map((a) => ({
+            id: a.id,
+            professionalId: a.professionalId,
+            startsAtIso: a.startsAt.toISOString(),
+            endsAtIso: a.endsAt.toISOString(),
+            status: a.status,
+            customerName: a.customerName,
+            customerPhone: a.customerPhone,
+            serviceName: a.serviceName,
+            serviceDurationMinutes: a.serviceDurationMinutes,
+            servicePriceCents: a.servicePriceCents,
+            professionalName: a.professionalName,
+          }))}
+          blocks={finalAgenda.blocks.map((b) => ({
+            id: b.id,
+            professionalId: b.professionalId,
+            startsAtIso: b.startsAt.toISOString(),
+            endsAtIso: b.endsAt.toISOString(),
+            reason: b.reason,
+          }))}
+          timezone={finalAgenda.timezone}
+          nowMinutes={nowMinutes}
+          colors={apptColors}
+        />
       </div>
 
       <p className="mono mt-3 text-[10px] uppercase tracking-wider text-subtle">

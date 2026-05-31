@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, FileSpreadsheet, Search } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { CustomersIllustration } from "@/components/ui/empty-state-illustrations";
@@ -55,6 +55,13 @@ export default async function CustomersListPage({
             {result.total !== 1 && "s"}
           </p>
         </div>
+        <Link
+          href="/admin/clientes/importar"
+          className="tap inline-flex h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-4 text-sm font-semibold transition-colors hover:border-brand hover:bg-brand-soft"
+        >
+          <FileSpreadsheet className="h-4 w-4" />
+          Importar CSV
+        </Link>
       </header>
 
       <form className="relative max-w-md" action="/admin/clientes" method="get">

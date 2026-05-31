@@ -18,6 +18,17 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
         serif: ["var(--font-serif)", "Georgia", "serif"],
       },
+      // Tracking suave — Playfair (display serif) com kerning apertado
+      // vira borrão. Defaults Tailwind eram agressivos (-0.025em em tight,
+      // -0.05em em tighter). Suavizamos sem chegar a wide.
+      letterSpacing: {
+        tighter: "-0.01em",
+        tight: "-0.005em",
+        normal: "0em",
+        wide: "0.01em",
+        wider: "0.025em",
+        widest: "0.08em",
+      },
       colors: {
         // Tokens Lustro
         brand: {

@@ -460,13 +460,30 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Smooth font rendering — pré-requisito pra display serif respirar */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
   body {
     @apply bg-surface text-ink;
-    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    /* "kern" garante kerning de pares (W+A, T+e); ligatures e small-caps */
+    font-feature-settings: "kern" 1, "rlig" 1, "calt" 1, "ss01" 1;
+    line-height: 1.55;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display), system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    /* Playfair tem traços finos: tracking apertado embola. Quase neutro
+       agora — mais arejado, ainda elegante. */
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+  }
+  h1 {
+    /* H1 grande precisa de respiro extra horizontal e vertical pro serif
+       desenhar bonito (ex: "Estoque", "Configurações") */
+    letter-spacing: 0.005em;
+    line-height: 1.1;
   }
   .num, .mono, code {
     font-family: var(--font-mono), ui-monospace, monospace;

@@ -100,8 +100,9 @@ export function AgendaFiltersSheet({
             )}
           </button>
         </DialogTrigger>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
+        <DialogContent className="flex max-h-[90vh] max-w-sm flex-col gap-0 p-0">
+          {/* Header sticky no topo */}
+          <DialogHeader className="border-b border-line p-5">
             <DialogTitle className="font-display text-lg font-bold">
               Filtros da agenda
             </DialogTitle>
@@ -110,7 +111,8 @@ export function AgendaFiltersSheet({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          {/* Conteúdo com scroll interno */}
+          <div className="flex-1 space-y-5 overflow-y-auto p-5">
             {/* Calendário */}
             <div>
               <div className="mb-2 inline-flex items-center gap-1.5 mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
@@ -189,25 +191,25 @@ export function AgendaFiltersSheet({
                 })}
               </div>
             </div>
+          </div>
 
-            {/* Footer */}
-            <div className="flex gap-2 border-t border-line pt-4">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="tap h-10 flex-1 rounded-lg border border-line bg-surface text-sm font-semibold transition-colors hover:bg-surface-2"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleApply}
-                disabled={isPending}
-                className="tap h-10 flex-1 rounded-lg bg-ink text-sm font-semibold text-surface shadow-sm transition-all hover:-translate-y-px hover:shadow-md disabled:opacity-60"
-              >
-                Aplicar
-              </button>
-            </div>
+          {/* Footer sticky no bottom — SEMPRE visível mesmo em mobile alto */}
+          <div className="flex shrink-0 gap-2 border-t border-line bg-surface p-4">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="tap h-11 flex-1 rounded-lg border border-line bg-surface text-sm font-semibold transition-colors hover:bg-surface-2"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={isPending}
+              className="tap h-11 flex-1 rounded-lg bg-ink text-sm font-semibold text-surface shadow-sm transition-all hover:-translate-y-px hover:shadow-md disabled:opacity-60"
+            >
+              Aplicar
+            </button>
           </div>
         </DialogContent>
       </Dialog>

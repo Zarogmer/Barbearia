@@ -37,6 +37,13 @@ model Organization {
   // Aceita placeholders: {nome}, {servico}, {profissional}, {data}, {hora}, {barbearia}
   // Null = usa default em src/lib/reminder-template.ts
   reminderTemplate String?
+  // PBI-43: configs de booking.
+  // allowMultipleSimultaneousBookings: cliente pode ter 2 appts no mesmo
+  //   horario com profs diferentes (default false: barbearia tradicional)
+  // allowOverbookEncaixe: dono pode forcar agendamento em conflito de
+  //   horario (encaixe). Quando false, esconde "Forcar" no QuickBooking
+  allowMultipleSimultaneousBookings Boolean @default(false)
+  allowOverbookEncaixe              Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

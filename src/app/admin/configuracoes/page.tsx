@@ -59,6 +59,8 @@ export default async function SettingsPage() {
             instagram: org.instagram,
             whatsapp: org.whatsapp,
             businessHours: org.businessHours,
+            allowMultipleSimultaneousBookings: org.allowMultipleSimultaneousBookings,
+            allowOverbookEncaixe: org.allowOverbookEncaixe,
           }}
         />
       </div>

@@ -22,6 +22,8 @@ export type AdminOrganization = {
   whatsapp: string | null;
   businessHours: BusinessHours | null;
   reminderTemplate: string | null;
+  allowMultipleSimultaneousBookings: boolean;
+  allowOverbookEncaixe: boolean;
 };
 
 /**
@@ -47,6 +49,8 @@ export async function getOrganizationForAdmin(
         whatsapp: true,
         businessHours: true,
         reminderTemplate: true,
+        allowMultipleSimultaneousBookings: true,
+        allowOverbookEncaixe: true,
       },
     });
     return {
@@ -98,6 +102,9 @@ export async function updateOrganization(
           name: input.name,
           slug: input.slug,
           allowGuestBooking: input.allowGuestBooking,
+          allowMultipleSimultaneousBookings:
+            input.allowMultipleSimultaneousBookings ?? false,
+          allowOverbookEncaixe: input.allowOverbookEncaixe ?? true,
           coverImageUrl: input.coverImageUrl ?? null,
           tagline: input.tagline ?? null,
           address: input.address ?? null,
@@ -121,6 +128,8 @@ export async function updateOrganization(
           whatsapp: true,
           businessHours: true,
           reminderTemplate: true,
+          allowMultipleSimultaneousBookings: true,
+          allowOverbookEncaixe: true,
         },
       });
       return {

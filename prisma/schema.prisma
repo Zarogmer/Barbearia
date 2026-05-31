@@ -430,6 +430,21 @@ model InventoryMovement {
   @@map("inventory_movements")
 }
 
+// ─── Job runs (self-trigger de cron interno) ──────────────
+// Registra cada execução do job diário de notificações pra evitar
+// duplicar quando múltiplos admins abrirem o painel no mesmo dia.
+
+model JobRun {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   // "daily-notifications"
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  result     Json?    // {remindersSent, digestsSent, ...}
+
+  @@index([name, startedAt])
+  @@map("job_runs")
+}
+
 // ─── SMS OTP (PBI-23) ─────────────────────────────────────
 // Confirmacao de agendamento anonimo por codigo SMS. Cross-tenant
 // (telefone e global, nao pertence a uma org). Sem RLS — controle

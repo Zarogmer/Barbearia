@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { toZonedTime } from "date-fns-tz";
 
 import { prismaAdmin } from "@/lib/db";
@@ -44,6 +45,63 @@ export async function runDailyNotificationsJob(
     startedAt,
     finishedAt: new Date(),
   };
+}
+
+const JOB_NAME = "daily-notifications";
+const MIN_HOURS_BETWEEN_RUNS = 23;
+
+/**
+ * Self-trigger: roda o job se passaram >= 23h desde a última execução.
+ *
+ * Chamado fire-and-forget no admin layout — toda vez que um admin abre
+ * o painel, verifica se já passou 1 dia. Se sim, dispara em background
+ * sem bloquear o render. Múltiplos admins abrindo simultaneamente: o
+ * primeiro INSERT na transação ganha, demais saem como skipped.
+ *
+ * Vantagem vs cron externo: zero setup (não precisa Railway Scheduled
+ * Task nem cron-job.org nem CRON_SECRET).
+ * Limitação: se nenhum admin abrir o painel por 1 dia, o job não roda.
+ * Pra uso real, recomenda ter cron externo plugado em paralelo.
+ */
+export async function maybeRunDailyJob(): Promise<
+  { ran: true; result: DailyJobResult } | { ran: false; reason: string }
+> {
+  // Race-safe: SELECT...FOR UPDATE-style via $transaction
+  return prismaAdmin.$transaction(async (tx) => {
+    const last = await tx.jobRun.findFirst({
+      where: { name: JOB_NAME },
+      orderBy: { startedAt: "desc" },
+      select: { startedAt: true, finishedAt: true },
+    });
+
+    if (last) {
+      const ageHours = (Date.now() - last.startedAt.getTime()) / 1000 / 3600;
+      if (ageHours < MIN_HOURS_BETWEEN_RUNS) {
+        return { ran: false as const, reason: `last run ${ageHours.toFixed(1)}h ago` };
+      }
+    }
+
+    // Cria o registro ANTES de rodar pra travar outros admins concorrentes
+    const run = await tx.jobRun.create({
+      data: { name: JOB_NAME },
+      select: { id: true },
+    });
+
+    // Executa fora da transação (job é longo, não deve segurar o lock)
+    // Trade-off: se crashar, jobRun fica órfão sem finishedAt. Próximo
+    // self-trigger ainda vai pular por 23h. Aceitável pra MVP.
+    const result = await runDailyNotificationsJob();
+
+    await tx.jobRun.update({
+      where: { id: run.id },
+      data: {
+        finishedAt: new Date(),
+        result: result as unknown as Prisma.InputJsonValue,
+      },
+    });
+
+    return { ran: true as const, result };
+  });
 }
 
 // ─── Lembretes 24h pro cliente ────────────────────────────

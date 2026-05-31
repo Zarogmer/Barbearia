@@ -52,12 +52,18 @@ export const applyDiscountSchema = z.object({
 export type ApplyDiscountInput = z.infer<typeof applyDiscountSchema>;
 
 export function openComandaFormDataToInput(formData: FormData): unknown {
+  // formData.get() devolve null pra campo ausente. Zod nao trata null
+  // como "vazio" — precisa virar undefined pra cair no .optional().
+  const opt = (k: string): string | undefined => {
+    const v = formData.get(k);
+    return typeof v === "string" ? v : undefined;
+  };
   return {
-    customerUserId: formData.get("customerUserId"),
-    customerName: formData.get("customerName"),
-    professionalId: formData.get("professionalId"),
-    appointmentId: formData.get("appointmentId"),
-    notes: formData.get("notes"),
+    customerUserId: opt("customerUserId"),
+    customerName: opt("customerName"),
+    professionalId: opt("professionalId"),
+    appointmentId: opt("appointmentId"),
+    notes: opt("notes"),
   };
 }
 

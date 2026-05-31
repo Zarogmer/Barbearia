@@ -1,13 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
+import {
+  ArrowRight,
+  Cake,
+  Calendar,
+  MessageCircle,
+  Receipt,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 
 import { OnboardingChecklist } from "@/components/features/admin/OnboardingChecklist";
 import { auth } from "@/lib/auth";
+import {
+  buildBirthdayMessage,
+  buildWhatsAppLink,
+  listUpcomingBirthdays,
+} from "@/lib/server/birthdays";
 import { getDashboardStats } from "@/lib/server/dashboard";
 import { getOnboardingState } from "@/lib/server/onboarding";
-import { formatBRL, formatDuration } from "@/lib/utils";
+import { getOrganizationForAdmin } from "@/lib/server/organizations";
+import { cn, formatBRL, formatDuration } from "@/lib/utils";
 
 function formatTimeIn(utc: Date, timezone: string): string {
   const z = toZonedTime(utc, timezone);
@@ -29,11 +43,17 @@ export default async function DashboardPage() {
     );
   }
 
-  const [stats, onboarding] = await Promise.all([
+  const [stats, onboarding, org, birthdays] = await Promise.all([
     getDashboardStats(membership.organizationId),
     getOnboardingState(membership.organizationId),
+    getOrganizationForAdmin(membership.organizationId),
+    listUpcomingBirthdays(membership.organizationId, 7),
   ]);
   const showOnboarding = !onboarding.allDone && !onboarding.dismissed;
+  const birthdaysToday = birthdays.filter((b) => b.daysUntil === 0);
+  const birthdaysWeek = birthdays.filter(
+    (b) => b.daysUntil > 0 && b.daysUntil <= 7,
+  );
 
   const todayLocal = toZonedTime(new Date(), stats.timezone);
   const todayLabel = todayLocal.toLocaleDateString("pt-BR", {
@@ -52,21 +72,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-4 lg:p-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="eyebrow mb-3">Painel · hoje</div>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight capitalize md:text-3xl">
-            {todayLabel}
-          </h1>
-          <p className="text-sm text-subtle">Visão geral do dia.</p>
-        </div>
-        <Link
-          href="/admin/agenda"
-          className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-fg shadow-sm transition-all hover:-translate-y-px hover:shadow-lg active:translate-y-0"
-        >
-          <Plus className="h-4 w-4" />
-          Novo agendamento
-        </Link>
+      <header>
+        <div className="eyebrow mb-3">Painel · hoje</div>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight capitalize md:text-3xl">
+          {todayLabel}
+        </h1>
+        <p className="text-sm text-subtle">Visão geral do dia.</p>
       </header>
 
       {showOnboarding && (
@@ -119,6 +130,113 @@ export default async function DashboardPage() {
           footnote={stats.noShowCount7d === 0 ? "limpo essa semana" : "últimos 7 dias"}
         />
       </div>
+
+      {/* Widget aniversariantes (se houver) */}
+      {(birthdaysToday.length > 0 || birthdaysWeek.length > 0) && (
+        <section className="overflow-hidden rounded-md border border-brand/30 bg-gradient-to-br from-brand-soft/40 via-surface to-surface">
+          <div className="flex items-center justify-between border-b border-line bg-surface/60 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-brand text-brand-fg">
+                <Cake className="h-3.5 w-3.5" />
+              </span>
+              <h2 className="font-display text-sm font-bold">
+                {birthdaysToday.length > 0
+                  ? `🎉 Aniversariante${birthdaysToday.length !== 1 ? "s" : ""} hoje`
+                  : "Aniversariantes da semana"}
+              </h2>
+            </div>
+            <Link
+              href="/admin/aniversariantes"
+              className="text-xs text-subtle transition-colors hover:text-ink"
+            >
+              Ver todos →
+            </Link>
+          </div>
+          <ul className="divide-y divide-line">
+            {[...birthdaysToday, ...birthdaysWeek.slice(0, 3)].map((b) => {
+              const initials = b.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
+              const waLink = b.phone
+                ? buildWhatsAppLink(b.phone, buildBirthdayMessage(org.name, b.name))
+                : null;
+              return (
+                <li
+                  key={b.userId}
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-2.5"
+                >
+                  <span className="avatar-ring">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-3 text-xs font-bold">
+                      {initials}
+                    </span>
+                  </span>
+                  <div className="min-w-0">
+                    <Link
+                      href={`/admin/clientes/${b.userId}`}
+                      className="block truncate text-sm font-semibold hover:text-brand"
+                    >
+                      {b.name}
+                    </Link>
+                    <div className="mono text-[10px] text-subtle">
+                      {b.daysUntil === 0
+                        ? "🎂 hoje"
+                        : b.daysUntil === 1
+                          ? "amanhã"
+                          : `em ${b.daysUntil} dias`}
+                    </div>
+                  </div>
+                  {waLink && (
+                    <Link
+                      href={waLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="tap inline-flex h-8 items-center gap-1 rounded-md bg-ok/10 px-2.5 text-[11px] font-semibold text-ok hover:bg-ok/20"
+                    >
+                      <MessageCircle className="h-3 w-3" />
+                      WhatsApp
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {/* Atalhos rápidos */}
+      <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <ShortcutCard
+          href="/admin/agenda"
+          icon={<Calendar className="h-4 w-4" />}
+          label="Agenda"
+          hint="Ver dia / semana / mês"
+          tone="brand"
+        />
+        <ShortcutCard
+          href="/admin/comandas"
+          icon={<Receipt className="h-4 w-4" />}
+          label="Comandas"
+          hint="Abrir / fechar contas"
+          tone="ok"
+        />
+        <ShortcutCard
+          href="/admin/clientes"
+          icon={<Users className="h-4 w-4" />}
+          label="Clientes"
+          hint="CRM + importar CSV"
+          tone="subtle"
+        />
+        <ShortcutCard
+          href="/admin/relatorios"
+          icon={<TrendingUp className="h-4 w-4" />}
+          label="Relatórios"
+          hint="Faturamento + ticket"
+          tone="warn"
+        />
+      </section>
 
       {/* Próximos agendamentos */}
       <div className="overflow-hidden rounded-md border border-line bg-surface">
@@ -197,6 +315,44 @@ export default async function DashboardPage() {
 }
 
 type KpiTone = "brand" | "ok" | "warn" | "danger";
+
+function ShortcutCard({
+  href,
+  icon,
+  label,
+  hint,
+  tone,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  tone: "brand" | "ok" | "warn" | "subtle";
+}) {
+  return (
+    <Link
+      href={href}
+      className="tap group flex items-center gap-3 rounded-md border border-line bg-surface p-3 transition-all hover:-translate-y-px hover:border-brand hover:shadow-sm"
+    >
+      <span
+        className={cn(
+          "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md",
+          tone === "brand" && "bg-brand-soft text-brand",
+          tone === "ok" && "bg-ok/15 text-ok",
+          tone === "warn" && "bg-warn/15 text-warn",
+          tone === "subtle" && "bg-surface-2 text-subtle",
+        )}
+      >
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="font-semibold">{label}</div>
+        <div className="text-[11px] text-subtle">{hint}</div>
+      </div>
+      <ArrowRight className="h-3.5 w-3.5 text-subtle transition-colors group-hover:text-brand" />
+    </Link>
+  );
+}
 
 function KpiCard({
   label,

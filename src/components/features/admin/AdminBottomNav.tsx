@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { logoutAction } from "@/app/admin/_logout-action";
+import { QuickActionsSheet } from "@/components/features/admin/QuickActionsSheet";
 import { cn } from "@/lib/utils";
 
 type IconType = typeof Calendar;
@@ -32,9 +33,13 @@ type NavItem = {
   Icon: IconType;
 };
 
-const PRIMARY: NavItem[] = [
+// PRIMARY agora tem 4 items + 1 FAB no centro (item 3, position 2):
+// [Hoje] [Agenda] [➕ FAB] [Comandas] [Mais]
+const PRIMARY_LEFT: NavItem[] = [
   { href: "/admin/dashboard", label: "Hoje", Icon: LayoutDashboard },
   { href: "/admin/agenda", label: "Agenda", Icon: Calendar },
+];
+const PRIMARY_RIGHT: NavItem[] = [
   { href: "/admin/comandas", label: "Comandas", Icon: Receipt },
 ];
 
@@ -65,34 +70,20 @@ export function AdminBottomNav({ userName }: { userName: string }) {
         aria-label="Navegação principal"
         className="fixed bottom-0 left-0 right-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
-        <ul className="flex items-stretch justify-around px-2 py-2">
-          {PRIMARY.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <li key={item.href} className="flex-1">
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "tap flex flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] transition-colors",
-                    active ? "text-brand" : "text-subtle hover:text-ink",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
-                      active ? "bg-brand-soft" : "",
-                    )}
-                  >
-                    <item.Icon className="h-[18px] w-[18px]" />
-                  </span>
-                  <span className={cn("font-semibold", active ? "" : "font-medium")}>
-                    {item.label}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
+        <ul className="flex items-end justify-around px-2 py-2">
+          {PRIMARY_LEFT.map((item) => (
+            <NavTab key={item.href} item={item} active={isActive(item.href)} />
+          ))}
+
+          {/* FAB central — botão "+" elevado */}
+          <li className="flex flex-1 justify-center">
+            <QuickActionsSheet />
+          </li>
+
+          {PRIMARY_RIGHT.map((item) => (
+            <NavTab key={item.href} item={item} active={isActive(item.href)} />
+          ))}
+
           <li className="flex-1">
             <button
               type="button"
@@ -195,5 +186,32 @@ export function AdminBottomNav({ userName }: { userName: string }) {
         </div>
       )}
     </>
+  );
+}
+
+function NavTab({ item, active }: { item: NavItem; active: boolean }) {
+  return (
+    <li className="flex-1">
+      <Link
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "tap flex flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] transition-colors",
+          active ? "text-brand" : "text-subtle hover:text-ink",
+        )}
+      >
+        <span
+          className={cn(
+            "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
+            active ? "bg-brand-soft" : "",
+          )}
+        >
+          <item.Icon className="h-[18px] w-[18px]" />
+        </span>
+        <span className={cn("font-semibold", active ? "" : "font-medium")}>
+          {item.label}
+        </span>
+      </Link>
+    </li>
   );
 }

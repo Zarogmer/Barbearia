@@ -39,6 +39,9 @@ type Props = {
     allowOverbookEncaixe: boolean;
     creditCardFeeBp: number;
     debitCardFeeBp: number;
+    loyaltyEnabled: boolean;
+    loyaltyGoal: number;
+    loyaltyRewardLabel: string | null;
   };
 };
 
@@ -56,6 +59,7 @@ export function OrgConfigForm({ defaults }: Props) {
   const [allowOverbook, setAllowOverbook] = useState(
     defaults.allowOverbookEncaixe,
   );
+  const [loyaltyEnabled, setLoyaltyEnabled] = useState(defaults.loyaltyEnabled);
   const [confirmingSlug, setConfirmingSlug] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
 
@@ -280,6 +284,69 @@ export function OrgConfigForm({ defaults }: Props) {
               />
             </div>
           </div>
+        </div>
+
+        {/* Cartão fidelidade (PBI-27) */}
+        <div className="space-y-3 rounded-lg border border-line bg-surface-2 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <label htmlFor="loyaltyEnabled" className="cursor-pointer text-sm">
+              <div className="font-display text-base font-bold">
+                Cartão fidelidade
+              </div>
+              <div className="text-xs text-subtle">
+                A cada N atendimentos concluídos, cliente ganha a recompensa.
+                Visível na ficha do cliente quando ativo.
+              </div>
+            </label>
+            <Switch
+              id="loyaltyEnabled"
+              checked={loyaltyEnabled}
+              onCheckedChange={setLoyaltyEnabled}
+            />
+            <input
+              type="hidden"
+              name="loyaltyEnabled"
+              value={loyaltyEnabled ? "true" : "false"}
+            />
+          </div>
+          {loyaltyEnabled && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="loyaltyGoal"
+                  className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                >
+                  Meta (atendimentos)
+                </label>
+                <input
+                  id="loyaltyGoal"
+                  name="loyaltyGoal"
+                  type="number"
+                  min={1}
+                  max={100}
+                  defaultValue={defaults.loyaltyGoal}
+                  className="mono h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:shadow-glow"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="loyaltyRewardLabel"
+                  className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                >
+                  Recompensa
+                </label>
+                <input
+                  id="loyaltyRewardLabel"
+                  name="loyaltyRewardLabel"
+                  type="text"
+                  maxLength={80}
+                  defaultValue={defaults.loyaltyRewardLabel ?? ""}
+                  placeholder="Ex: Corte grátis, 20% off"
+                  className="h-11 w-full rounded-lg border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:shadow-glow"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Vitrine pública (PBI-26) */}

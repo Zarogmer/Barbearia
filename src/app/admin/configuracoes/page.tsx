@@ -63,6 +63,9 @@ export default async function SettingsPage() {
             allowOverbookEncaixe: org.allowOverbookEncaixe,
             creditCardFeeBp: org.creditCardFeeBp,
             debitCardFeeBp: org.debitCardFeeBp,
+            loyaltyEnabled: org.loyaltyEnabled,
+            loyaltyGoal: org.loyaltyGoal,
+            loyaltyRewardLabel: org.loyaltyRewardLabel,
           }}
         />
       </div>

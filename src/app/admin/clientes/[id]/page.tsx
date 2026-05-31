@@ -5,8 +5,10 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Gift,
   MessageSquare,
   Phone,
+  Sparkles,
   TrendingUp,
   X,
 } from "lucide-react";
@@ -21,6 +23,7 @@ import {
   listCustomerAppointments,
 } from "@/lib/server/customers";
 import { listCustomerNotes } from "@/lib/server/customerNotes";
+import { getLoyaltyStatusForCustomer } from "@/lib/server/loyalty";
 import { withTenant } from "@/lib/db";
 import { cn, formatBRL } from "@/lib/utils";
 
@@ -78,6 +81,9 @@ export default async function CustomerDetailPage({
         .then((o) => o.timezone),
     ),
   ]);
+  // Separado pra não quebrar a inferência de tuple do Promise.all acima
+  // (5 elementos confunde o inferidor com tipos de retorno mistos).
+  const loyalty = await getLoyaltyStatusForCustomer(orgId, id);
 
   if (!detail) notFound();
 
@@ -181,6 +187,88 @@ export default async function CustomerDetailPage({
           highlight={detail.stats.upcomingCount > 0}
         />
       </div>
+
+      {/* Cartão fidelidade (PBI-27) — só renderiza quando enabled */}
+      {loyalty?.enabled && (
+        <section
+          className={cn(
+            "overflow-hidden rounded-md border bg-gradient-to-br",
+            loyalty.eligible
+              ? "border-brand from-brand-soft/60 via-surface to-surface"
+              : "border-line from-brand-soft/20 via-surface to-surface",
+          )}
+        >
+          <div className="flex items-center gap-3 border-b border-line bg-surface/40 px-4 py-3">
+            <span
+              className={cn(
+                "inline-flex h-9 w-9 items-center justify-center rounded-md",
+                loyalty.eligible
+                  ? "bg-brand text-brand-fg"
+                  : "bg-brand-soft text-brand",
+              )}
+            >
+              {loyalty.eligible ? (
+                <Sparkles className="h-4 w-4" />
+              ) : (
+                <Gift className="h-4 w-4" />
+              )}
+            </span>
+            <div className="flex-1">
+              <div className="font-display text-sm font-bold">
+                {loyalty.eligible
+                  ? "🎉 Cliente elegível pra recompensa"
+                  : "Cartão fidelidade"}
+              </div>
+              <div className="mono text-[10px] text-subtle">
+                Recompensa:{" "}
+                <span className="font-semibold text-ink">
+                  {loyalty.rewardLabel}
+                </span>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="num font-display text-2xl font-extrabold">
+                {loyalty.count}
+                <span className="mono ml-0.5 text-sm font-normal text-subtle">
+                  /{loyalty.goal}
+                </span>
+              </div>
+              {!loyalty.eligible && loyalty.remaining > 0 && (
+                <div className="mono text-[10px] text-subtle">
+                  faltam {loyalty.remaining}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Stamps visual (até 20 max pra não estourar layout) */}
+          <div className="flex flex-wrap gap-1.5 p-3">
+            {Array.from({ length: Math.min(loyalty.goal, 20) }, (_, i) => {
+              const stamped = i < Math.min(loyalty.count, 20);
+              return (
+                <span
+                  key={i}
+                  className={cn(
+                    "inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold transition-colors",
+                    stamped
+                      ? "bg-brand text-brand-fg shadow-sm"
+                      : "border border-dashed border-line bg-surface text-subtle",
+                  )}
+                  aria-label={
+                    stamped ? `Carimbo ${i + 1}` : `Vazio ${i + 1}`
+                  }
+                >
+                  {stamped ? "★" : i + 1}
+                </span>
+              );
+            })}
+            {loyalty.goal > 20 && (
+              <span className="mono text-[10px] text-subtle">
+                (mostrando 20/{loyalty.goal})
+              </span>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Notes */}
       <section className="rounded-md border border-line bg-surface p-5">

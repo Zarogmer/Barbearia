@@ -151,30 +151,41 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Widget aniversariantes (se houver) */}
-      {(birthdaysToday.length > 0 || birthdaysMonth.length > 0) && (
-        <section className="overflow-hidden rounded-md border border-brand/30 bg-gradient-to-br from-brand-soft/40 via-surface to-surface">
-          <div className="flex items-center justify-between border-b border-line bg-surface/60 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-brand text-brand-fg">
-                <Cake className="h-3.5 w-3.5" />
-              </span>
-              <h2 className="font-display text-sm font-bold">
-                {birthdaysToday.length > 0
-                  ? `🎉 Aniversariante${birthdaysToday.length !== 1 ? "s" : ""} hoje`
-                  : "Aniversariantes do mês"}
-              </h2>
-              <span className="rounded-full bg-brand-soft px-2 py-0.5 mono text-[10px] font-semibold text-brand">
-                {birthdaysToday.length + birthdaysMonth.length}
-              </span>
-            </div>
-            <Link
-              href="/admin/aniversariantes"
-              className="text-xs text-subtle transition-colors hover:text-ink"
-            >
-              Ver todos →
-            </Link>
+      {/* Widget aniversariantes — sempre mostra (com estado vazio) pra
+          deixar claro que o widget existe e tá OK, só não tem cliente
+          aniversariante no horizonte. */}
+      <section className="overflow-hidden rounded-md border border-brand/30 bg-gradient-to-br from-brand-soft/40 via-surface to-surface">
+        <div className="flex items-center justify-between border-b border-line bg-surface/60 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-brand text-brand-fg">
+              <Cake className="h-3.5 w-3.5" />
+            </span>
+            <h2 className="font-display text-sm font-bold">
+              {birthdaysToday.length > 0
+                ? `🎉 Aniversariante${birthdaysToday.length !== 1 ? "s" : ""} hoje`
+                : "Aniversariantes do mês"}
+            </h2>
+            <span className="rounded-full bg-brand-soft px-2 py-0.5 mono text-[10px] font-semibold text-brand">
+              {birthdaysToday.length + birthdaysMonth.length}
+            </span>
           </div>
+          <Link
+            href="/admin/aniversariantes"
+            className="text-xs text-subtle transition-colors hover:text-ink"
+          >
+            Ver todos →
+          </Link>
+        </div>
+        {birthdaysToday.length === 0 && birthdaysMonth.length === 0 ? (
+          <div className="px-4 py-6 text-center">
+            <p className="text-sm text-subtle">
+              Nenhum aniversariante nos próximos 31 dias.
+            </p>
+            <p className="mono mt-1 text-[10px] uppercase tracking-wider text-subtle">
+              cadastre datas em /clientes
+            </p>
+          </div>
+        ) : (
           <ul className="divide-y divide-line">
             {[...birthdaysToday, ...birthdaysMonth.slice(0, 5)].map((b) => {
               const initials = b.name
@@ -226,135 +237,140 @@ export default async function DashboardPage() {
               );
             })}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
-      {/* Alertas proativos: estoque + clientes sumidos VIP. Lado a lado
-          em desktop, empilhados em mobile. So renderiza se houver dados. */}
-      {(lowStock.length > 0 || vipLapsed.length > 0) && (
-        <div className="grid gap-3 lg:grid-cols-2">
-          {lowStock.length > 0 && (
-            <section className="overflow-hidden rounded-md border border-warn/30 bg-warn/5">
-              <div className="flex items-center justify-between border-b border-warn/20 bg-surface/60 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-warn/15 text-warn">
-                    <Package className="h-3.5 w-3.5" />
-                  </span>
-                  <h2 className="font-display text-sm font-bold">Estoque baixo</h2>
-                  <span className="rounded-full bg-warn/15 px-2 py-0.5 mono text-[10px] font-semibold text-warn">
-                    {lowStock.length}
-                  </span>
-                </div>
-                <Link
-                  href="/admin/estoque"
-                  className="text-xs text-subtle transition-colors hover:text-ink"
+      {/* Alertas proativos: estoque + clientes sumidos VIP. Estoque sempre
+          mostra (com vazio) — sinaliza pro dono que o widget existe.
+          VIP sumidos so aparece se houver — relevante em prod com historico. */}
+      <div className="grid gap-3 lg:grid-cols-2">
+        <section className="overflow-hidden rounded-md border border-warn/30 bg-warn/5">
+          <div className="flex items-center justify-between border-b border-warn/20 bg-surface/60 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-warn/15 text-warn">
+                <Package className="h-3.5 w-3.5" />
+              </span>
+              <h2 className="font-display text-sm font-bold">Estoque baixo</h2>
+              <span className="rounded-full bg-warn/15 px-2 py-0.5 mono text-[10px] font-semibold text-warn">
+                {lowStock.length}
+              </span>
+            </div>
+            <Link
+              href="/admin/estoque"
+              className="text-xs text-subtle transition-colors hover:text-ink"
+            >
+              Ver estoque →
+            </Link>
+          </div>
+          {lowStock.length === 0 ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm text-subtle">
+                Tudo OK — nenhum produto abaixo do estoque mínimo.
+              </p>
+              <p className="mono mt-1 text-[10px] uppercase tracking-wider text-subtle">
+                gerenciar em /estoque
+              </p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {lowStock.map((p) => (
+                <li
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 px-4 py-2.5"
                 >
-                  Ver estoque →
-                </Link>
-              </div>
-              <ul className="divide-y divide-line">
-                {lowStock.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex items-center justify-between gap-3 px-4 py-2.5"
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold">{p.name}</div>
+                    <div className="mono text-[10px] text-subtle">
+                      min: {p.minStock} {p.sku ? `· ${p.sku}` : ""}
+                    </div>
+                  </div>
+                  <span
+                    className={cn(
+                      "mono inline-flex h-7 items-center rounded-md px-2 text-xs font-bold",
+                      p.stockStatus === "negative"
+                        ? "bg-danger/15 text-danger"
+                        : p.stockStatus === "critical"
+                          ? "bg-danger/10 text-danger"
+                          : "bg-warn/15 text-warn",
+                    )}
                   >
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold">
-                        {p.name}
-                      </div>
+                    {p.currentStock} un
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {vipLapsed.length > 0 && (
+          <section className="overflow-hidden rounded-md border border-danger/30 bg-danger/5">
+            <div className="flex items-center justify-between border-b border-danger/20 bg-surface/60 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-danger/15 text-danger">
+                  <UserX className="h-3.5 w-3.5" />
+                </span>
+                <h2 className="font-display text-sm font-bold">
+                  Clientes VIP sumidos
+                </h2>
+              </div>
+              <Link
+                href="/admin/clientes/sumidos"
+                className="text-xs text-subtle transition-colors hover:text-ink"
+              >
+                Ver todos →
+              </Link>
+            </div>
+            <ul className="divide-y divide-line">
+              {vipLapsed.map((c) => {
+                const initials = c.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase();
+                const waLink = c.phone
+                  ? `https://wa.me/${(c.phone.replace(/\D/g, "").startsWith("55") ? "" : "55") + c.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${c.name.split(" ")[0]}! Faz uns ${c.daysSince} dias que não te vemos por aqui. Que tal marcar um horário?`)}`
+                  : null;
+                return (
+                  <li
+                    key={c.userId}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-2.5"
+                  >
+                    <span className="avatar-ring">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-3 text-xs font-bold">
+                        {initials}
+                      </span>
+                    </span>
+                    <div className="min-w-0">
+                      <Link
+                        href={`/admin/clientes/${c.userId}`}
+                        className="block truncate text-sm font-semibold hover:text-brand"
+                      >
+                        {c.name}
+                      </Link>
                       <div className="mono text-[10px] text-subtle">
-                        min: {p.minStock} {p.sku ? `· ${p.sku}` : ""}
+                        {c.daysSince}d sem voltar · gastou{" "}
+                        {formatBRL(c.totalSpentCents)}
                       </div>
                     </div>
-                    <span
-                      className={cn(
-                        "mono inline-flex h-7 items-center rounded-md px-2 text-xs font-bold",
-                        p.stockStatus === "negative"
-                          ? "bg-danger/15 text-danger"
-                          : p.stockStatus === "critical"
-                            ? "bg-danger/10 text-danger"
-                            : "bg-warn/15 text-warn",
-                      )}
-                    >
-                      {p.currentStock < 0 ? p.currentStock : p.currentStock}{" "}
-                      un
-                    </span>
+                    {waLink && (
+                      <a
+                        href={waLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tap inline-flex h-8 items-center gap-1 rounded-md bg-ok/10 px-2.5 text-[11px] font-semibold text-ok hover:bg-ok/20"
+                      >
+                        <MessageCircle className="h-3 w-3" />
+                        WhatsApp
+                      </a>
+                    )}
                   </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {vipLapsed.length > 0 && (
-            <section className="overflow-hidden rounded-md border border-danger/30 bg-danger/5">
-              <div className="flex items-center justify-between border-b border-danger/20 bg-surface/60 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-danger/15 text-danger">
-                    <UserX className="h-3.5 w-3.5" />
-                  </span>
-                  <h2 className="font-display text-sm font-bold">
-                    Clientes VIP sumidos
-                  </h2>
-                </div>
-                <Link
-                  href="/admin/clientes/sumidos"
-                  className="text-xs text-subtle transition-colors hover:text-ink"
-                >
-                  Ver todos →
-                </Link>
-              </div>
-              <ul className="divide-y divide-line">
-                {vipLapsed.map((c) => {
-                  const initials = c.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .slice(0, 2)
-                    .join("")
-                    .toUpperCase();
-                  const waLink = c.phone
-                    ? `https://wa.me/${(c.phone.replace(/\D/g, "").startsWith("55") ? "" : "55") + c.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${c.name.split(" ")[0]}! Faz uns ${c.daysSince} dias que não te vemos por aqui. Que tal marcar um horário?`)}`
-                    : null;
-                  return (
-                    <li
-                      key={c.userId}
-                      className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-2.5"
-                    >
-                      <span className="avatar-ring">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-3 text-xs font-bold">
-                          {initials}
-                        </span>
-                      </span>
-                      <div className="min-w-0">
-                        <Link
-                          href={`/admin/clientes/${c.userId}`}
-                          className="block truncate text-sm font-semibold hover:text-brand"
-                        >
-                          {c.name}
-                        </Link>
-                        <div className="mono text-[10px] text-subtle">
-                          {c.daysSince}d sem voltar · gastou{" "}
-                          {formatBRL(c.totalSpentCents)}
-                        </div>
-                      </div>
-                      {waLink && (
-                        <a
-                          href={waLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="tap inline-flex h-8 items-center gap-1 rounded-md bg-ok/10 px-2.5 text-[11px] font-semibold text-ok hover:bg-ok/20"
-                        >
-                          <MessageCircle className="h-3 w-3" />
-                          WhatsApp
-                        </a>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          )}
-        </div>
-      )}
+                );
+              })}
+            </ul>
+          </section>
+        )}
+      </div>
 
       {/* Atalhos rápidos */}
       <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">

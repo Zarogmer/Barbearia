@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { AppointmentColorsEditor } from "@/components/features/admin/AppointmentColorsEditor";
 import { OrgConfigForm } from "@/components/features/admin/OrgConfigForm";
+import { ReminderTemplateEditor } from "@/components/features/admin/ReminderTemplateEditor";
 import { ThemeSelector } from "@/components/features/admin/ThemeSelector";
 import { auth } from "@/lib/auth";
 import { getAppointmentColors } from "@/lib/server/appointment-colors";
@@ -72,6 +73,13 @@ export default async function SettingsPage() {
 
       <div className="rounded-md border border-line bg-surface p-6">
         <AppointmentColorsEditor initial={apptColors} />
+      </div>
+
+      <div className="rounded-md border border-line bg-surface p-6">
+        <ReminderTemplateEditor
+          initial={org.reminderTemplate}
+          orgName={org.name}
+        />
       </div>
     </div>
   );

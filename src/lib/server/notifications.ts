@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { toZonedTime } from "date-fns-tz";
 
 import { prismaAdmin } from "@/lib/db";
+import { firstName, renderReminder } from "@/lib/reminder-template";
 import { getSmsProvider } from "@/lib/server/sms";
 
 /**
@@ -126,7 +127,13 @@ async function sendBookingReminders(
       customerPhone: true,
       startsAt: true,
       organization: {
-        select: { name: true, slug: true, timezone: true, whatsapp: true },
+        select: {
+          name: true,
+          slug: true,
+          timezone: true,
+          whatsapp: true,
+          reminderTemplate: true,
+        },
       },
       service: { select: { name: true } },
       professional: { select: { name: true } },
@@ -151,10 +158,14 @@ async function sendBookingReminders(
       month: "short",
       timeZone: a.organization.timezone,
     });
-    const body =
-      `Oi ${a.customerName.split(" ")[0]}! Lembrete: amanhã (${day}) ` +
-      `${time} você tem ${a.service.name} com ${a.professional.name} ` +
-      `na ${a.organization.name}. Cancelar até 2h antes.`;
+    const body = renderReminder(a.organization.reminderTemplate, {
+      nome: firstName(a.customerName),
+      servico: a.service.name,
+      profissional: firstName(a.professional.name),
+      data: day,
+      hora: time,
+      barbearia: a.organization.name,
+    });
 
     try {
       await sms.send(a.customerPhone, body);

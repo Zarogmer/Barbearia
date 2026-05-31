@@ -3,18 +3,23 @@
 import { useState, useTransition } from "react";
 import {
   AlertCircle,
+  Banknote,
   Check,
   Copy,
+  CreditCard,
+  Gift,
   Loader2,
+  Pencil,
   Phone,
+  Smartphone,
   UserX,
   X,
 } from "lucide-react";
 
 import {
   cancelAppointmentAction,
-  markCompletedAction,
   markNoShowAction,
+  markPaidAction,
 } from "@/app/admin/agenda/actions";
 import {
   Dialog,
@@ -28,6 +33,7 @@ import {
 import { cn, formatBRL, formatDuration } from "@/lib/utils";
 
 type Status = "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+type PaymentMethod = "CASH" | "PIX" | "CREDIT" | "DEBIT" | "CORTESIA";
 
 type Props = {
   appointment: {
@@ -39,22 +45,56 @@ type Props = {
     servicePriceCents: number;
     professionalName: string;
     status: Status;
-    startsAtLabel: string; // formatado no fuso da org
+    startsAtLabel: string;
     endsAtLabel: string;
+    paymentMethod: PaymentMethod | null;
+    paidAtLabel: string | null;
   };
   requiresCancelReason: boolean;
   trigger: React.ReactNode;
+  /** Quando passado, mostra botão "Editar" e dispara o callback. */
+  onRequestEdit?: () => void;
 };
 
-export function AppointmentDetailDialog({ appointment, requiresCancelReason, trigger }: Props) {
+const PAYMENT_OPTIONS: {
+  method: PaymentMethod;
+  label: string;
+  Icon: typeof Banknote;
+}[] = [
+  { method: "CASH", label: "Dinheiro", Icon: Banknote },
+  { method: "PIX", label: "Pix", Icon: Smartphone },
+  { method: "CREDIT", label: "Crédito", Icon: CreditCard },
+  { method: "DEBIT", label: "Débito", Icon: CreditCard },
+  { method: "CORTESIA", label: "Cortesia", Icon: Gift },
+];
+
+export function AppointmentDetailDialog({
+  appointment,
+  requiresCancelReason,
+  trigger,
+  onRequestEdit,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [cancelMode, setCancelMode] = useState(false);
+  const [mode, setMode] = useState<"view" | "pay" | "cancel">("view");
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState<string | null>(null);
 
-  function run(fn: () => Promise<{ ok?: boolean; error?: string; fieldErrors?: Record<string, string> }>) {
+  function resetState() {
+    setMode("view");
+    setReason("");
+    setError(null);
+    setReasonError(null);
+  }
+
+  function run(
+    fn: () => Promise<{
+      ok?: boolean;
+      error?: string;
+      fieldErrors?: Record<string, string>;
+    }>,
+  ) {
     setError(null);
     setReasonError(null);
     startTransition(async () => {
@@ -65,9 +105,7 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
         return;
       }
       setOpen(false);
-      // reset interno pra próxima abertura
-      setCancelMode(false);
-      setReason("");
+      resetState();
     });
   }
 
@@ -83,28 +121,38 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (!o) {
-          setCancelMode(false);
-          setReason("");
-          setError(null);
-          setReasonError(null);
-        }
+        if (!o) resetState();
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="mb-2 flex items-center gap-2 mono text-[10px] uppercase tracking-wider text-subtle">
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full",
-                appointment.status === "CONFIRMED" && "bg-ok",
-                appointment.status === "CANCELLED" && "bg-danger",
-                appointment.status === "COMPLETED" && "bg-brand",
-                appointment.status === "NO_SHOW" && "bg-warn",
-              )}
-            />
-            {labelOf(appointment.status)} · #{appointment.id.slice(0, 8)}
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 mono text-[10px] uppercase tracking-wider text-subtle">
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  appointment.status === "CONFIRMED" && "bg-ok",
+                  appointment.status === "CANCELLED" && "bg-danger",
+                  appointment.status === "COMPLETED" && "bg-brand",
+                  appointment.status === "NO_SHOW" && "bg-warn",
+                )}
+              />
+              {labelOf(appointment.status)} · #{appointment.id.slice(0, 8)}
+            </div>
+            {!isFinal && onRequestEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onRequestEdit();
+                }}
+                className="tap inline-flex h-7 items-center gap-1 rounded-md border border-line bg-surface px-2 text-[11px] font-semibold text-subtle transition-colors hover:border-brand hover:text-brand"
+              >
+                <Pencil className="h-3 w-3" />
+                Editar
+              </button>
+            )}
           </div>
           <DialogTitle className="font-display text-lg font-bold">
             {appointment.customerName}
@@ -119,7 +167,11 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
         </DialogHeader>
 
         <div className="space-y-2 rounded-md border border-line bg-surface-2 p-3 text-sm">
-          <Row label="Quando" value={`${appointment.startsAtLabel} → ${appointment.endsAtLabel}`} mono />
+          <Row
+            label="Quando"
+            value={`${appointment.startsAtLabel} → ${appointment.endsAtLabel}`}
+            mono
+          />
           <Row label="Profissional" value={appointment.professionalName} />
           {appointment.customerPhone && (
             <div className="flex items-center justify-between">
@@ -135,6 +187,12 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
               </button>
             </div>
           )}
+          {appointment.status === "COMPLETED" && appointment.paymentMethod && (
+            <Row
+              label="Pago em"
+              value={`${paymentLabel(appointment.paymentMethod)}${appointment.paidAtLabel ? ` · ${appointment.paidAtLabel}` : ""}`}
+            />
+          )}
         </div>
 
         {error && (
@@ -147,7 +205,7 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
           </p>
         )}
 
-        {cancelMode && (
+        {mode === "cancel" && (
           <div>
             <label
               htmlFor="cancel-reason"
@@ -166,7 +224,38 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
                 reasonError ? "border-danger" : "border-line",
               )}
             />
-            {reasonError && <p className="mt-1 text-[11px] text-danger">{reasonError}</p>}
+            {reasonError && (
+              <p className="mt-1 text-[11px] text-danger">{reasonError}</p>
+            )}
+          </div>
+        )}
+
+        {mode === "pay" && (
+          <div className="space-y-2">
+            <div className="mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+              Forma de pagamento
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {PAYMENT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.method}
+                  type="button"
+                  disabled={pending}
+                  onClick={() =>
+                    run(() => markPaidAction(appointment.id, opt.method))
+                  }
+                  className={cn(
+                    "tap inline-flex h-14 flex-col items-center justify-center gap-1 rounded-lg border border-line bg-surface text-xs font-semibold transition-all",
+                    pending
+                      ? "cursor-wait opacity-60"
+                      : "hover:-translate-y-px hover:border-brand hover:bg-brand-soft hover:text-brand active:translate-y-0",
+                  )}
+                >
+                  <opt.Icon className="h-4 w-4" />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -180,11 +269,11 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
               Fechar
             </button>
           </DialogFooter>
-        ) : cancelMode ? (
+        ) : mode === "cancel" ? (
           <DialogFooter className="gap-2 sm:gap-2">
             <button
               type="button"
-              onClick={() => setCancelMode(false)}
+              onClick={() => setMode("view")}
               className="h-10 rounded-lg border border-line bg-surface px-4 text-sm font-semibold transition-colors hover:bg-surface-2"
             >
               Voltar
@@ -193,7 +282,13 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
               type="button"
               disabled={pending}
               onClick={() =>
-                run(() => cancelAppointmentAction(appointment.id, reason || undefined, requiresCancelReason))
+                run(() =>
+                  cancelAppointmentAction(
+                    appointment.id,
+                    reason || undefined,
+                    requiresCancelReason,
+                  ),
+                )
               }
               className={cn(
                 "inline-flex h-10 items-center gap-1.5 rounded-lg bg-danger px-4 text-sm font-semibold text-white shadow-sm transition-all",
@@ -202,18 +297,32 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
                   : "hover:-translate-y-px hover:shadow-lg active:translate-y-0",
               )}
             >
-              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+              {pending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <X className="h-4 w-4" />
+              )}
               Confirmar cancelamento
             </button>
           </DialogFooter>
+        ) : mode === "pay" ? (
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setMode("view")}
+              className="h-10 rounded-lg border border-line bg-surface px-4 text-sm font-semibold transition-colors hover:bg-surface-2"
+            >
+              Voltar
+            </button>
+          </DialogFooter>
         ) : (
-          <DialogFooter className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <DialogFooter className="grid grid-cols-3 gap-2">
             <ActionButton
               icon={<Check className="h-4 w-4" />}
-              label="Concluído"
+              label="Pagar"
               tone="brand"
               disabled={pending}
-              onClick={() => run(() => markCompletedAction(appointment.id))}
+              onClick={() => setMode("pay")}
             />
             <ActionButton
               icon={<UserX className="h-4 w-4" />}
@@ -227,7 +336,7 @@ export function AppointmentDetailDialog({ appointment, requiresCancelReason, tri
               label="Cancelar"
               tone="danger"
               disabled={pending}
-              onClick={() => setCancelMode(true)}
+              onClick={() => setMode("cancel")}
             />
           </DialogFooter>
         )}
@@ -262,7 +371,9 @@ function ActionButton({
       onClick={onClick}
       className={cn(
         "inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border bg-surface px-3 text-xs font-semibold transition-all",
-        disabled ? "cursor-wait opacity-60" : "hover:-translate-y-px hover:shadow-sm active:translate-y-0",
+        disabled
+          ? "cursor-wait opacity-60"
+          : "hover:-translate-y-px hover:shadow-sm active:translate-y-0",
         toneClass,
       )}
     >
@@ -272,7 +383,15 @@ function ActionButton({
   );
 }
 
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function Row({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-subtle">{label}</span>
@@ -288,4 +407,14 @@ function labelOf(status: Status): string {
     COMPLETED: "Concluído",
     NO_SHOW: "No-show",
   }[status];
+}
+
+function paymentLabel(m: PaymentMethod): string {
+  return {
+    CASH: "Dinheiro",
+    PIX: "Pix",
+    CREDIT: "Crédito",
+    DEBIT: "Débito",
+    CORTESIA: "Cortesia",
+  }[m];
 }

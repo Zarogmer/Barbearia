@@ -70,6 +70,7 @@ model Organization {
   commissionPayments CommissionPayment[]
   products           Product[]
   inventoryMovements InventoryMovement[]
+  customerOrgs       CustomerOrg[]
 
   @@map("organizations")
 }
@@ -92,6 +93,7 @@ model User {
   appointments Appointment[]
   accounts     Account[]
   sessions     Session[]
+  customerOrgs CustomerOrg[]
 
   @@map("users")
 }
@@ -248,6 +250,11 @@ model Appointment {
   // Notificações (job diário): marca quando o lembrete 24h foi disparado
   // pro cliente. Evita duplicar SMS se o cron rodar mais de uma vez.
   reminderSentAt DateTime?
+  // PDV inline: forma de pagamento + paidAt quando marcar como COMPLETED
+  // direto na agenda (atalho pra quem nao usa fluxo de Comanda completo).
+  // Null = nao pago / status diferente de COMPLETED.
+  paymentMethod  PaymentMethod?
+  paidAt         DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -305,6 +312,27 @@ model CustomerNote {
 
   @@index([organizationId, customerUserId, createdAt])
   @@map("customer_notes")
+}
+
+// Tabela de "cliente da org" — link explicito User × Organization.
+// User eh global (compartilhado entre orgs), CustomerOrg marca quem
+// pertence a quais. Populado automaticamente em createAppointment e
+// importCustomers; tambem alimentado pelo cadastro manual avulso.
+//
+// Sem isto, "cliente cadastrado sem agendamento" nao apareceria na
+// lista (a listagem buscava por appointments.some — agora busca aqui).
+model CustomerOrg {
+  organizationId String   @db.Uuid
+  userId         String   @db.Uuid
+  source         String   @default("booking") // "booking" | "import" | "manual"
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([organizationId, userId])
+  @@index([organizationId])
+  @@map("customer_orgs")
 }
 
 // ─── Comandas (PBI-21) ────────────────────────────────────

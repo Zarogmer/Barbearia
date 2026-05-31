@@ -232,6 +232,9 @@ export default async function AgendaPage({
               serviceDurationMinutes: a.serviceDurationMinutes,
               servicePriceCents: a.servicePriceCents,
               professionalName: a.professionalName,
+              paymentMethod: a.paymentMethod,
+              paidAtIso: a.paidAt ? a.paidAt.toISOString() : null,
+              notes: a.notes,
             }))}
             blocks={finalAgenda.blocks.map((b) => ({
               id: b.id,

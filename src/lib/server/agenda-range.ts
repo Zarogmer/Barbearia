@@ -72,6 +72,7 @@ export async function getWeekAgenda(args: {
     const apts = await db.appointment.findMany({
       where: {
         organizationId,
+        status: { in: ["CONFIRMED", "COMPLETED", "NO_SHOW"] },
         ...(onlyProfessionalId ? { professionalId: onlyProfessionalId } : {}),
         startsAt: { gte: weekStart, lt: weekEnd },
       },

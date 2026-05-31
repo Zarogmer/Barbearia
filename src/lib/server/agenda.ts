@@ -16,6 +16,11 @@ export type AgendaAppointment = {
   serviceDurationMinutes: number;
   servicePriceCents: number;
   professionalName: string;
+  notes: string | null;
+  // PDV inline (PBI balcão): preenchidos quando admin marca como pago
+  // direto na agenda (sem usar fluxo de Comanda).
+  paymentMethod: "CASH" | "PIX" | "CREDIT" | "DEBIT" | "CORTESIA" | null;
+  paidAt: Date | null;
 };
 
 export type AgendaProfessional = {
@@ -73,8 +78,11 @@ export async function getDayAgenda(args: GetDayAgendaArgs): Promise<DayAgenda> {
       ? { id: onlyProfessionalId, active: true }
       : { active: true };
 
+    // Mostra tudo exceto CANCELLED: COMPLETED e NO_SHOW continuam no
+    // calendario com cor diferente (decisao UX — admin sabe o que aconteceu
+    // sem precisar trocar de tela). CANCELLED some pra nao poluir.
     const apptsWhere = {
-      status: "CONFIRMED" as const,
+      status: { in: ["CONFIRMED", "COMPLETED", "NO_SHOW"] satisfies Array<"CONFIRMED" | "COMPLETED" | "NO_SHOW"> as ("CONFIRMED" | "COMPLETED" | "NO_SHOW")[] },
       startsAt: { gte: rangeStart, lt: rangeEnd },
       ...(onlyProfessionalId ? { professionalId: onlyProfessionalId } : {}),
     };
@@ -114,6 +122,9 @@ export async function getDayAgenda(args: GetDayAgendaArgs): Promise<DayAgenda> {
           startsAt: true,
           endsAt: true,
           status: true,
+          paymentMethod: true,
+          paidAt: true,
+          notes: true,
           customerName: true,
           customerPhone: true,
           service: {
@@ -148,6 +159,9 @@ export async function getDayAgenda(args: GetDayAgendaArgs): Promise<DayAgenda> {
       startsAt: a.startsAt,
       endsAt: a.endsAt,
       status: a.status,
+      paymentMethod: a.paymentMethod,
+      paidAt: a.paidAt,
+      notes: a.notes,
       customerName: a.customerName,
       customerPhone: a.customerPhone,
       serviceName: a.service.name,
@@ -182,6 +196,9 @@ export async function getAppointmentForAdmin(
         startsAt: true,
         endsAt: true,
         status: true,
+        paymentMethod: true,
+        paidAt: true,
+        notes: true,
         customerName: true,
         customerPhone: true,
         service: {
@@ -197,6 +214,9 @@ export async function getAppointmentForAdmin(
       startsAt: a.startsAt,
       endsAt: a.endsAt,
       status: a.status,
+      paymentMethod: a.paymentMethod,
+      paidAt: a.paidAt,
+      notes: a.notes,
       customerName: a.customerName,
       customerPhone: a.customerPhone,
       serviceName: a.service.name,

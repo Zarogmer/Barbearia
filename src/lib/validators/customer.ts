@@ -20,3 +20,38 @@ export const searchCustomerSchema = z.object({
 });
 
 export type SearchCustomerInput = z.infer<typeof searchCustomerSchema>;
+
+export const createCustomerSchema = z.object({
+  name: z.string().trim().min(2, "Nome muito curto").max(80, "Nome muito longo"),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(120, "Email muito longo")
+    .email("Email inválido")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  phone: z
+    .string()
+    .trim()
+    .max(20, "Telefone muito longo")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  birthDate: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve ser AAAA-MM-DD")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+});
+
+export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
+
+export function createCustomerFormDataToInput(formData: FormData): unknown {
+  return {
+    name: formData.get("name") ?? "",
+    email: formData.get("email") ?? "",
+    phone: formData.get("phone") ?? "",
+    birthDate: formData.get("birthDate") ?? "",
+  };
+}

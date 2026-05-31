@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { toZonedTime } from "date-fns-tz";
 
 import { AppointmentDetailDialog } from "@/components/features/admin/AppointmentDetailDialog";
+import { EditAppointmentDialog } from "@/components/features/admin/EditAppointmentDialog";
 import {
   colorForStatus,
   DEFAULT_APPOINTMENT_COLORS,
@@ -34,6 +36,9 @@ type AgendaAppt = {
   serviceDurationMinutes: number;
   servicePriceCents: number;
   professionalName: string;
+  paymentMethod: "CASH" | "PIX" | "CREDIT" | "DEBIT" | "CORTESIA" | null;
+  paidAtIso: string | null;
+  notes?: string | null;
 };
 
 type AgendaBlock = {
@@ -78,6 +83,11 @@ export function AgendaGrid({
   nowMinutes,
   colors = DEFAULT_APPOINTMENT_COLORS,
 }: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editingAppt = editingId
+    ? appointments.find((a) => a.id === editingId) ?? null
+    : null;
+
   if (professionals.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
@@ -248,8 +258,13 @@ export function AgendaGrid({
                           status: a.status,
                           startsAtLabel: formatHHMMIn(start, timezone),
                           endsAtLabel: formatHHMMIn(end, timezone),
+                          paymentMethod: a.paymentMethod,
+                          paidAtLabel: a.paidAtIso
+                            ? formatHHMMIn(new Date(a.paidAtIso), timezone)
+                            : null,
                         }}
                         requiresCancelReason={requires}
+                        onRequestEdit={() => setEditingId(a.id)}
                         trigger={
                           <button
                             type="button"
@@ -279,6 +294,21 @@ export function AgendaGrid({
             );
           })}
         </div>
+
+        {editingAppt && (
+          <EditAppointmentDialog
+            appointment={{
+              id: editingAppt.id,
+              customerName: editingAppt.customerName,
+              serviceName: editingAppt.serviceName,
+              startsAtIso: editingAppt.startsAtIso,
+              notes: editingAppt.notes ?? null,
+            }}
+            timezone={timezone}
+            open
+            onClose={() => setEditingId(null)}
+          />
+        )}
       </div>
   );
 }

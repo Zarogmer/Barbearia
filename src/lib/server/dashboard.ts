@@ -24,7 +24,14 @@ export type DashboardUpcomingAppointment = {
   serviceName: string;
   serviceDurationMinutes: number;
   servicePriceCents: number;
+  professionalId: string;
   professionalName: string;
+};
+
+export type DashboardProfessionalAgenda = {
+  professionalId: string;
+  professionalName: string;
+  appointments: DashboardUpcomingAppointment[];
 };
 
 export type DashboardStats = {
@@ -32,7 +39,10 @@ export type DashboardStats = {
   estimatedRevenueCents: number;
   occupancyPercent: number;
   noShowCount7d: number;
+  /** Lista flat (legado) — usada se UI quiser visão sem agrupamento. */
   upcomingAppointments: DashboardUpcomingAppointment[];
+  /** Próximos do dia agrupados por profissional, ordenados por nome. */
+  upcomingByProfessional: DashboardProfessionalAgenda[];
   timezone: string;
   todayIso: string;
 };
@@ -93,11 +103,12 @@ export async function getDashboardStats(organizationId: string): Promise<Dashboa
           startsAt: { gte: now, lt: dayEndUtc },
         },
         orderBy: { startsAt: "asc" },
-        take: 5,
+        take: 60, // cobre dia inteiro com varios profs
         select: {
           id: true,
           startsAt: true,
           customerName: true,
+          professionalId: true,
           service: {
             select: { name: true, durationMinutes: true, priceCents: true },
           },
@@ -141,8 +152,24 @@ export async function getDashboardStats(organizationId: string): Promise<Dashboa
         serviceName: a.service.name,
         serviceDurationMinutes: a.service.durationMinutes,
         servicePriceCents: a.service.priceCents,
+        professionalId: a.professionalId,
         professionalName: a.professional.name,
       }),
+    );
+
+    // Agrupa por profissional, ordena por nome do prof, depois por hora
+    const byProfMap = new Map<string, DashboardProfessionalAgenda>();
+    for (const a of upcomingAppointments) {
+      const cur = byProfMap.get(a.professionalId) ?? {
+        professionalId: a.professionalId,
+        professionalName: a.professionalName,
+        appointments: [],
+      };
+      cur.appointments.push(a);
+      byProfMap.set(a.professionalId, cur);
+    }
+    const upcomingByProfessional = Array.from(byProfMap.values()).sort((a, b) =>
+      a.professionalName.localeCompare(b.professionalName, "pt-BR"),
     );
 
     return {
@@ -151,6 +178,7 @@ export async function getDashboardStats(organizationId: string): Promise<Dashboa
       occupancyPercent,
       noShowCount7d: noShowCount,
       upcomingAppointments,
+      upcomingByProfessional,
       timezone: tz,
       todayIso,
     };

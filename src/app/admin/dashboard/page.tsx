@@ -47,12 +47,12 @@ export default async function DashboardPage() {
     getDashboardStats(membership.organizationId),
     getOnboardingState(membership.organizationId),
     getOrganizationForAdmin(membership.organizationId),
-    listUpcomingBirthdays(membership.organizationId, 7),
+    listUpcomingBirthdays(membership.organizationId, 31),
   ]);
   const showOnboarding = !onboarding.allDone && !onboarding.dismissed;
   const birthdaysToday = birthdays.filter((b) => b.daysUntil === 0);
-  const birthdaysWeek = birthdays.filter(
-    (b) => b.daysUntil > 0 && b.daysUntil <= 7,
+  const birthdaysMonth = birthdays.filter(
+    (b) => b.daysUntil > 0 && b.daysUntil <= 31,
   );
 
   const todayLocal = toZonedTime(new Date(), stats.timezone);
@@ -132,7 +132,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Widget aniversariantes (se houver) */}
-      {(birthdaysToday.length > 0 || birthdaysWeek.length > 0) && (
+      {(birthdaysToday.length > 0 || birthdaysMonth.length > 0) && (
         <section className="overflow-hidden rounded-md border border-brand/30 bg-gradient-to-br from-brand-soft/40 via-surface to-surface">
           <div className="flex items-center justify-between border-b border-line bg-surface/60 px-4 py-3">
             <div className="flex items-center gap-2">
@@ -142,8 +142,11 @@ export default async function DashboardPage() {
               <h2 className="font-display text-sm font-bold">
                 {birthdaysToday.length > 0
                   ? `🎉 Aniversariante${birthdaysToday.length !== 1 ? "s" : ""} hoje`
-                  : "Aniversariantes da semana"}
+                  : "Aniversariantes do mês"}
               </h2>
+              <span className="rounded-full bg-brand-soft px-2 py-0.5 mono text-[10px] font-semibold text-brand">
+                {birthdaysToday.length + birthdaysMonth.length}
+              </span>
             </div>
             <Link
               href="/admin/aniversariantes"
@@ -153,7 +156,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <ul className="divide-y divide-line">
-            {[...birthdaysToday, ...birthdaysWeek.slice(0, 3)].map((b) => {
+            {[...birthdaysToday, ...birthdaysMonth.slice(0, 5)].map((b) => {
               const initials = b.name
                 .split(" ")
                 .map((n) => n[0])
@@ -238,11 +241,14 @@ export default async function DashboardPage() {
         />
       </section>
 
-      {/* Próximos agendamentos */}
+      {/* Próximos agendamentos — agrupados por profissional pro dono ver
+          rapidamente quem tem o quê pela frente sem precisar abrir agenda. */}
       <div className="overflow-hidden rounded-md border border-line bg-surface">
         <div className="flex items-center justify-between border-b border-line bg-surface-2 px-4 py-3">
           <div className="flex items-center gap-3">
-            <h2 className="font-display text-sm font-bold">Próximos agendamentos</h2>
+            <h2 className="font-display text-sm font-bold">
+              Próximos do dia · por profissional
+            </h2>
             <span className="rounded-full bg-brand-soft px-2 py-0.5 mono text-[10px] font-semibold text-brand">
               {stats.upcomingAppointments.length}
             </span>
@@ -254,7 +260,7 @@ export default async function DashboardPage() {
             Ver agenda completa →
           </Link>
         </div>
-        {stats.upcomingAppointments.length === 0 ? (
+        {stats.upcomingByProfessional.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <p className="font-display text-sm font-bold">Nenhum agendamento futuro hoje</p>
             <p className="mt-1 mono text-[10px] uppercase tracking-wider text-subtle">
@@ -263,47 +269,62 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="divide-y divide-line">
-            {stats.upcomingAppointments.map((a) => {
-              const profInitials = a.professionalName
+            {stats.upcomingByProfessional.map((group) => {
+              const profInitials = group.professionalName
                 .split(" ")
                 .map((n) => n[0])
                 .slice(0, 2)
                 .join("")
                 .toUpperCase();
               return (
-                <div
-                  key={a.id}
-                  className="grid grid-cols-[64px_1fr_140px_120px] items-center gap-3 px-4 py-3 sm:grid-cols-[80px_1fr_1fr_160px_100px]"
-                >
-                  <div className="mono text-xs font-semibold">
-                    {formatTimeIn(a.startsAt, stats.timezone)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold">{a.customerName}</div>
-                    <div className="mono truncate text-[11px] text-subtle">
-                      #{a.id.slice(0, 8)}
-                    </div>
-                  </div>
-                  <div className="hidden min-w-0 sm:block">
-                    <div className="truncate text-sm font-medium">{a.serviceName}</div>
-                    <div className="mono truncate text-[11px] text-subtle">
-                      {formatDuration(a.serviceDurationMinutes)} ·{" "}
-                      {formatBRL(a.servicePriceCents)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="avatar-ring">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-3 text-[9px] font-bold">
-                        {profInitials}
+                <div key={group.professionalId} className="px-4 py-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="avatar-ring">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[10px] font-bold">
+                          {profInitials}
+                        </span>
                       </span>
-                    </span>
-                    <span className="truncate text-xs">
-                      {a.professionalName.split(" ")[0]}
-                    </span>
+                      <div className="leading-tight">
+                        <div className="text-sm font-semibold">
+                          {group.professionalName}
+                        </div>
+                        <div className="mono text-[10px] text-subtle">
+                          {group.appointments.length} agendamento
+                          {group.appointments.length !== 1 ? "s" : ""}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <span className="rounded-full bg-ok/10 px-2 py-0.5 text-center text-[10px] font-semibold text-ok">
-                    Confirmado
-                  </span>
+                  <ul className="space-y-1.5 pl-10">
+                    {group.appointments.slice(0, 5).map((a) => (
+                      <li
+                        key={a.id}
+                        className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-md bg-surface-2/60 px-3 py-2"
+                      >
+                        <span className="mono text-xs font-semibold">
+                          {formatTimeIn(a.startsAt, stats.timezone)}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium">
+                            {a.customerName}
+                          </div>
+                          <div className="mono truncate text-[10px] text-subtle">
+                            {a.serviceName} ·{" "}
+                            {formatDuration(a.serviceDurationMinutes)}
+                          </div>
+                        </div>
+                        <span className="mono text-xs font-semibold text-subtle">
+                          {formatBRL(a.servicePriceCents)}
+                        </span>
+                      </li>
+                    ))}
+                    {group.appointments.length > 5 && (
+                      <li className="pt-1 text-center mono text-[10px] text-subtle">
+                        + {group.appointments.length - 5} mais
+                      </li>
+                    )}
+                  </ul>
                 </div>
               );
             })}

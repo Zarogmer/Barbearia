@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Cake,
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
@@ -39,6 +40,7 @@ const PRIMARY: NavItem[] = [
 
 const SECONDARY: NavItem[] = [
   { href: "/admin/clientes", label: "Clientes", Icon: UserCircle2 },
+  { href: "/admin/aniversariantes", label: "Aniversariantes", Icon: Cake },
   { href: "/admin/servicos", label: "Serviços", Icon: Scissors },
   { href: "/admin/estoque", label: "Estoque", Icon: Package },
   { href: "/admin/profissionais", label: "Profissionais", Icon: Users },

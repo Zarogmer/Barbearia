@@ -17,6 +17,7 @@ import { toZonedTime } from "date-fns-tz";
 import { BirthDateEditor } from "@/components/features/admin/BirthDateEditor";
 import { DeleteNoteButton } from "@/components/features/admin/DeleteNoteButton";
 import { NewNoteDialog } from "@/components/features/admin/NewNoteDialog";
+import { SendMessageDialog } from "@/components/features/admin/SendMessageDialog";
 import { auth } from "@/lib/auth";
 import {
   getCustomerDetail,
@@ -24,6 +25,8 @@ import {
 } from "@/lib/server/customers";
 import { listCustomerNotes } from "@/lib/server/customerNotes";
 import { getLoyaltyStatusForCustomer } from "@/lib/server/loyalty";
+import { listMessageTemplates } from "@/lib/server/messages";
+import { getOrganizationForAdmin } from "@/lib/server/organizations";
 import { withTenant } from "@/lib/db";
 import { cn, formatBRL } from "@/lib/utils";
 
@@ -71,10 +74,12 @@ export default async function CustomerDetailPage({
   }
   const orgId = membership.organizationId;
 
-  const [detail, appointments, notes, timezone] = await Promise.all([
+  const [detail, appointments, notes, templates, org, timezone] = await Promise.all([
     getCustomerDetail(orgId, id),
     listCustomerAppointments(orgId, id),
     listCustomerNotes(orgId, id),
+    listMessageTemplates(orgId, { onlyActive: true }),
+    getOrganizationForAdmin(orgId),
     withTenant(orgId, (db) =>
       db.organization
         .findUniqueOrThrow({ where: { id: orgId }, select: { timezone: true } })
@@ -138,6 +143,21 @@ export default async function CustomerDetailPage({
             </div>
           </div>
         </div>
+        <SendMessageDialog
+          templates={templates.map((t) => ({
+            id: t.id,
+            title: t.title,
+            body: t.body,
+            key: t.key,
+          }))}
+          customer={{ name: detail.name, phone: detail.phone }}
+          vars={{
+            barbearia: org.name,
+            endereco: org.address ?? undefined,
+          }}
+          triggerLabel="Enviar WhatsApp"
+          triggerVariant="primary"
+        />
       </header>
 
       {/* Stats KPI */}

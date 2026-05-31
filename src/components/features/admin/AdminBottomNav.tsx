@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
+  MessageCircle,
   MoreHorizontal,
   Package,
   Percent,
@@ -54,6 +55,7 @@ const SECONDARY: NavItem[] = [
   { href: "/admin/comissoes", label: "Comissões", Icon: Percent },
   { href: "/admin/relatorios", label: "Relatórios", Icon: BarChart3 },
   { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
+  { href: "/admin/mensagens", label: "Mensagens", Icon: MessageCircle },
   { href: "/admin/configuracoes", label: "Configurações", Icon: Settings },
 ];
 

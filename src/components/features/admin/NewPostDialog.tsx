@@ -45,8 +45,8 @@ export function NewPostDialog() {
           Novo post
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-md flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b border-line px-6 pb-4 pt-6">
           <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand">
             <ImageIcon className="h-4 w-4" />
           </div>
@@ -59,52 +59,54 @@ export function NewPostDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <form action={dispatch} className="space-y-3.5">
-          {state.error && !state.fieldErrors && (
-            <div
-              role="alert"
-              className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger/5 p-3 text-xs text-danger"
-            >
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{state.error}</span>
-            </div>
-          )}
-
-          <ImageUpload
-            name="imageUrl"
-            label="Imagem do post"
-            aspectRatio={1}
-            hint="Quadrada (1:1) fica melhor no feed."
-          />
-
-          <div>
-            <label
-              htmlFor="caption"
-              className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
-            >
-              Legenda (opcional)
-            </label>
-            <textarea
-              id="caption"
-              name="caption"
-              rows={3}
-              maxLength={280}
-              placeholder="Descreva o post…"
-              className={cn(
-                "w-full rounded-lg border bg-surface px-3 py-2 text-sm outline-none transition-all",
-                state.fieldErrors?.caption
-                  ? "border-danger focus:shadow-[0_0_0_4px_hsl(var(--danger)/0.18)]"
-                  : "border-line focus:border-brand focus:shadow-glow",
-              )}
-            />
-            {state.fieldErrors?.caption && (
-              <p className="mt-1 text-[11px] text-danger">
-                {state.fieldErrors.caption}
-              </p>
+        <form action={dispatch} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex-1 space-y-3.5 overflow-y-auto px-6 py-4">
+            {state.error && !state.fieldErrors && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger/5 p-3 text-xs text-danger"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{state.error}</span>
+              </div>
             )}
+
+            <ImageUpload
+              name="imageUrl"
+              label="Imagem do post"
+              aspectRatio={1}
+              hint="Quadrada (1:1) fica melhor no feed."
+            />
+
+            <div>
+              <label
+                htmlFor="caption"
+                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+              >
+                Legenda (opcional)
+              </label>
+              <textarea
+                id="caption"
+                name="caption"
+                rows={3}
+                maxLength={280}
+                placeholder="Descreva o post…"
+                className={cn(
+                  "w-full rounded-lg border bg-surface px-3 py-2 text-sm outline-none transition-all",
+                  state.fieldErrors?.caption
+                    ? "border-danger focus:shadow-[0_0_0_4px_hsl(var(--danger)/0.18)]"
+                    : "border-line focus:border-brand focus:shadow-glow",
+                )}
+              />
+              {state.fieldErrors?.caption && (
+                <p className="mt-1 text-[11px] text-danger">
+                  {state.fieldErrors.caption}
+                </p>
+              )}
+            </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-2">
+          <DialogFooter className="shrink-0 gap-2 border-t border-line bg-surface px-6 py-3 sm:gap-2">
             <button
               type="button"
               onClick={() => setOpen(false)}

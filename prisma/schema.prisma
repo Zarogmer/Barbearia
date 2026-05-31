@@ -205,6 +205,9 @@ model Appointment {
   notes          String?
   cancelledAt    DateTime?
   cancelReason   String?
+  // Notificações (job diário): marca quando o lembrete 24h foi disparado
+  // pro cliente. Evita duplicar SMS se o cron rodar mais de uma vez.
+  reminderSentAt DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 

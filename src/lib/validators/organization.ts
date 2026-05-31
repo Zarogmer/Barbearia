@@ -53,6 +53,15 @@ export const updateOrganizationSchema = z.object({
   // PBI-45 — taxa em basis points × 10 (4.99% = 499). 0 = sem taxa.
   creditCardFeeBp: z.coerce.number().int().min(0).max(5000).default(0),
   debitCardFeeBp: z.coerce.number().int().min(0).max(5000).default(0),
+  // PBI-27 — cartão fidelidade
+  loyaltyEnabled: z.boolean().default(false),
+  loyaltyGoal: z.coerce.number().int().min(1).max(100).default(10),
+  loyaltyRewardLabel: z
+    .string()
+    .trim()
+    .max(80, "Recompensa muito longa (máx 80)")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   // Vitrine (PBI-26)
   coverImageUrl: URL_OR_EMPTY.optional(),
   tagline: z
@@ -122,6 +131,11 @@ export function organizationFormDataToInput(formData: FormData): unknown {
     debitCardFeeBp: Math.round(
       Number(formData.get("debitCardFeePercent") ?? 0) * 100,
     ),
+    loyaltyEnabled:
+      formData.get("loyaltyEnabled") === "on" ||
+      formData.get("loyaltyEnabled") === "true",
+    loyaltyGoal: Number(formData.get("loyaltyGoal") ?? 10),
+    loyaltyRewardLabel: formData.get("loyaltyRewardLabel") ?? "",
     coverImageUrl: formData.get("coverImageUrl") ?? "",
     tagline: formData.get("tagline") ?? "",
     address: formData.get("address") ?? "",

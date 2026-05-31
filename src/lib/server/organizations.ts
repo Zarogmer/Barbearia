@@ -26,6 +26,9 @@ export type AdminOrganization = {
   allowOverbookEncaixe: boolean;
   creditCardFeeBp: number;
   debitCardFeeBp: number;
+  loyaltyEnabled: boolean;
+  loyaltyGoal: number;
+  loyaltyRewardLabel: string | null;
 };
 
 /**
@@ -55,6 +58,9 @@ export async function getOrganizationForAdmin(
         allowOverbookEncaixe: true,
         creditCardFeeBp: true,
         debitCardFeeBp: true,
+        loyaltyEnabled: true,
+        loyaltyGoal: true,
+        loyaltyRewardLabel: true,
       },
     });
     return {
@@ -111,6 +117,9 @@ export async function updateOrganization(
           allowOverbookEncaixe: input.allowOverbookEncaixe ?? true,
           creditCardFeeBp: input.creditCardFeeBp ?? 0,
           debitCardFeeBp: input.debitCardFeeBp ?? 0,
+          loyaltyEnabled: input.loyaltyEnabled ?? false,
+          loyaltyGoal: input.loyaltyGoal ?? 10,
+          loyaltyRewardLabel: input.loyaltyRewardLabel ?? null,
           coverImageUrl: input.coverImageUrl ?? null,
           tagline: input.tagline ?? null,
           address: input.address ?? null,
@@ -138,6 +147,9 @@ export async function updateOrganization(
           allowOverbookEncaixe: true,
           creditCardFeeBp: true,
           debitCardFeeBp: true,
+          loyaltyEnabled: true,
+          loyaltyGoal: true,
+          loyaltyRewardLabel: true,
         },
       });
       return {

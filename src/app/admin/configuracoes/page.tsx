@@ -90,6 +90,32 @@ export default async function SettingsPage() {
         />
       </div>
 
+      {/* Página de Bio (PBI-32): link copiável pra compartilhar no
+          Instagram bio, WhatsApp, QR code impresso, etc. */}
+      <div className="rounded-md border border-line bg-surface p-6">
+        <div className="mb-3">
+          <div className="eyebrow mb-2">Compartilhar</div>
+          <h2 className="font-display text-base font-bold">Página de Bio</h2>
+          <p className="text-xs text-subtle">
+            Link estilo Linktree pra colar no Instagram, WhatsApp ou imprimir
+            QR code. Mostra botões de contato + CTA pra agendar.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <code className="mono flex-1 truncate rounded-md border border-line bg-surface-2 px-3 py-2 text-xs">
+            barbearia.app/{org.slug}/bio
+          </code>
+          <Link
+            href={`/${org.slug}/bio`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tap inline-flex h-10 items-center gap-1.5 rounded-lg bg-brand px-4 text-sm font-semibold text-brand-fg hover:opacity-90"
+          >
+            Abrir
+          </Link>
+        </div>
+      </div>
+
       <div className="text-center">
         <Link
           href="/admin/configuracoes/cloudinary-debug"

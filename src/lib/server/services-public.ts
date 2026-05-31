@@ -23,7 +23,8 @@ export async function listActiveServices(
 ): Promise<PublicService[]> {
   return withTenant(organizationId, async (db) => {
     return db.service.findMany({
-      where: { active: true },
+      // PBI-33: filtra allowOnlineBooking — só admin marca off-line
+      where: { active: true, allowOnlineBooking: true },
       orderBy: [{ priceCents: "asc" }, { name: "asc" }],
       select: {
         id: true,
@@ -42,7 +43,8 @@ export async function getActiveServiceById(
 ): Promise<PublicService | null> {
   return withTenant(organizationId, async (db) => {
     return db.service.findFirst({
-      where: { id: serviceId, active: true },
+      // PBI-33: blocked se allowOnlineBooking=false (impede deep link público)
+      where: { id: serviceId, active: true, allowOnlineBooking: true },
       select: {
         id: true,
         name: true,

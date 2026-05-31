@@ -12,6 +12,11 @@ export type ServiceWithProfessionals = {
   priceCents: number;
   active: boolean;
   professionalIds: string[];
+  // PBI-33
+  category: string | null;
+  color: string | null;
+  costCents: number;
+  allowOnlineBooking: boolean;
 };
 
 export async function listServices(organizationId: string): Promise<ServiceWithProfessionals[]> {
@@ -28,6 +33,10 @@ export async function listServices(organizationId: string): Promise<ServiceWithP
       priceCents: s.priceCents,
       active: s.active,
       professionalIds: s.professionalServices.map((ps) => ps.professionalId),
+      category: s.category,
+      color: s.color,
+      costCents: s.costCents,
+      allowOnlineBooking: s.allowOnlineBooking,
     }));
   });
 }
@@ -50,6 +59,10 @@ export async function getServiceById(
       priceCents: s.priceCents,
       active: s.active,
       professionalIds: s.professionalServices.map((ps) => ps.professionalId),
+      category: s.category,
+      color: s.color,
+      costCents: s.costCents,
+      allowOnlineBooking: s.allowOnlineBooking,
     };
   });
 }
@@ -67,6 +80,10 @@ export async function createService(
         durationMinutes: input.durationMinutes,
         priceCents: input.priceCents,
         active: input.active,
+        category: input.category ?? null,
+        color: input.color ?? null,
+        costCents: input.costCents ?? 0,
+        allowOnlineBooking: input.allowOnlineBooking ?? true,
         professionalServices: input.professionalIds.length
           ? {
               create: input.professionalIds.map((professionalId) => ({ professionalId })),
@@ -93,6 +110,10 @@ export async function updateService(
           durationMinutes: input.durationMinutes,
           priceCents: input.priceCents,
           active: input.active,
+          category: input.category ?? null,
+          color: input.color ?? null,
+          costCents: input.costCents ?? 0,
+          allowOnlineBooking: input.allowOnlineBooking ?? true,
         },
       }),
       // Reset N:N — apaga todos e re-cria com os novos IDs.

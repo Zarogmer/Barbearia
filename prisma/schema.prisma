@@ -110,8 +110,18 @@ model Service {
   durationMinutes Int
   priceCents      Int
   active          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  // PBI-33: extras de servico.
+  // category: agrupador (ex: "Corte", "Barba", "Combo")
+  // color: hex pra agenda/lista (ex: "#FF5722"), null = usa tema
+  // costCents: custo de produto/insumo (margem = price - cost)
+  // allowOnlineBooking: se false, esconde do fluxo publico /agendar
+  //   (so admin pode marcar via QuickBookingDialog)
+  category           String?
+  color              String?
+  costCents          Int     @default(0)
+  allowOnlineBooking Boolean @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   professionalServices ProfessionalService[]

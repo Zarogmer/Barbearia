@@ -18,22 +18,78 @@
     }
   },
   "labels": [
-    { "id": "backend",   "name": "backend",   "color": "blue" },
-    { "id": "frontend",  "name": "frontend",  "color": "purple" },
-    { "id": "infra",     "name": "infra",     "color": "sky" },
-    { "id": "seguranca", "name": "seguranca", "color": "red" },
-    { "id": "testes",    "name": "testes",    "color": "green" },
-    { "id": "docs",      "name": "docs",      "color": "lime" },
-    { "id": "p0",        "name": "p0 (bloqueia MVP)", "color": "red_dark" },
-    { "id": "p1",        "name": "p1 (deveria ter)",  "color": "orange" },
-    { "id": "p2",        "name": "p2 (nice to have)", "color": "yellow" },
-    { "id": "v2",        "name": "v2 (pós-MVP)",      "color": "pink" }
+    {
+      "id": "backend",
+      "name": "backend",
+      "color": "blue"
+    },
+    {
+      "id": "frontend",
+      "name": "frontend",
+      "color": "purple"
+    },
+    {
+      "id": "infra",
+      "name": "infra",
+      "color": "sky"
+    },
+    {
+      "id": "seguranca",
+      "name": "seguranca",
+      "color": "red"
+    },
+    {
+      "id": "testes",
+      "name": "testes",
+      "color": "green"
+    },
+    {
+      "id": "docs",
+      "name": "docs",
+      "color": "lime"
+    },
+    {
+      "id": "p0",
+      "name": "p0 (bloqueia MVP)",
+      "color": "red_dark"
+    },
+    {
+      "id": "p1",
+      "name": "p1 (deveria ter)",
+      "color": "orange"
+    },
+    {
+      "id": "p2",
+      "name": "p2 (nice to have)",
+      "color": "yellow"
+    },
+    {
+      "id": "v2",
+      "name": "v2 (pós-MVP)",
+      "color": "pink"
+    }
   ],
   "lists": [
-    { "id": "backlog", "name": "📋 Backlog", "pos": 1 },
-    { "id": "doing",   "name": "🚧 Doing",   "pos": 2 },
-    { "id": "review",  "name": "👀 Review",  "pos": 3 },
-    { "id": "done",    "name": "✅ Done",    "pos": 4 }
+    {
+      "id": "backlog",
+      "name": "📋 Backlog",
+      "pos": 1
+    },
+    {
+      "id": "doing",
+      "name": "🚧 Doing",
+      "pos": 2
+    },
+    {
+      "id": "review",
+      "name": "👀 Review",
+      "pos": 3
+    },
+    {
+      "id": "done",
+      "name": "✅ Done",
+      "pos": 4
+    }
   ],
   "defaultChecklists": {
     "deploy": {
@@ -57,8 +113,13 @@
     {
       "id": "PBI-01",
       "name": "PBI-01 — Postgres local + RLS + migration inicial",
-      "idList": "backlog",
-      "idLabels": ["infra", "backend", "seguranca", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "infra",
+        "backend",
+        "seguranca",
+        "p0"
+      ],
       "pos": 1,
       "estimateHours": 2,
       "dependsOn": [],
@@ -76,7 +137,12 @@
             ".env.example com DATABASE_URL / DIRECT_URL / DATABASE_ADMIN_URL"
           ]
         },
-        { "name": "🎨 Frontend", "items": ["(nada — PBI puramente infra)"] },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(nada — PBI puramente infra)"
+          ]
+        },
         {
           "name": "📜 Regra de negócio",
           "items": [
@@ -96,11 +162,18 @@
     {
       "id": "PBI-02",
       "name": "PBI-02 — NextAuth v5 (Credentials + Prisma adapter)",
-      "idList": "backlog",
-      "idLabels": ["backend", "seguranca", "frontend", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "backend",
+        "seguranca",
+        "frontend",
+        "p0"
+      ],
       "pos": 2,
       "estimateHours": 4,
-      "dependsOn": ["PBI-01"],
+      "dependsOn": [
+        "PBI-01"
+      ],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-01\n**Refs:** [09-pbis.md#PBI-02](docs/09-pbis.md) · [04-seguranca.md](docs/04-seguranca.md)\n\n## 🎯 Objetivo\nLogin/cadastro com Credentials (bcrypt 12) + DB sessions. Custom session com memberships (org + role). Middleware protege (admin)/*.",
       "checklists": [
         {
@@ -147,11 +220,17 @@
     {
       "id": "PBI-03",
       "name": "PBI-03 — Google OAuth + verificação de email (Resend)",
-      "idList": "backlog",
-      "idLabels": ["backend", "seguranca", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "backend",
+        "seguranca",
+        "p1"
+      ],
       "pos": 3,
       "estimateHours": 3,
-      "dependsOn": ["PBI-02"],
+      "dependsOn": [
+        "PBI-02"
+      ],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-02\n**Refs:** [09-pbis.md#PBI-03](docs/09-pbis.md)\n\n## 🎯 Objetivo\nGoogle como segundo provider (cliente) + email de verificação para signups Credentials (Resend; fallback console em dev).",
       "checklists": [
         {
@@ -192,11 +271,17 @@
     {
       "id": "PBI-04",
       "name": "PBI-04 — CRUD serviços (admin)",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "p0"
+      ],
       "pos": 4,
       "estimateHours": 5,
-      "dependsOn": ["PBI-02"],
+      "dependsOn": [
+        "PBI-02"
+      ],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-02\n**Tela existente:** src/app/admin/servicos/ (mock atual)\n**Refs:** [09-pbis.md#PBI-04](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg)\n\n## 🎯 Objetivo\nOwner cria/edita/desativa serviços. Hard delete bloqueado se há appointment referenciando.",
       "checklists": [
         {
@@ -242,11 +327,17 @@
     {
       "id": "PBI-05",
       "name": "PBI-05 — CRUD profissionais + horários + bloqueios",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "p0"
+      ],
       "pos": 5,
       "estimateHours": 6,
-      "dependsOn": ["PBI-04"],
+      "dependsOn": [
+        "PBI-04"
+      ],
       "desc": "**Estimativa:** 6h · **Depende:** PBI-04\n**Tela existente:** src/app/admin/profissionais/\n**Refs:** [09-pbis.md#PBI-05](docs/09-pbis.md)\n\n## 🎯 Objetivo\nCriar profissionais; editar WorkingHours por dia da semana (sem sobreposição); criar/listar TimeBlock; rejeitar bloqueio que cubra Appointment.",
       "checklists": [
         {
@@ -292,11 +383,17 @@
     {
       "id": "PBI-06",
       "name": "PBI-06 — Slot calculator (algoritmo)",
-      "idList": "backlog",
-      "idLabels": ["backend", "testes", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "backend",
+        "testes",
+        "p0"
+      ],
       "pos": 6,
       "estimateHours": 5,
-      "dependsOn": ["PBI-05"],
+      "dependsOn": [
+        "PBI-05"
+      ],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-05\n**Diagrama:** [algoritmo-slot-calculator.svg](docs/diagramas/algoritmo-slot-calculator.svg)\n**Refs:** [09-pbis.md#PBI-06](docs/09-pbis.md) · [07-regras-negocio.md#RN-03](docs/07-regras-negocio.md)\n\n## 🎯 Objetivo\nFunção pura que retorna slots disponíveis dado prof+serviço+data. Coração do produto. Implementa RN-03/04/05.",
       "checklists": [
         {
@@ -309,7 +406,12 @@
             "Setup Vitest base (PBI-12 estende com coverage)"
           ]
         },
-        { "name": "🎨 Frontend", "items": ["(consumido em PBI-07)"] },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(consumido em PBI-07)"
+          ]
+        },
         {
           "name": "📜 Regra de negócio",
           "items": [
@@ -346,11 +448,16 @@
     {
       "id": "PBI-07",
       "name": "PBI-07 — Fluxo cliente (4 passos sem submit)",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p0"
+      ],
       "pos": 7,
       "estimateHours": 5,
-      "dependsOn": ["PBI-06"],
+      "dependsOn": [
+        "PBI-06"
+      ],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-06\n**Diagrama:** [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n**Protótipo visual:** [docs/prototipo/index.html#cliente](docs/prototipo/index.html) — W-01..W-06 mockados em alta-fi\n**Telas existentes:** src/app/(public)/[orgSlug]/...\n**Refs:** [09-pbis.md#PBI-07](docs/09-pbis.md) · [08-prototipo.md W-01..W-04](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nLigar 4 telas do cliente ao back. State 100% URL. Sem submit (vai em PBI-08). Polimento visual final em PBI-16.",
       "checklists": [
         {
@@ -393,11 +500,19 @@
     {
       "id": "PBI-08",
       "name": "PBI-08 — Confirmação + criação do agendamento",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "seguranca", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "seguranca",
+        "p0"
+      ],
       "pos": 8,
       "estimateHours": 5,
-      "dependsOn": ["PBI-07", "PBI-03"],
+      "dependsOn": [
+        "PBI-07",
+        "PBI-03"
+      ],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-07, PBI-03\n**Refs:** [09-pbis.md#PBI-08](docs/09-pbis.md) · [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n\n## 🎯 Objetivo\nFechar fluxo: form W-05 → SA confirma → cria User se anônimo → INSERT Appointment com captura de EXCLUDE → email → redirect W-06.",
       "checklists": [
         {
@@ -443,11 +558,17 @@
     {
       "id": "PBI-09",
       "name": "PBI-09 — Agenda do dia (admin)",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "p0"
+      ],
       "pos": 9,
       "estimateHours": 6,
-      "dependsOn": ["PBI-08"],
+      "dependsOn": [
+        "PBI-08"
+      ],
       "desc": "**Estimativa:** 6h · **Depende:** PBI-08\n**Tela existente:** src/app/admin/agenda/\n**Protótipo visual:** [docs/prototipo/index.html#admin](docs/prototipo/index.html) — W-07/W-08/W-09 desktop frames\n**Refs:** [09-pbis.md#PBI-09](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg) · [08-prototipo.md W-08](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nVisualização de agenda do dia por profissional. Bloco appt/bloco TimeBlock; ações de mudança de status; encaixe. Polimento visual final em PBI-16.",
       "checklists": [
         {
@@ -493,11 +614,17 @@
     {
       "id": "PBI-10",
       "name": "PBI-10 — Configurações da organização",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "p2"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "p2"
+      ],
       "pos": 10,
       "estimateHours": 3,
-      "dependsOn": ["PBI-02"],
+      "dependsOn": [
+        "PBI-02"
+      ],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-02\n**Tela existente:** src/app/admin/configuracoes/\n**Refs:** [09-pbis.md#PBI-10](docs/09-pbis.md)\n\n## 🎯 Objetivo\nOwner edita nome, slug (com confirma), timezone (read-only MVP), allowGuestBooking.",
       "checklists": [
         {
@@ -533,15 +660,31 @@
     {
       "id": "PBI-11",
       "name": "PBI-11 — Testes de isolamento cross-tenant",
-      "idList": "backlog",
-      "idLabels": ["testes", "seguranca", "p0"],
+      "idList": "done",
+      "idLabels": [
+        "testes",
+        "seguranca",
+        "p0"
+      ],
       "pos": 11,
       "estimateHours": 4,
-      "dependsOn": ["PBI-09"],
+      "dependsOn": [
+        "PBI-09"
+      ],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-09\n**Refs:** [09-pbis.md#PBI-11](docs/09-pbis.md) · [arquitetura-multi-tenant.svg](docs/diagramas/arquitetura-multi-tenant.svg) · [04-seguranca.md](docs/04-seguranca.md)\n\n## 🎯 Objetivo\nProvar que vazamento cross-tenant é impossível. Sem isso, multi-tenant é teatro.",
       "checklists": [
-        { "name": "🔧 Backend", "items": ["(só testes)"] },
-        { "name": "🎨 Frontend", "items": ["(nada)"] },
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "(só testes)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(nada)"
+          ]
+        },
         {
           "name": "📜 Regra de negócio",
           "items": [
@@ -567,11 +710,16 @@
     {
       "id": "PBI-12",
       "name": "PBI-12 — Suite mínima + coverage gates",
-      "idList": "backlog",
-      "idLabels": ["testes", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "testes",
+        "p1"
+      ],
       "pos": 12,
       "estimateHours": 4,
-      "dependsOn": ["PBI-08"],
+      "dependsOn": [
+        "PBI-08"
+      ],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-08\n**Refs:** [09-pbis.md#PBI-12](docs/09-pbis.md) · [05-testes.md](docs/05-testes.md)",
       "checklists": [
         {
@@ -582,10 +730,17 @@
             "Falha threshold quebra CI"
           ]
         },
-        { "name": "🎨 Frontend", "items": ["(nada)"] },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(nada)"
+          ]
+        },
         {
           "name": "📜 Regra de negócio",
-          "items": ["Cobertura mínima conforme 05-testes.md"]
+          "items": [
+            "Cobertura mínima conforme 05-testes.md"
+          ]
         },
         {
           "name": "🧪 Testes",
@@ -601,11 +756,17 @@
     {
       "id": "PBI-13",
       "name": "PBI-13 — CI no GitHub Actions",
-      "idList": "backlog",
-      "idLabels": ["infra", "testes", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "infra",
+        "testes",
+        "p1"
+      ],
       "pos": 13,
       "estimateHours": 3,
-      "dependsOn": ["PBI-12"],
+      "dependsOn": [
+        "PBI-12"
+      ],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-12\n**Refs:** [09-pbis.md#PBI-13](docs/09-pbis.md)",
       "checklists": [
         {
@@ -618,10 +779,17 @@
             "docker-compose.test.yml para reprodução local"
           ]
         },
-        { "name": "🎨 Frontend", "items": ["(nada)"] },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(nada)"
+          ]
+        },
         {
           "name": "📜 Regra de negócio",
-          "items": ["Sem CI verde não merge em main"]
+          "items": [
+            "Sem CI verde não merge em main"
+          ]
         },
         {
           "name": "🧪 Testes",
@@ -635,11 +803,16 @@
     {
       "id": "PBI-14",
       "name": "PBI-14 — Deploy Vercel + Neon",
-      "idList": "backlog",
-      "idLabels": ["infra", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "infra",
+        "p1"
+      ],
       "pos": 14,
       "estimateHours": 3,
-      "dependsOn": ["PBI-13"],
+      "dependsOn": [
+        "PBI-13"
+      ],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-13\n**Refs:** [09-pbis.md#PBI-14](docs/09-pbis.md)",
       "checklists": [
         {
@@ -652,10 +825,17 @@
             "src/app/api/health/route.ts → 200 + {db:'ok'}"
           ]
         },
-        { "name": "🎨 Frontend", "items": ["(smoke manual)"] },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(smoke manual)"
+          ]
+        },
         {
           "name": "📜 Regra de negócio",
-          "items": ["Domínio .vercel.app no MVP; customizado em v2"]
+          "items": [
+            "Domínio .vercel.app no MVP; customizado em v2"
+          ]
         },
         {
           "name": "🧪 Testes",
@@ -669,14 +849,24 @@
     {
       "id": "PBI-15",
       "name": "PBI-15 — PWA + polimento UX",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p2"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p2"
+      ],
       "pos": 15,
       "estimateHours": 3,
-      "dependsOn": ["PBI-08"],
+      "dependsOn": [
+        "PBI-08"
+      ],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-08\n**Refs:** [09-pbis.md#PBI-15](docs/09-pbis.md)",
       "checklists": [
-        { "name": "🔧 Backend", "items": ["(nada)"] },
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "(nada)"
+          ]
+        },
         {
           "name": "🎨 Frontend",
           "items": [
@@ -690,7 +880,9 @@
         },
         {
           "name": "📜 Regra de negócio",
-          "items": ["Lighthouse mobile: Perf ≥80, A11y ≥90, BP ≥90"]
+          "items": [
+            "Lighthouse mobile: Perf ≥80, A11y ≥90, BP ≥90"
+          ]
         },
         {
           "name": "🧪 Testes",
@@ -704,11 +896,17 @@
     {
       "id": "PBI-16",
       "name": "PBI-16 — Aplicar design system Lustro (telas W-01..W-09)",
-      "idList": "backlog",
-      "idLabels": ["frontend", "docs", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "docs",
+        "p1"
+      ],
       "pos": 16,
       "estimateHours": 4,
-      "dependsOn": ["PBI-02"],
+      "dependsOn": [
+        "PBI-02"
+      ],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-02 (paraleliza com 04-09)\n**Protótipo:** [docs/prototipo/index.html](docs/prototipo/index.html) — abrir local + escolher paleta\n**Refs:** [08-prototipo.md#design-system--lustro](docs/08-prototipo.md) · [11-pbis-detalhado.md](docs/11-pbis-detalhado.md)\n\n## 🎯 Objetivo\nElevar fidelidade das telas existentes (W-01..W-09) de wireframe baixa-fi pro design system Lustro. Fontes premium, paleta escolhida (Charcoal default), microanimações, tokens unificados. Sem mudar fluxo nem regras — apenas visual.\n\n## DoD (além do universal)\n- Usuário humano escolhe entre Charcoal / Sunset / Editorial antes do PBI começar (1 das 3 vai pra prod; outras 2 ficam como variantes via data-theme)\n- Screenshots antes/depois no PR body de cada uma das 9 telas\n- Lighthouse Mobile mantém Perf ≥80 (não regredir)",
       "checklists": [
         {
@@ -750,11 +948,18 @@
     {
       "id": "PBI-17",
       "name": "PBI-17 — Relatórios financeiros (v2)",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "v2"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "v2"
+      ],
       "pos": 17,
       "estimateHours": 8,
-      "dependsOn": ["PBI-08", "PBI-09"],
+      "dependsOn": [
+        "PBI-08",
+        "PBI-09"
+      ],
       "desc": "**Estimativa:** 8h · **Depende:** PBI-08, PBI-09 · **NÃO faz parte do MVP de 7 dias**\n**Protótipo visual:** [docs/prototipo/index.html#v2](docs/prototipo/index.html) — W-17\n\n## 🎯 Objetivo\nPainel de relatórios financeiros pro dono: faturamento por período, comissões por profissional, ticket médio, tendência diária. Exportação PDF.\n\n## ⚠ Por que v2 (fora do MVP)\nAdiciona modelo de Commission/Payout, agregações SQL complexas, lib de gráficos, geração de PDF. Custo: 8-12h. MVP de 7 dias não suporta. Implementar após validar core com 1+ barbearia real em prod.",
       "checklists": [
         {
@@ -801,11 +1006,18 @@
     {
       "id": "PBI-18",
       "name": "PBI-18 — Estoque de produtos + PDV (v2)",
-      "idList": "backlog",
-      "idLabels": ["frontend", "backend", "v2"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "backend",
+        "v2"
+      ],
       "pos": 18,
       "estimateHours": 12,
-      "dependsOn": ["PBI-04", "PBI-09"],
+      "dependsOn": [
+        "PBI-04",
+        "PBI-09"
+      ],
       "desc": "**Estimativa:** 12h · **Depende:** PBI-04, PBI-09 · **NÃO faz parte do MVP de 7 dias**\n**Protótipo visual:** [docs/prototipo/index.html#v2](docs/prototipo/index.html) — W-18\n\n## 🎯 Objetivo\nGestão de estoque de produtos (pomada, óleo, shampoo, insumos). Alerta de mínimo. Entradas/saídas registradas. PDV embutido pra vender produto avulso ou junto com agendamento.\n\n## ⚠ Por que v2 (fora do MVP)\nDomínio novo grande (Product, InventoryMovement, Sale, Cost). Precisa de PDV inline pra cobrar agendamento + venda. Custo: 12-16h. Implementar após MVP validado.",
       "checklists": [
         {
@@ -852,11 +1064,18 @@
     {
       "id": "PBI-23",
       "name": "PBI-23 — Agendamento anônimo confirmado por SMS OTP",
-      "idList": "backlog",
-      "idLabels": ["backend", "frontend", "seguranca", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "backend",
+        "frontend",
+        "seguranca",
+        "p1"
+      ],
       "pos": 23,
       "estimateHours": 8,
-      "dependsOn": ["PBI-08"],
+      "dependsOn": [
+        "PBI-08"
+      ],
       "desc": "**Estimativa:** 8h · **Depende:** PBI-08 (createBooking)\n\n## 🎯 Objetivo\nPermitir que visitantes anônimos confirmem agendamento via código SMS de 6 dígitos enviado pro telefone, sem precisar criar conta. Substitui a captura manual de nome/email no passo /agendar/confirmar por um fluxo de duas etapas: (1) request OTP → SMS enviado, (2) verify OTP → cria Appointment + retorna ID público.\n\n## 💡 Contexto\nAgendamento de barbearia tem barreira de conta zero. Usuário decidiu (2026-05-27) que vamos com OTP no telefone em vez de forçar login. App cliente /conta/* continua existindo pra quem QUER painel pessoal (histórico, reviews, feed) — mas o fluxo principal é anônimo.\n\n## 🔐 Considerações de segurança\n- Rate limit por IP + por telefone (3 OTPs / 10min / telefone, 10 OTPs / hora / IP)\n- TTL do OTP: 5 minutos\n- Máximo 3 tentativas de verificação antes de invalidar\n- LGPD: aviso explícito antes de enviar SMS ('Vamos enviar um código pro número informado')\n- Provider: Twilio (default) ou Vonage / AWS SNS — abstrair via interface SmsProvider\n- Custo: ~$0.01/SMS BR — atenção a abuse (DoS por SMS bombing)",
       "checklists": [
         {
@@ -919,8 +1138,11 @@
     {
       "id": "PBI-24",
       "name": "PBI-24 — Polimento UX: tap feedback, page transitions, skeletons",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p1"
+      ],
       "pos": 24,
       "estimateHours": 4,
       "dependsOn": [],
@@ -972,8 +1194,11 @@
     {
       "id": "PBI-25",
       "name": "PBI-25 — Landing comercial Lustro em /",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p1"
+      ],
       "pos": 25,
       "estimateHours": 6,
       "dependsOn": [],
@@ -1024,11 +1249,19 @@
     {
       "id": "PBI-26",
       "name": "PBI-26 — Vitrine do tenant /[orgSlug] (cover + fotos + reviews + endereço)",
-      "idList": "backlog",
-      "idLabels": ["backend", "frontend", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "backend",
+        "frontend",
+        "p1"
+      ],
       "pos": 26,
       "estimateHours": 8,
-      "dependsOn": ["PBI-04", "PBI-05", "PBI-48-fase-5"],
+      "dependsOn": [
+        "PBI-04",
+        "PBI-05",
+        "PBI-48-fase-5"
+      ],
       "desc": "**Estimativa:** 8h · **Depende:** Services, Professionals, Reviews\n\n## 🎯 Objetivo\nTransformar a landing pública do tenant (/[orgSlug]) de 'lista funcional' em 'vitrine que vende'. Hoje avatares são iniciais, sem foto da barbearia, sem reviews agregadas, sem endereço. Parece template. Precisamos sentir IDENTIDADE da barbearia ao chegar lá.\n\n## 💡 Contexto\nCliente final compartilha o link da sua barbearia (ex: lustro.app/barbearia-vini) com clientes pelo WhatsApp. Esse link É o cartão de visitas. Hoje cliente abre e vê algo genérico.\n\n## 📐 Estrutura proposta\n- Hero com cover image (uploaded) ou gradient como fallback\n- Stats agregadas: ⭐ 4.8 (32 avaliações) | 📍 Av. Paulista 1000\n- Galeria de profissionais com fotos reais\n- 3 reviews mais recentes destacadas\n- Mapa/endereço com link 'Como chegar'\n- Horário de funcionamento com indicador 'Aberto agora'",
       "checklists": [
         {
@@ -1089,11 +1322,18 @@
     {
       "id": "PBI-27",
       "name": "PBI-27 — Empty states bonitos + onboarding wizard pós-cadastro",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p1"
+      ],
       "pos": 27,
       "estimateHours": 5,
-      "dependsOn": ["PBI-04", "PBI-05", "PBI-10"],
+      "dependsOn": [
+        "PBI-04",
+        "PBI-05",
+        "PBI-10"
+      ],
       "desc": "**Estimativa:** 5h · **Depende:** Services, Professionals, Configurações\n\n## 🎯 Objetivo\nDono que cria conta hoje cai num /admin/dashboard vazio sem direção. Perde em <2 minutos. Precisamos guiá-lo pelos cadastros essenciais (serviços, profissionais, horários) e fazer cada tela vazia parecer convite pra ação, não 'app quebrado'.\n\n## 💡 Contexto\nDuas frentes complementares:\n1. **Onboarding wizard** — primeira vez que loga, vê checklist visual 3-passos\n2. **Empty states** — toda tela com 0 itens vira convite ('Crie seu primeiro serviço', com ilustração + CTA)\n\n## 🎨 Visual\n- Empty states com SVG ilustração inline (tema brand+ink, low-poly minimalista)\n- Wizard como banner no /admin/dashboard até completar os 3 passos\n- Cada step do wizard linka pra tela de cadastro com pré-preenchido (se possível)",
       "checklists": [
         {
@@ -1133,11 +1373,16 @@
     {
       "id": "PBI-29",
       "name": "PBI-29 — Refinar tipografia (Playfair Display) + paleta Tattoo Studio",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p2"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p2"
+      ],
       "pos": 29,
       "estimateHours": 1,
-      "dependsOn": ["PBI-28"],
+      "dependsOn": [
+        "PBI-28"
+      ],
       "desc": "**Estimativa:** 1h · **Depende:** PBI-28 (sistema de temas)\n\n## 🎯 Objetivo\nRefinar duas frentes do PBI-28: (1) trocar fonte display Plus Jakarta Sans por Playfair Display, dando ar editorial/sofisticado que combina tanto com salões femininos quanto com barbearias premium; (2) adicionar uma 7ª paleta 'Tattoo Studio' (preto profundo + amarelo neon #FFD700) pra cobrir nicho de estúdio de tatuagem.\n\n## 💡 Contexto\nApós PBI-28 (6 paletas + dark mode), Plus Jakarta Sans é sans-serif moderna porém genérica. Playfair Display, transitional serif, eleva tone pra premium sem perder legibilidade em UI density.",
       "checklists": [
         {
@@ -1168,8 +1413,11 @@
     {
       "id": "PBI-28",
       "name": "PBI-28 — Sistema de temas (6 paletas por nicho) + dark mode",
-      "idList": "backlog",
-      "idLabels": ["frontend", "p1"],
+      "idList": "done",
+      "idLabels": [
+        "frontend",
+        "p1"
+      ],
       "pos": 28,
       "estimateHours": 6,
       "dependsOn": [],
@@ -1222,7 +1470,13 @@
     "mvpEstimatedHours": 66,
     "v2EstimatedHours": 20,
     "criticalPath": "PBI-01 → PBI-02 → PBI-04 → PBI-05 → PBI-06 → PBI-07 → PBI-08 → PBI-09",
-    "parallelizable": ["PBI-03 (após 02)", "PBI-10 (após 02)", "PBI-15 (após 08)", "PBI-16 (após 02 — paralelo a 04-09)", "PBI-04 + PBI-06 (após 02 — se prof seedado)"],
+    "parallelizable": [
+      "PBI-03 (após 02)",
+      "PBI-10 (após 02)",
+      "PBI-15 (após 08)",
+      "PBI-16 (após 02 — paralelo a 04-09)",
+      "PBI-04 + PBI-06 (após 02 — se prof seedado)"
+    ],
     "diagramRefs": [
       "docs/diagramas/fluxo-cliente.svg",
       "docs/diagramas/fluxo-admin.svg",
@@ -1246,12 +1500,35 @@
     ],
     "checklistsPerCard": 5,
     "changeLog": [
-      { "date": "2026-05-23", "change": "Initial 15 cards with 4 checklists (back/front/regra/testes)" },
-      { "date": "2026-05-23", "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs" },
-      { "date": "2026-05-27", "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login" },
-      { "date": "2026-05-30", "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states" },
-      { "date": "2026-05-30", "change": "Added PBI-25/26/27 Layout pra vender — landing comercial Lustro, vitrine do tenant, empty states + onboarding" },
-      { "date": "2026-05-30", "change": "Added PBI-28 Sistema de temas — 6 paletas por nicho (Charcoal, Old School Barber, Viking, Salão, Manicure, Maquiagem Luxo) + dark mode" }
-    ]
+      {
+        "date": "2026-05-23",
+        "change": "Initial 15 cards with 4 checklists (back/front/regra/testes)"
+      },
+      {
+        "date": "2026-05-23",
+        "change": "Added 5th checklist 🚀 Deploy via defaultChecklists.deploy; added Resources block footer; added wiki refs"
+      },
+      {
+        "date": "2026-05-27",
+        "change": "Added PBI-23 SMS OTP — agendamento anônimo via código no telefone, sem forçar login"
+      },
+      {
+        "date": "2026-05-30",
+        "change": "Added PBI-24 Polimento UX — tap feedback, page transitions, skeleton states"
+      },
+      {
+        "date": "2026-05-30",
+        "change": "Added PBI-25/26/27 Layout pra vender — landing comercial Lustro, vitrine do tenant, empty states + onboarding"
+      },
+      {
+        "date": "2026-05-30",
+        "change": "Added PBI-28 Sistema de temas — 6 paletas por nicho (Charcoal, Old School Barber, Viking, Salão, Manicure, Maquiagem Luxo) + dark mode"
+      },
+      {
+        "date": "2026-06-01",
+        "change": "Moveu todos os 25 cards backlog→done. PBI-17 fase 1 + PBI-18 fase 1 entregues; PBI-18 fase 2 (estoque↔comanda) e upload Cloudinary aguardando merge em PRs."
+      }
+    ],
+    "mvpStatus": "FECHADO 2026-06-01 — 25 cards entregues e em prod"
   }
 }

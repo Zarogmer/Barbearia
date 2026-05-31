@@ -31,6 +31,11 @@ export type ServiceDefaults = {
   priceCents: number;
   active: boolean;
   professionalIds: string[];
+  // PBI-33
+  category: string | null;
+  color: string | null;
+  costCents: number;
+  allowOnlineBooking: boolean;
 };
 
 type Props = {
@@ -133,7 +138,63 @@ export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Pr
             error={state.fieldErrors?.professionalIds}
           />
 
+          {/* PBI-33 extras */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field
+              id="category"
+              label="Categoria"
+              defaultValue={defaults?.category ?? ""}
+              placeholder="Corte / Barba / Combo"
+            />
+            <div>
+              <label
+                htmlFor="color"
+                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+              >
+                Cor (opcional)
+              </label>
+              <div className="flex items-center gap-1.5">
+                <input
+                  id="color"
+                  name="color"
+                  type="color"
+                  defaultValue={defaults?.color ?? "#F1A015"}
+                  className="h-11 w-14 cursor-pointer rounded-lg border border-line bg-surface"
+                />
+                <input
+                  type="text"
+                  defaultValue={defaults?.color ?? ""}
+                  placeholder="#RRGGBB"
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const colorInput = document.getElementById(
+                      "color",
+                    ) as HTMLInputElement | null;
+                    if (colorInput && /^#[0-9a-fA-F]{6}$/.test(v))
+                      colorInput.value = v;
+                  }}
+                  className="mono h-11 flex-1 rounded-lg border border-line bg-surface px-3 text-sm outline-none focus:border-brand"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Field
+            id="costPrice"
+            label="Custo do serviço (R$) — pra calcular margem"
+            type="number"
+            step="0.01"
+            defaultValue={
+              defaults?.costCents ? (defaults.costCents / 100).toFixed(2) : "0.00"
+            }
+            mono
+          />
+
           <ActiveToggle defaultActive={defaults?.active ?? true} />
+
+          <OnlineBookingToggle
+            defaultAllow={defaults?.allowOnlineBooking ?? true}
+          />
 
           <DialogFooter className="gap-2 sm:gap-2">
             <button
@@ -328,6 +389,30 @@ function ActiveToggle({ defaultActive }: { defaultActive: boolean }) {
       />
       {/* Switch do shadcn não popula FormData. Hidden input replica o valor. */}
       <input type="hidden" name="active" value={checked ? "true" : "false"} />
+    </div>
+  );
+}
+
+function OnlineBookingToggle({ defaultAllow }: { defaultAllow: boolean }) {
+  const [checked, setChecked] = useState(defaultAllow);
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-line bg-surface-2 px-3 py-2">
+      <div>
+        <div className="text-sm font-medium">Disponível online</div>
+        <div className="text-[11px] text-subtle">
+          Quando off, só dono pode marcar — não aparece no /agendar público.
+        </div>
+      </div>
+      <Switch
+        name="allowOnlineBooking"
+        checked={checked}
+        onCheckedChange={setChecked}
+      />
+      <input
+        type="hidden"
+        name="allowOnlineBooking"
+        value={checked ? "true" : "false"}
+      />
     </div>
   );
 }

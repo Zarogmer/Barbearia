@@ -97,6 +97,10 @@ export default async function ServicesPage() {
                     priceCents: s.priceCents,
                     active: s.active,
                     professionalIds: s.professionalIds,
+                    category: s.category,
+                    color: s.color,
+                    costCents: s.costCents,
+                    allowOnlineBooking: s.allowOnlineBooking,
                   }}
                   trigger={<EditServiceTrigger name={s.name} />}
                 />
@@ -113,7 +117,31 @@ export default async function ServicesPage() {
                   <div className="sm:hidden">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-semibold">{s.name}</div>
+                        <div className="flex items-center gap-1.5">
+                          {s.color && (
+                            <span
+                              className="h-2.5 w-2.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: s.color }}
+                              aria-hidden
+                            />
+                          )}
+                          <span className="truncate text-sm font-semibold">
+                            {s.name}
+                          </span>
+                          {s.category && (
+                            <span className="mono shrink-0 rounded bg-surface-2 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-subtle">
+                              {s.category}
+                            </span>
+                          )}
+                          {!s.allowOnlineBooking && (
+                            <span
+                              className="mono shrink-0 rounded bg-warn/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-warn"
+                              title="Não aparece no agendamento público"
+                            >
+                              off-line
+                            </span>
+                          )}
+                        </div>
                         {s.description && (
                           <div className="truncate text-[11px] text-subtle">
                             {s.description}

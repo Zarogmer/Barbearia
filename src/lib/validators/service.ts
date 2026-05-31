@@ -30,6 +30,26 @@ export const serviceBaseSchema = z.object({
     .array(UUID)
     .max(50, "Máximo 50 profissionais por serviço")
     .default([]),
+  // PBI-33
+  category: z
+    .string()
+    .trim()
+    .max(40, "Categoria muito longa (máx 40)")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Use hex #RRGGBB")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  costCents: z
+    .number()
+    .int()
+    .min(0, "Custo não pode ser negativo")
+    .max(100_000, "Custo máximo R$ 1.000,00 no MVP")
+    .default(0),
+  allowOnlineBooking: z.boolean().default(true),
 });
 
 export const createServiceSchema = serviceBaseSchema;
@@ -59,5 +79,11 @@ export function serviceFormDataToInput(formData: FormData): unknown {
     priceCents: Math.round(Number(formData.get("priceCents")) * 100),
     active: formData.get("active") === "on" || formData.get("active") === "true",
     professionalIds,
+    category: formData.get("category") ?? "",
+    color: formData.get("color") ?? "",
+    costCents: Math.round(Number(formData.get("costPrice") ?? 0) * 100),
+    allowOnlineBooking:
+      formData.get("allowOnlineBooking") === "on" ||
+      formData.get("allowOnlineBooking") === "true",
   };
 }

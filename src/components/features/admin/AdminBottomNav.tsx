@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
@@ -42,6 +43,7 @@ const SECONDARY: NavItem[] = [
   { href: "/admin/estoque", label: "Estoque", Icon: Package },
   { href: "/admin/profissionais", label: "Profissionais", Icon: Users },
   { href: "/admin/comissoes", label: "Comissões", Icon: Percent },
+  { href: "/admin/relatorios", label: "Relatórios", Icon: BarChart3 },
   { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
   { href: "/admin/configuracoes", label: "Configurações", Icon: Settings },
 ];

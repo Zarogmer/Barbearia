@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
@@ -24,6 +25,7 @@ const NAV = [
   { href: "/admin/estoque", label: "Estoque", icon: Package },
   { href: "/admin/profissionais", label: "Profissionais", icon: Users },
   { href: "/admin/comissoes", label: "Comissões", icon: Percent },
+  { href: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/admin/feed", label: "Feed", icon: ImageIcon },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];

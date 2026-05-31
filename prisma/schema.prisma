@@ -29,6 +29,10 @@ model Organization {
   // PBI-30: tema persistido por org. Cookie ainda sobrescreve (preview).
   theme         String?
   darkMode      Boolean @default(false)
+  // PBI-44: cores customizadas dos appointments por status na agenda.
+  // Shape: { confirmed: "#hex", completed: "#hex", cancelled: "#hex", noShow: "#hex" }
+  // Null = usa defaults do tema.
+  appointmentColors Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

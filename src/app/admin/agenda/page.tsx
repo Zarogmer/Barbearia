@@ -5,7 +5,9 @@ import { toZonedTime } from "date-fns-tz";
 
 import { AppointmentDetailDialog } from "@/components/features/admin/AppointmentDetailDialog";
 import { QuickBookingDialog } from "@/components/features/admin/QuickBookingDialog";
+import { colorForStatus, readableTextColor } from "@/lib/appointment-colors";
 import { auth } from "@/lib/auth";
+import { getAppointmentColors } from "@/lib/server/appointment-colors";
 import { cancelRequiresReason } from "@/lib/server/booking-service";
 import { getDayAgenda } from "@/lib/server/agenda";
 import { listActiveServices } from "@/lib/server/services-public";
@@ -108,7 +110,12 @@ export default async function AgendaPage({
             : membership.professionalId ?? undefined,
         });
 
-  const services = canManageAll ? await listActiveServices(membership.organizationId) : [];
+  const [services, apptColors] = await Promise.all([
+    canManageAll
+      ? listActiveServices(membership.organizationId)
+      : Promise.resolve([]),
+    getAppointmentColors(membership.organizationId),
+  ]);
 
   const hours: number[] = [];
   for (let h = HOUR_START; h <= HOUR_END; h++) hours.push(h);
@@ -330,8 +337,15 @@ export default async function AgendaPage({
                             trigger={
                               <button
                                 type="button"
-                                className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md bg-brand p-1.5 text-left text-[11px] text-brand-fg shadow-sm transition-transform hover:-translate-y-px hover:shadow-md"
-                                style={{ top: `${top}px`, height: `${height}px` }}
+                                className="absolute left-1 right-1 cursor-pointer overflow-hidden rounded-md p-1.5 text-left text-[11px] shadow-sm transition-transform hover:-translate-y-px hover:shadow-md"
+                                style={{
+                                  top: `${top}px`,
+                                  height: `${height}px`,
+                                  backgroundColor: colorForStatus(apptColors, a.status),
+                                  color: readableTextColor(
+                                    colorForStatus(apptColors, a.status),
+                                  ),
+                                }}
                               >
                                 <div className="truncate font-semibold leading-tight">
                                   {a.customerName}

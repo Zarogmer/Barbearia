@@ -60,8 +60,8 @@ export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Pr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-md flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b border-line px-6 pb-4 pt-6">
           <DialogTitle className="font-display text-lg font-bold">
             {mode === "create" ? "Novo serviço" : "Editar serviço"}
           </DialogTitle>
@@ -72,7 +72,8 @@ export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Pr
           </DialogDescription>
         </DialogHeader>
 
-        <form action={dispatch} className="space-y-3.5">
+        <form action={dispatch} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex-1 space-y-3.5 overflow-y-auto px-6 py-4">
           {mode === "edit" && defaults && (
             <input type="hidden" name="id" value={defaults.id} />
           )}
@@ -195,8 +196,9 @@ export function ServiceFormDialog({ mode, professionals, defaults, trigger }: Pr
           <OnlineBookingToggle
             defaultAllow={defaults?.allowOnlineBooking ?? true}
           />
+          </div>
 
-          <DialogFooter className="gap-2 sm:gap-2">
+          <DialogFooter className="shrink-0 gap-2 border-t border-line bg-surface px-6 py-3 sm:gap-2">
             <button
               type="button"
               onClick={() => setOpen(false)}

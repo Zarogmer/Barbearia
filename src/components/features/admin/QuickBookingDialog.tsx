@@ -63,8 +63,8 @@ export function QuickBookingDialog({
           {triggerLabel ?? "Novo"}
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-md flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b border-line px-6 pb-4 pt-6">
           <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand">
             <Zap className="h-4 w-4" />
           </div>
@@ -78,12 +78,13 @@ export function QuickBookingDialog({
         </DialogHeader>
 
         {!canSubmit ? (
-          <p className="rounded-md border border-warn/30 bg-warn/5 p-3 text-xs text-warn">
+          <p className="m-6 rounded-md border border-warn/30 bg-warn/5 p-3 text-xs text-warn">
             {professionals.length === 0 && "Nenhum profissional cadastrado. "}
             {services.length === 0 && "Nenhum serviço cadastrado."}
           </p>
         ) : (
-          <form action={dispatch} className="space-y-3.5">
+          <form action={dispatch} className="flex min-h-0 flex-1 flex-col">
+            <div className="flex-1 space-y-3.5 overflow-y-auto px-6 py-4">
             <input type="hidden" name="date" value={date} />
 
             {state.error && !state.fieldErrors && (
@@ -197,8 +198,9 @@ export function QuickBookingDialog({
                 <p className="mt-1 text-[11px] text-danger">{state.fieldErrors.notes}</p>
               )}
             </div>
+            </div>
 
-            <DialogFooter className="gap-2 sm:gap-2">
+            <DialogFooter className="shrink-0 gap-2 border-t border-line bg-surface px-6 py-3 sm:gap-2">
               <button
                 type="button"
                 onClick={() => setOpen(false)}

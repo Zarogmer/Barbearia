@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display, JetBrains_Mono, Instrument_Serif } from "next/font/google";
+import { Inter, Manrope, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 
 import { ServiceWorkerRegister } from "@/components/features/common/ServiceWorkerRegister";
 import { auth } from "@/lib/auth";
@@ -13,9 +13,10 @@ const inter = Inter({
   display: "swap",
 });
 
-const playfair = Playfair_Display({
+const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-display",
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -95,7 +96,7 @@ export default async function RootLayout({
   const { theme, dark } = await getThemeState(orgId);
   const htmlClass = [
     inter.variable,
-    playfair.variable,
+    manrope.variable,
     jetbrains.variable,
     instrument.variable,
     dark ? "dark" : "",

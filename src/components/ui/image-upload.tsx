@@ -71,15 +71,34 @@ export function ImageUpload({
           { method: "POST", body: form },
         );
         if (!res.ok) {
-          const body = await res.text();
-          throw new Error(`Cloudinary ${res.status}: ${body}`);
+          // Cloudinary devolve {"error":{"message":"Invalid Signature..."}}.
+          // Mostrar a msg real ajuda admin a diagnosticar config errada.
+          let detail = `HTTP ${res.status}`;
+          try {
+            const errJson = (await res.json()) as {
+              error?: { message?: string };
+            };
+            if (errJson?.error?.message) detail = errJson.error.message;
+          } catch {
+            // resposta nao-JSON, mantem o HTTP status
+          }
+          throw new Error(detail);
         }
         const json = (await res.json()) as { secure_url?: string };
         if (!json.secure_url) throw new Error("Resposta sem URL");
         setUrl(json.secure_url);
       } catch (err) {
         console.error(err);
-        setError("Falha ao enviar. Tente de novo ou cole uma URL.");
+        const msg = err instanceof Error ? err.message : String(err);
+        // "Invalid Signature" = secret no env nao bate com o do dashboard
+        // Cloudinary. Dica acionavel direto pro admin OWNER.
+        if (msg.toLowerCase().includes("invalid signature")) {
+          setError(
+            "Cloudinary: secret invalido. Confira CLOUDINARY_API_SECRET (Configurações → Cloudinary debug).",
+          );
+        } else {
+          setError(`Falha ao enviar: ${msg}`);
+        }
       }
     });
   }

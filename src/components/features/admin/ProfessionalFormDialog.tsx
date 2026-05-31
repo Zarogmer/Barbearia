@@ -58,8 +58,12 @@ export function ProfessionalFormDialog({ mode, services, defaults, trigger }: Pr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      {/* Form longo (campos + upload + lista de servicos) — DialogContent
+          tem que ser flex column com altura limitada, conteudo scrollavel
+          no meio e footer sticky no rodape, senao botoes ficam fora da
+          tela em mobile e nao da pra fechar. */}
+      <DialogContent className="flex max-h-[90vh] max-w-md flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b border-line px-6 pb-4 pt-6">
           <DialogTitle className="font-display text-lg font-bold">
             {mode === "create" ? "Novo profissional" : "Editar profissional"}
           </DialogTitle>
@@ -70,53 +74,55 @@ export function ProfessionalFormDialog({ mode, services, defaults, trigger }: Pr
           </DialogDescription>
         </DialogHeader>
 
-        <form action={dispatch} className="space-y-3.5">
-          {mode === "edit" && defaults && (
-            <input type="hidden" name="id" value={defaults.id} />
-          )}
+        <form action={dispatch} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex-1 space-y-3.5 overflow-y-auto px-6 py-4">
+            {mode === "edit" && defaults && (
+              <input type="hidden" name="id" value={defaults.id} />
+            )}
 
-          {state.error && (
-            <div
-              role="alert"
-              className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger/5 p-3 text-xs text-danger"
-            >
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{state.error}</span>
-            </div>
-          )}
+            {state.error && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger/5 p-3 text-xs text-danger"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{state.error}</span>
+              </div>
+            )}
 
-          <Field
-            id="name"
-            label="Nome *"
-            defaultValue={defaults?.name}
-            placeholder="Ex: João Silva"
-            required
-            error={state.fieldErrors?.name}
-          />
-          <Textarea
-            id="bio"
-            label="Bio"
-            defaultValue={defaults?.bio ?? ""}
-            placeholder="Especialidades, anos de experiência (opcional)"
-            error={state.fieldErrors?.bio}
-          />
-          <ImageUpload
-            name="photoUrl"
-            label="Foto do profissional"
-            defaultValue={defaults?.photoUrl ?? null}
-            aspectRatio={1}
-            hint="Aparece na vitrine + agenda. Quadrada (1:1) fica melhor."
-          />
+            <Field
+              id="name"
+              label="Nome *"
+              defaultValue={defaults?.name}
+              placeholder="Ex: João Silva"
+              required
+              error={state.fieldErrors?.name}
+            />
+            <Textarea
+              id="bio"
+              label="Bio"
+              defaultValue={defaults?.bio ?? ""}
+              placeholder="Especialidades, anos de experiência (opcional)"
+              error={state.fieldErrors?.bio}
+            />
+            <ImageUpload
+              name="photoUrl"
+              label="Foto do profissional"
+              defaultValue={defaults?.photoUrl ?? null}
+              aspectRatio={1}
+              hint="Aparece na vitrine + agenda. Quadrada (1:1) fica melhor."
+            />
 
-          <ServicesMultiSelect
-            services={services}
-            defaultSelected={defaults?.serviceIds ?? []}
-            error={state.fieldErrors?.serviceIds}
-          />
+            <ServicesMultiSelect
+              services={services}
+              defaultSelected={defaults?.serviceIds ?? []}
+              error={state.fieldErrors?.serviceIds}
+            />
 
-          <ActiveToggle defaultActive={defaults?.active ?? true} />
+            <ActiveToggle defaultActive={defaults?.active ?? true} />
+          </div>
 
-          <DialogFooter className="gap-2 sm:gap-2">
+          <DialogFooter className="shrink-0 gap-2 border-t border-line bg-surface px-6 py-3 sm:gap-2">
             <button
               type="button"
               onClick={() => setOpen(false)}

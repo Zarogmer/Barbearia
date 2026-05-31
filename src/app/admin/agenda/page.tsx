@@ -5,11 +5,17 @@ import { toZonedTime } from "date-fns-tz";
 
 import { AgendaFiltersSheet } from "@/components/features/admin/AgendaFiltersSheet";
 import { AgendaGrid } from "@/components/features/admin/AgendaGrid";
+import { AgendaMonthView } from "@/components/features/admin/AgendaMonthView";
+import { AgendaWeekView } from "@/components/features/admin/AgendaWeekView";
 import { QuickBookingDialog } from "@/components/features/admin/QuickBookingDialog";
 import { auth } from "@/lib/auth";
 import { getAppointmentColors } from "@/lib/server/appointment-colors";
 import { getDayAgenda } from "@/lib/server/agenda";
+import { getMonthAgenda, getWeekAgenda } from "@/lib/server/agenda-range";
 import { listActiveServices } from "@/lib/server/services-public";
+import { cn } from "@/lib/utils";
+
+type ViewMode = "day" | "week" | "month";
 
 
 function todayIsoIn(timezone: string): string {
@@ -50,7 +56,7 @@ function formatDateLabel(iso: string, timezone: string): string {
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string; prof?: string }>;
+  searchParams: Promise<{ date?: string; prof?: string; view?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login?next=/admin/agenda");
@@ -68,6 +74,8 @@ export default async function AgendaPage({
   const canManageAll = membership.role === "OWNER";
 
   const sp = await searchParams;
+  const view: ViewMode =
+    sp.view === "week" || sp.view === "month" ? sp.view : "day";
   // Quando date não vem, busca uma vez pra descobrir timezone e refaz com hoje
   // real no fuso da org. ±24h de folga no SQL absorve a primeira aproximação.
   const dateInput =
@@ -154,28 +162,28 @@ export default async function AgendaPage({
             </Link>
           )}
           <div className="flex overflow-hidden rounded-lg border border-line bg-surface">
-            <button
-              type="button"
-              className="bg-ink px-3 py-1.5 text-xs font-semibold text-[hsl(var(--surface))]"
-            >
-              Dia
-            </button>
-            <button
-              type="button"
-              className="px-3 py-1.5 text-xs font-semibold text-subtle hover:bg-surface-2"
-              disabled
-              title="v2"
-            >
-              Semana
-            </button>
-            <button
-              type="button"
-              className="px-3 py-1.5 text-xs font-semibold text-subtle hover:bg-surface-2"
-              disabled
-              title="v2"
-            >
-              Mês
-            </button>
+            {(["day", "week", "month"] as const).map((v) => {
+              const label = v === "day" ? "Dia" : v === "week" ? "Semana" : "Mês";
+              const active = view === v;
+              const params = new URLSearchParams();
+              params.set("view", v);
+              params.set("date", date);
+              if (profFilterId) params.set("prof", profFilterId);
+              return (
+                <Link
+                  key={v}
+                  href={`/admin/agenda?${params.toString()}`}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-semibold transition-colors",
+                    active
+                      ? "bg-ink text-[hsl(var(--surface))]"
+                      : "text-subtle hover:bg-surface-2",
+                  )}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -205,36 +213,53 @@ export default async function AgendaPage({
       </div>
 
       <div className="flex flex-1 overflow-hidden rounded-md border border-line bg-surface">
-        <AgendaGrid
-          professionals={visibleProfessionals.map((p) => ({
-            id: p.id,
-            name: p.name,
-            appointmentsCount: p.appointmentsCount,
-          }))}
-          appointments={finalAgenda.appointments.map((a) => ({
-            id: a.id,
-            professionalId: a.professionalId,
-            startsAtIso: a.startsAt.toISOString(),
-            endsAtIso: a.endsAt.toISOString(),
-            status: a.status,
-            customerName: a.customerName,
-            customerPhone: a.customerPhone,
-            serviceName: a.serviceName,
-            serviceDurationMinutes: a.serviceDurationMinutes,
-            servicePriceCents: a.servicePriceCents,
-            professionalName: a.professionalName,
-          }))}
-          blocks={finalAgenda.blocks.map((b) => ({
-            id: b.id,
-            professionalId: b.professionalId,
-            startsAtIso: b.startsAt.toISOString(),
-            endsAtIso: b.endsAt.toISOString(),
-            reason: b.reason,
-          }))}
-          timezone={finalAgenda.timezone}
-          nowMinutes={nowMinutes}
-          colors={apptColors}
-        />
+        {view === "day" && (
+          <AgendaGrid
+            professionals={visibleProfessionals.map((p) => ({
+              id: p.id,
+              name: p.name,
+              appointmentsCount: p.appointmentsCount,
+            }))}
+            appointments={finalAgenda.appointments.map((a) => ({
+              id: a.id,
+              professionalId: a.professionalId,
+              startsAtIso: a.startsAt.toISOString(),
+              endsAtIso: a.endsAt.toISOString(),
+              status: a.status,
+              customerName: a.customerName,
+              customerPhone: a.customerPhone,
+              serviceName: a.serviceName,
+              serviceDurationMinutes: a.serviceDurationMinutes,
+              servicePriceCents: a.servicePriceCents,
+              professionalName: a.professionalName,
+            }))}
+            blocks={finalAgenda.blocks.map((b) => ({
+              id: b.id,
+              professionalId: b.professionalId,
+              startsAtIso: b.startsAt.toISOString(),
+              endsAtIso: b.endsAt.toISOString(),
+              reason: b.reason,
+            }))}
+            timezone={finalAgenda.timezone}
+            nowMinutes={nowMinutes}
+            colors={apptColors}
+          />
+        )}
+        {view === "week" && (
+          <AgendaWeekContent
+            organizationId={membership.organizationId}
+            date={date}
+            profFilterId={profFilterId}
+            colors={apptColors}
+          />
+        )}
+        {view === "month" && (
+          <AgendaMonthContent
+            organizationId={membership.organizationId}
+            date={date}
+            profFilterId={profFilterId}
+          />
+        )}
       </div>
 
       <p className="mono mt-3 text-[10px] uppercase tracking-wider text-subtle">
@@ -244,5 +269,66 @@ export default async function AgendaPage({
         {canManageAll && " · clique em + Novo para encaixe"}
       </p>
     </div>
+  );
+}
+
+async function AgendaWeekContent({
+  organizationId,
+  date,
+  profFilterId,
+  colors,
+}: {
+  organizationId: string;
+  date: string;
+  profFilterId: string | null;
+  colors: Awaited<ReturnType<typeof getAppointmentColors>>;
+}) {
+  const week = await getWeekAgenda({
+    organizationId,
+    dateIso: date,
+    ...(profFilterId ? { onlyProfessionalId: profFilterId } : {}),
+  });
+  return (
+    <AgendaWeekView
+      weekStart={week.weekStart}
+      timezone={week.timezone}
+      colors={colors}
+      appointments={week.appointments.map((a) => ({
+        id: a.id,
+        startsAtIso: a.startsAt.toISOString(),
+        endsAtIso: a.endsAt.toISOString(),
+        status: a.status,
+        customerName: a.customerName,
+        serviceName: a.serviceName,
+        servicePriceCents: a.servicePriceCents,
+        professionalId: a.professionalId,
+        professionalName: a.professionalName,
+      }))}
+    />
+  );
+}
+
+async function AgendaMonthContent({
+  organizationId,
+  date,
+  profFilterId,
+}: {
+  organizationId: string;
+  date: string;
+  profFilterId: string | null;
+}) {
+  const [y, m] = date.split("-").map(Number);
+  const month = await getMonthAgenda({
+    organizationId,
+    year: y!,
+    month: m!,
+    ...(profFilterId ? { onlyProfessionalId: profFilterId } : {}),
+  });
+  return (
+    <AgendaMonthView
+      year={month.year}
+      month={month.month}
+      daysSummary={month.daysSummary}
+    />
   );
 }

@@ -105,20 +105,29 @@ export default async function RelatoriosPage({
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 lg:p-8">
-      <header>
-        <div className="eyebrow mb-3">Finanças</div>
-        <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">
-          Relatórios
-        </h1>
-        <p className="text-sm text-subtle">
-          {period.label}
-          {selectedProf && (
-            <>
-              {" · "}
-              <span className="font-medium text-ink">{selectedProf.name}</span>
-            </>
-          )}
-        </p>
+      <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <div className="eyebrow mb-3">Finanças</div>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">
+            Relatórios
+          </h1>
+          <p className="text-sm text-subtle">
+            {period.label}
+            {selectedProf && (
+              <>
+                {" · "}
+                <span className="font-medium text-ink">{selectedProf.name}</span>
+              </>
+            )}
+          </p>
+        </div>
+        <Link
+          href="/admin/relatorios/profissionais"
+          className="tap inline-flex h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-4 text-sm font-semibold transition-colors hover:border-brand hover:bg-brand-soft"
+        >
+          <Users className="h-4 w-4" />
+          Performance por prof.
+        </Link>
       </header>
 
       {/* Filtros */}

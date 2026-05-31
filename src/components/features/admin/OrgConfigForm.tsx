@@ -35,6 +35,8 @@ type Props = {
     instagram: string | null;
     whatsapp: string | null;
     businessHours: BusinessHours | null;
+    allowMultipleSimultaneousBookings: boolean;
+    allowOverbookEncaixe: boolean;
   };
 };
 
@@ -46,6 +48,12 @@ export function OrgConfigForm({ defaults }: Props) {
 
   const [slug, setSlug] = useState(defaults.slug);
   const [allowGuest, setAllowGuest] = useState(defaults.allowGuestBooking);
+  const [allowMulti, setAllowMulti] = useState(
+    defaults.allowMultipleSimultaneousBookings,
+  );
+  const [allowOverbook, setAllowOverbook] = useState(
+    defaults.allowOverbookEncaixe,
+  );
   const [confirmingSlug, setConfirmingSlug] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
 
@@ -150,24 +158,73 @@ export function OrgConfigForm({ defaults }: Props) {
           <p className="mt-1.5 text-xs text-subtle">Configurável em v2.</p>
         </div>
 
-        <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-surface-2 p-3">
-          <label htmlFor="allowGuestBooking" className="cursor-pointer text-sm">
-            <div className="font-semibold">Permitir agendamento sem cadastro</div>
-            <div className="text-xs text-subtle">
-              Cliente fornece nome e email mas não precisa criar senha. Útil
-              para fluxo rápido.
-            </div>
-          </label>
-          <Switch
-            id="allowGuestBooking"
-            checked={allowGuest}
-            onCheckedChange={setAllowGuest}
-          />
-          <input
-            type="hidden"
-            name="allowGuestBooking"
-            value={allowGuest ? "true" : "false"}
-          />
+        {/* Bloco de configs de booking (PBI-43) */}
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-surface-2 p-3">
+            <label htmlFor="allowGuestBooking" className="cursor-pointer text-sm">
+              <div className="font-semibold">Permitir agendamento sem cadastro</div>
+              <div className="text-xs text-subtle">
+                Cliente fornece nome e email mas não precisa criar senha. Útil
+                para fluxo rápido.
+              </div>
+            </label>
+            <Switch
+              id="allowGuestBooking"
+              checked={allowGuest}
+              onCheckedChange={setAllowGuest}
+            />
+            <input
+              type="hidden"
+              name="allowGuestBooking"
+              value={allowGuest ? "true" : "false"}
+            />
+          </div>
+
+          <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-surface-2 p-3">
+            <label
+              htmlFor="allowMultipleSimultaneousBookings"
+              className="cursor-pointer text-sm"
+            >
+              <div className="font-semibold">Múltiplo agendamento simultâneo</div>
+              <div className="text-xs text-subtle">
+                Cliente pode marcar 2 serviços ao mesmo tempo com profissionais
+                diferentes (ex: corte + manicure paralelo).
+              </div>
+            </label>
+            <Switch
+              id="allowMultipleSimultaneousBookings"
+              checked={allowMulti}
+              onCheckedChange={setAllowMulti}
+            />
+            <input
+              type="hidden"
+              name="allowMultipleSimultaneousBookings"
+              value={allowMulti ? "true" : "false"}
+            />
+          </div>
+
+          <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-surface-2 p-3">
+            <label
+              htmlFor="allowOverbookEncaixe"
+              className="cursor-pointer text-sm"
+            >
+              <div className="font-semibold">Permitir encaixe (overbook)</div>
+              <div className="text-xs text-subtle">
+                Dono pode forçar agendamento em conflito de horário pra encaixar
+                cliente urgente. Quando off, o botão &quot;Forçar&quot; some.
+              </div>
+            </label>
+            <Switch
+              id="allowOverbookEncaixe"
+              checked={allowOverbook}
+              onCheckedChange={setAllowOverbook}
+            />
+            <input
+              type="hidden"
+              name="allowOverbookEncaixe"
+              value={allowOverbook ? "true" : "false"}
+            />
+          </div>
         </div>
 
         {/* Vitrine pública (PBI-26) */}

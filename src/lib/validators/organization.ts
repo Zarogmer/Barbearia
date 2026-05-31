@@ -47,6 +47,9 @@ export const updateOrganizationSchema = z.object({
     .max(50, "Slug muito longo (máx 50)")
     .regex(SLUG_RE, "Use apenas letras minúsculas, números e hífen (kebab-case)"),
   allowGuestBooking: z.boolean().default(true),
+  // PBI-43
+  allowMultipleSimultaneousBookings: z.boolean().default(false),
+  allowOverbookEncaixe: z.boolean().default(true),
   // Vitrine (PBI-26)
   coverImageUrl: URL_OR_EMPTY.optional(),
   tagline: z
@@ -104,6 +107,12 @@ export function organizationFormDataToInput(formData: FormData): unknown {
     allowGuestBooking:
       formData.get("allowGuestBooking") === "on" ||
       formData.get("allowGuestBooking") === "true",
+    allowMultipleSimultaneousBookings:
+      formData.get("allowMultipleSimultaneousBookings") === "on" ||
+      formData.get("allowMultipleSimultaneousBookings") === "true",
+    allowOverbookEncaixe:
+      formData.get("allowOverbookEncaixe") === "on" ||
+      formData.get("allowOverbookEncaixe") === "true",
     coverImageUrl: formData.get("coverImageUrl") ?? "",
     tagline: formData.get("tagline") ?? "",
     address: formData.get("address") ?? "",

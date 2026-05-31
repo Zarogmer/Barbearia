@@ -10,6 +10,7 @@ import {
   type OrgConfigState,
 } from "@/app/admin/configuracoes/state";
 import { BusinessHoursEditor } from "@/components/features/admin/BusinessHoursEditor";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Dialog,
   DialogContent,
@@ -187,13 +188,12 @@ export function OrgConfigForm({ defaults }: Props) {
             error={state.fieldErrors?.tagline}
           />
 
-          <Field
-            id="coverImageUrl"
-            label="URL da imagem de capa"
-            defaultValue={defaults.coverImageUrl ?? ""}
-            placeholder="https://… (cole link de Cloudinary, Imgur, etc.)"
-            error={state.fieldErrors?.coverImageUrl}
-            mono
+          <ImageUpload
+            name="coverImageUrl"
+            label="Imagem de capa"
+            defaultValue={defaults.coverImageUrl}
+            aspectRatio={3 / 1}
+            hint="Aparece como hero na vitrine pública. Ideal 1500x500px."
           />
 
           <Field

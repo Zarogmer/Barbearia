@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 
+import { AppointmentColorsEditor } from "@/components/features/admin/AppointmentColorsEditor";
 import { OrgConfigForm } from "@/components/features/admin/OrgConfigForm";
 import { ThemeSelector } from "@/components/features/admin/ThemeSelector";
 import { auth } from "@/lib/auth";
+import { getAppointmentColors } from "@/lib/server/appointment-colors";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
 import { getThemeState } from "@/lib/server/theme";
 
@@ -27,9 +29,10 @@ export default async function SettingsPage() {
     );
   }
 
-  const [org, themeState] = await Promise.all([
+  const [org, themeState, apptColors] = await Promise.all([
     getOrganizationForAdmin(ownerMembership.organizationId),
     getThemeState(ownerMembership.organizationId),
+    getAppointmentColors(ownerMembership.organizationId),
   ]);
 
   return (
@@ -65,6 +68,10 @@ export default async function SettingsPage() {
           initialDark={themeState.dark}
           canSaveAsOrgDefault
         />
+      </div>
+
+      <div className="rounded-md border border-line bg-surface p-6">
+        <AppointmentColorsEditor initial={apptColors} />
       </div>
     </div>
   );

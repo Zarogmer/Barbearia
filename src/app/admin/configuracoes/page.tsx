@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AppointmentColorsEditor } from "@/components/features/admin/AppointmentColorsEditor";
@@ -87,6 +88,15 @@ export default async function SettingsPage() {
           initial={org.reminderTemplate}
           orgName={org.name}
         />
+      </div>
+
+      <div className="text-center">
+        <Link
+          href="/admin/configuracoes/cloudinary-debug"
+          className="text-[11px] text-subtle underline-offset-2 hover:text-brand hover:underline"
+        >
+          Debug Cloudinary (uploads de imagem)
+        </Link>
       </div>
     </div>
   );

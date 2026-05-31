@@ -17,6 +17,7 @@ import {
   Scissors,
   Settings,
   UserCircle2,
+  UserX,
   Users,
   X,
 } from "lucide-react";
@@ -45,6 +46,7 @@ const PRIMARY_RIGHT: NavItem[] = [
 
 const SECONDARY: NavItem[] = [
   { href: "/admin/clientes", label: "Clientes", Icon: UserCircle2 },
+  { href: "/admin/clientes/sumidos", label: "Sumidos", Icon: UserX },
   { href: "/admin/aniversariantes", label: "Aniversariantes", Icon: Cake },
   { href: "/admin/servicos", label: "Serviços", Icon: Scissors },
   { href: "/admin/estoque", label: "Estoque", Icon: Package },

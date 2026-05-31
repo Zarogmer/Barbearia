@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FileSpreadsheet, Search } from "lucide-react";
+import { ArrowRight, FileSpreadsheet, Search, UserX } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { CustomersIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
 import { listCustomersAdmin } from "@/lib/server/customers";
+import { countLapsedCustomers } from "@/lib/server/lapsed-customers";
 
 const PAGE_SIZE = 20;
 
@@ -32,12 +33,15 @@ export default async function CustomersListPage({
   const query = sp.q?.trim() ?? "";
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const result = await listCustomersAdmin(
-    membership.organizationId,
-    query || undefined,
-    page,
-    PAGE_SIZE,
-  );
+  const [result, lapsedCount] = await Promise.all([
+    listCustomersAdmin(
+      membership.organizationId,
+      query || undefined,
+      page,
+      PAGE_SIZE,
+    ),
+    countLapsedCustomers(membership.organizationId, 60),
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
 
@@ -55,13 +59,24 @@ export default async function CustomersListPage({
             {result.total !== 1 && "s"}
           </p>
         </div>
-        <Link
-          href="/admin/clientes/importar"
-          className="tap inline-flex h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-4 text-sm font-semibold transition-colors hover:border-brand hover:bg-brand-soft"
-        >
-          <FileSpreadsheet className="h-4 w-4" />
-          Importar CSV
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {lapsedCount > 0 && (
+            <Link
+              href="/admin/clientes/sumidos"
+              className="tap inline-flex h-10 items-center gap-1.5 rounded-lg border border-warn/40 bg-warn/10 px-4 text-sm font-semibold text-warn transition-colors hover:bg-warn/20"
+            >
+              <UserX className="h-4 w-4" />
+              {lapsedCount} {lapsedCount === 1 ? "sumido" : "sumidos"}
+            </Link>
+          )}
+          <Link
+            href="/admin/clientes/importar"
+            className="tap inline-flex h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-4 text-sm font-semibold transition-colors hover:border-brand hover:bg-brand-soft"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Importar CSV
+          </Link>
+        </div>
       </header>
 
       <form className="relative max-w-md" action="/admin/clientes" method="get">

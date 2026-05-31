@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 
+import { AgendaFiltersSheet } from "@/components/features/admin/AgendaFiltersSheet";
 import { AgendaGrid } from "@/components/features/admin/AgendaGrid";
 import { QuickBookingDialog } from "@/components/features/admin/QuickBookingDialog";
 import { auth } from "@/lib/auth";
@@ -49,7 +50,7 @@ function formatDateLabel(iso: string, timezone: string): string {
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; prof?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login?next=/admin/agenda");
@@ -111,7 +112,15 @@ export default async function AgendaPage({
   const isToday = date === todayIso;
   const nowMinutes = isToday ? localMinutesIn(new Date(), finalAgenda.timezone) : -1;
 
-  const visibleProfessionals = finalAgenda.professionals;
+  // PBI-43: filtro por profissional via ?prof=<id> (OWNER pode aplicar;
+  // STAFF já cai pra seu próprio prof via onlyProfessionalId).
+  const profFilterId =
+    canManageAll && sp.prof && finalAgenda.professionals.some((p) => p.id === sp.prof)
+      ? sp.prof
+      : null;
+  const visibleProfessionals = profFilterId
+    ? finalAgenda.professionals.filter((p) => p.id === profFilterId)
+    : finalAgenda.professionals;
 
   return (
     <div className="flex h-full flex-col p-4 lg:p-8">
@@ -169,17 +178,30 @@ export default async function AgendaPage({
             </button>
           </div>
         </div>
-        {canManageAll && (
-          <QuickBookingDialog
-            date={date}
-            professionals={visibleProfessionals.map((p) => ({ id: p.id, name: p.name }))}
-            services={services.map((s) => ({
-              id: s.id,
-              name: s.name,
-              durationMinutes: s.durationMinutes,
-            }))}
-          />
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {canManageAll && (
+            <AgendaFiltersSheet
+              currentDate={date}
+              currentProfId={profFilterId}
+              professionals={finalAgenda.professionals.map((p) => ({
+                id: p.id,
+                name: p.name,
+                appointmentsCount: p.appointmentsCount,
+              }))}
+            />
+          )}
+          {canManageAll && (
+            <QuickBookingDialog
+              date={date}
+              professionals={visibleProfessionals.map((p) => ({ id: p.id, name: p.name }))}
+              services={services.map((s) => ({
+                id: s.id,
+                name: s.name,
+                durationMinutes: s.durationMinutes,
+              }))}
+            />
+          )}
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden rounded-md border border-line bg-surface">

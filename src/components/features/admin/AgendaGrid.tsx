@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { toZonedTime } from "date-fns-tz";
 
 import { AppointmentDetailDialog } from "@/components/features/admin/AppointmentDetailDialog";
@@ -79,11 +78,6 @@ export function AgendaGrid({
   nowMinutes,
   colors = DEFAULT_APPOINTMENT_COLORS,
 }: Props) {
-  // Mobile: tab ativa = 1 prof por vez. Desktop: grid completo.
-  const [activeId, setActiveId] = useState<string>(
-    professionals[0]?.id ?? "",
-  );
-
   if (professionals.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
@@ -97,120 +91,60 @@ export function AgendaGrid({
   const hours: number[] = [];
   for (let h = HOUR_START; h <= HOUR_END; h++) hours.push(h);
 
+  // Único prof = vista expandida (1 col full width). 2+ profs = grid
+  // compacto com scroll horizontal no mobile. Filtro de prof é aplicado
+  // externamente (via searchParams da page).
+  const isSingleProfView = professionals.length === 1;
+
   return (
-    <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
-      {/* Tabs mobile: apenas avatar (foto/iniciais) com badge de count.
-          Esconde no desktop (>= lg) onde o grid completo mostra todos. */}
-      <div className="border-b border-line bg-surface-2 lg:hidden">
-        <div className="flex gap-2 overflow-x-auto px-3 py-2.5">
-          {professionals.map((p) => {
-            const active = p.id === activeId;
-            const initials = p.name
-              .split(" ")
-              .map((n) => n[0])
-              .slice(0, 2)
-              .join("")
-              .toUpperCase();
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setActiveId(p.id)}
-                aria-label={`Ver agenda de ${p.name}`}
-                aria-current={active ? "true" : undefined}
-                title={p.name}
-                className={cn(
-                  "tap relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all",
-                  active
-                    ? "bg-brand text-brand-fg shadow-md ring-2 ring-brand ring-offset-2 ring-offset-surface-2"
-                    : "bg-surface text-ink ring-1 ring-line hover:ring-brand/60",
-                )}
-              >
-                {initials}
-                {p.appointmentsCount > 0 && (
-                  <span
-                    className={cn(
-                      "mono absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold",
-                      active
-                        ? "bg-ink text-surface"
-                        : "bg-brand text-brand-fg",
-                    )}
-                  >
-                    {p.appointmentsCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {/* Header com nome do prof ativo (substitui texto truncado nas tabs) */}
-        {(() => {
-          const active = professionals.find((p) => p.id === activeId);
-          if (!active) return null;
-          return (
-            <div className="flex items-center justify-between border-t border-line bg-surface px-4 py-2">
-              <div className="leading-tight">
-                <div className="text-sm font-semibold">{active.name}</div>
-                <div className="mono text-[10px] text-subtle">
-                  {active.appointmentsCount} agendamento
-                  {active.appointmentsCount !== 1 ? "s" : ""} hoje
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+    <div className="flex flex-1 overflow-hidden">
+      {/* Coluna de horas */}
+      <div className="w-14 shrink-0 border-r border-line">
+        <div className="h-12 border-b border-line bg-surface-2" />
+        {hours.map((h) => (
+          <div
+            key={h}
+            className="mono border-b border-line pl-2 pt-1 text-[11px] font-medium text-subtle"
+            style={{ height: `${60 * PX_PER_MINUTE}px` }}
+          >
+            {String(h).padStart(2, "0")}:00
+          </div>
+        ))}
       </div>
 
-      {/* Timeline content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Coluna de horas */}
-        <div className="w-14 shrink-0 border-r border-line">
-          <div className="h-12 border-b border-line bg-surface-2" />
-          {hours.map((h) => (
+      {/* Grid de colunas dos profissionais. Mobile = scroll horizontal,
+          desktop = grid normal. Single prof = 1 col full width. */}
+      <div
+        className="grid flex-1 overflow-x-auto"
+        style={{
+          gridTemplateColumns: isSingleProfView
+            ? "1fr"
+            : `repeat(${professionals.length}, minmax(140px, 1fr))`,
+        }}
+      >
+        {professionals.map((p) => {
+          const apts = appointments.filter(
+            (a) => a.professionalId === p.id,
+          );
+          const blks = blocks.filter((b) => b.professionalId === p.id);
+          const initials = p.name
+            .split(" ")
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+
+          return (
             <div
-              key={h}
-              className="mono border-b border-line pl-2 pt-1 text-[11px] font-medium text-subtle"
-              style={{ height: `${60 * PX_PER_MINUTE}px` }}
+              key={p.id}
+              className="flex flex-col border-r border-line last:border-r-0"
             >
-              {String(h).padStart(2, "0")}:00
-            </div>
-          ))}
-        </div>
-
-        {/* Colunas profs:
-            - Mobile: mostra só a coluna do prof ativo (flex-1)
-            - Desktop: grid com todas (lg:grid + minmax) */}
-        <div
-          className="flex-1 overflow-auto lg:grid"
-          style={{
-            gridTemplateColumns: `repeat(${professionals.length}, minmax(140px, 1fr))`,
-          }}
-        >
-          {professionals.map((p) => {
-            const isActiveMobile = p.id === activeId;
-            const apts = appointments.filter(
-              (a) => a.professionalId === p.id,
-            );
-            const blks = blocks.filter((b) => b.professionalId === p.id);
-            const initials = p.name
-              .split(" ")
-              .map((n) => n[0])
-              .slice(0, 2)
-              .join("")
-              .toUpperCase();
-
-            return (
+              {/* Header da col (compacto sempre, mais espaçoso quando single) */}
               <div
-                key={p.id}
                 className={cn(
-                  "border-r border-line last:border-r-0",
-                  // Mobile: só mostra ativa. Desktop: todas
-                  isActiveMobile ? "flex flex-1 flex-col" : "hidden",
-                  "lg:flex lg:flex-1 lg:flex-col",
-                )}
-              >
-                {/* Header da col (esconde em mobile, mostra em desktop) */}
-                <div className="sticky top-0 z-10 hidden h-12 items-center gap-2 border-b border-line bg-surface-2 px-3 lg:flex">
+                  "sticky top-0 z-10 flex items-center gap-2 border-b border-line bg-surface-2 px-3",
+                  isSingleProfView ? "h-14" : "h-12",
+                )}>
                   <span className="avatar-ring">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-3 text-[10px] font-bold">
                       {initials}
@@ -346,6 +280,5 @@ export function AgendaGrid({
           })}
         </div>
       </div>
-    </div>
   );
 }

@@ -474,15 +474,13 @@
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display), system-ui, sans-serif;
-    /* Playfair tem traços finos: tracking apertado embola. Quase neutro
-       agora — mais arejado, ainda elegante. */
-    letter-spacing: -0.005em;
-    line-height: 1.15;
+    /* Manrope: geometric sans moderna. Tracking levemente negativo dá
+       densidade premium sem embolar. Line-height confortável. */
+    letter-spacing: -0.018em;
+    line-height: 1.2;
   }
   h1 {
-    /* H1 grande precisa de respiro extra horizontal e vertical pro serif
-       desenhar bonito (ex: "Estoque", "Configurações") */
-    letter-spacing: 0.005em;
+    letter-spacing: -0.025em;
     line-height: 1.1;
   }
   .num, .mono, code {

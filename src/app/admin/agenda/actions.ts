@@ -8,7 +8,9 @@ import {
   cancelAppointment,
   markCompleted as markCompletedSvc,
   markNoShow as markNoShowSvc,
+  markPaidAndCompleted as markPaidAndCompletedSvc,
   quickCreateBooking,
+  updateAppointment as updateAppointmentSvc,
 } from "@/lib/server/booking-service";
 import { getAppointmentForAdmin } from "@/lib/server/agenda";
 import {
@@ -122,6 +124,67 @@ export async function markNoShowAction(
     if (e instanceof BookingError) return { error: e.message };
     console.error("markNoShow failed:", e);
     return { error: "Não foi possível marcar no-show." };
+  }
+
+  revalidatePath("/admin/agenda");
+  return { ok: true };
+}
+
+const PAYMENT_METHODS = ["CASH", "PIX", "CREDIT", "DEBIT", "CORTESIA"] as const;
+type PaymentMethodLiteral = (typeof PAYMENT_METHODS)[number];
+
+export async function markPaidAction(
+  appointmentId: string,
+  paymentMethod: PaymentMethodLiteral,
+): Promise<AdminAgendaActionResult> {
+  if (!PAYMENT_METHODS.includes(paymentMethod)) {
+    return { error: "Forma de pagamento inválida." };
+  }
+  const authz = await authorizeOnAppointment(appointmentId);
+  if ("error" in authz) return { error: authz.error };
+
+  try {
+    await markPaidAndCompletedSvc({
+      organizationId: authz.orgId,
+      appointmentId,
+      paymentMethod,
+    });
+  } catch (e) {
+    if (e instanceof BookingError) return { error: e.message };
+    console.error("markPaid failed:", e);
+    return { error: "Não foi possível registrar pagamento." };
+  }
+
+  revalidatePath("/admin/agenda");
+  return { ok: true };
+}
+
+export async function updateAppointmentAction(
+  appointmentId: string,
+  input: {
+    startsAt: string; // ISO UTC
+    notes?: string | null;
+  },
+): Promise<AdminAgendaActionResult> {
+  const authz = await authorizeOnAppointment(appointmentId);
+  if ("error" in authz) return { error: authz.error };
+
+  const startsAt = new Date(input.startsAt);
+  if (Number.isNaN(startsAt.getTime())) {
+    return { error: "Data/hora inválida." };
+  }
+
+  try {
+    await updateAppointmentSvc({
+      organizationId: authz.orgId,
+      appointmentId,
+      startsAt,
+      notes: input.notes ?? null,
+    });
+  } catch (e) {
+    if (e instanceof BookingError) return { error: e.message };
+    console.error("updateAppointment failed:", e);
+    return { error: "Não foi possível atualizar." };
   }
 
   revalidatePath("/admin/agenda");

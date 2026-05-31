@@ -132,42 +132,16 @@ async function importOne(
     result = "created";
   }
 
-  // Marca como cliente da org via Appointment placeholder se ainda não tem
+  // Marca como cliente da org via CustomerOrg (upsert idempotente).
+  // Antes era via Appointment CANCELLED placeholder; agora temos tabela
+  // dedicada CustomerOrg (migration 20260601950000), bem mais limpo.
   await withTenant(organizationId, async (db) => {
-    const hasAny = await db.appointment.findFirst({
-      where: { userId, organizationId },
-      select: { id: true },
-    });
-    if (hasAny) return;
-
-    // Pega o primeiro serviço/profissional pra preencher FKs (Appointment
-    // exige). Se não tiver, falha graciosa.
-    const [service, professional] = await Promise.all([
-      db.service.findFirst({ select: { id: true } }),
-      db.professional.findFirst({ select: { id: true } }),
-    ]);
-    if (!service || !professional) {
-      throw new Error(
-        "Cadastre pelo menos 1 serviço e 1 profissional antes de importar.",
-      );
-    }
-
-    const markerDate = new Date("2000-01-01T00:00:00Z");
-    await db.appointment.create({
-      data: {
-        organizationId,
-        professionalId: professional.id,
-        serviceId: service.id,
-        userId,
-        customerName: person.name,
-        customerPhone: person.phone || null,
-        startsAt: markerDate,
-        endsAt: new Date(markerDate.getTime() + 30 * 60 * 1000),
-        status: "CANCELLED",
-        cancelledAt: new Date(),
-        cancelReason: CSV_IMPORT_MARKER,
-        notes: `${CSV_IMPORT_MARKER}:${organizationId}`,
+    await db.customerOrg.upsert({
+      where: {
+        organizationId_userId: { organizationId, userId },
       },
+      create: { organizationId, userId, source: "import" },
+      update: {},
     });
   });
 

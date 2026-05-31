@@ -3,13 +3,22 @@
 import { revalidatePath } from "next/cache";
 
 import { auth } from "@/lib/auth";
+import { createCustomer } from "@/lib/server/customer-create";
 import {
   createCustomerNote,
   deleteCustomerNote,
 } from "@/lib/server/customerNotes";
-import { customerNoteSchema } from "@/lib/validators/customer";
+import {
+  createCustomerFormDataToInput,
+  createCustomerSchema,
+  customerNoteSchema,
+} from "@/lib/validators/customer";
 
-import type { DeleteNoteResult, NoteActionState } from "./state";
+import type {
+  CreateCustomerState,
+  DeleteNoteResult,
+  NoteActionState,
+} from "./state";
 
 async function requireAdminOrg(): Promise<
   { orgId: string; userId: string } | { error: string }
@@ -51,6 +60,37 @@ export async function createNoteAction(
 
   revalidatePath(`/admin/clientes/${customerUserId}`);
   return { ok: true };
+}
+
+export async function createCustomerAction(
+  _prev: CreateCustomerState,
+  formData: FormData,
+): Promise<CreateCustomerState> {
+  const ctx = await requireAdminOrg();
+  if ("error" in ctx) return { error: ctx.error };
+
+  const parsed = createCustomerSchema.safeParse(
+    createCustomerFormDataToInput(formData),
+  );
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0]?.toString();
+      if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+    }
+    return { error: "Confira os campos.", fieldErrors };
+  }
+
+  try {
+    const result = await createCustomer(ctx.orgId, parsed.data);
+    revalidatePath("/admin/clientes");
+    return { ok: true, userId: result.userId };
+  } catch (e) {
+    console.error("createCustomer failed:", e);
+    return {
+      error: e instanceof Error ? e.message : "Não foi possível cadastrar.",
+    };
+  }
 }
 
 export async function deleteNoteAction(

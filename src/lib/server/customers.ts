@@ -34,8 +34,11 @@ export async function listCustomersAdmin(
   const skip = (page - 1) * pageSize;
   const q = query?.trim() ?? "";
 
+  // "Cliente da org" = User com link na tabela CustomerOrg. Substitui
+  // o filtro antigo (appointments.some) — agora cliente cadastrado sem
+  // agendamento ainda aparece na lista.
   const where = {
-    appointments: { some: { organizationId } },
+    customerOrgs: { some: { organizationId } },
     ...(q
       ? {
           OR: [
@@ -114,28 +117,33 @@ export async function getCustomerDetail(
   organizationId: string,
   userId: string,
 ): Promise<CustomerDetail | null> {
-  // User pode existir globalmente mas precisa ter appointment na org
-  // pra ser "cliente daquela org". Usa prismaAdmin pra User + withTenant
-  // pra appointments (respeitando RLS).
-  const user = await prismaAdmin.user.findUnique({
-    where: { id: userId },
-    select: { id: true, name: true, email: true, phone: true, birthDate: true },
-  });
-  if (!user) return null;
-
-  const appts = await withTenant(organizationId, (db) =>
-    db.appointment.findMany({
-      where: { userId },
-      orderBy: { startsAt: "asc" },
-      select: {
-        startsAt: true,
-        status: true,
-        service: { select: { priceCents: true } },
-      },
+  // User eh global; pra ser "cliente desta org" tem que estar em
+  // CustomerOrg. Carrega user + verifica linkagem em paralelo.
+  const [user, link, appts] = await Promise.all([
+    prismaAdmin.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, email: true, phone: true, birthDate: true },
     }),
-  );
-
-  if (appts.length === 0) return null;
+    withTenant(organizationId, (db) =>
+      db.customerOrg.findUnique({
+        where: { organizationId_userId: { organizationId, userId } },
+        select: { organizationId: true },
+      }),
+    ),
+    withTenant(organizationId, (db) =>
+      db.appointment.findMany({
+        where: { userId },
+        orderBy: { startsAt: "asc" },
+        select: {
+          startsAt: true,
+          status: true,
+          service: { select: { priceCents: true } },
+        },
+      }),
+    ),
+  ]);
+  if (!user) return null;
+  if (!link) return null;
 
   const now = new Date();
   let completedCount = 0;

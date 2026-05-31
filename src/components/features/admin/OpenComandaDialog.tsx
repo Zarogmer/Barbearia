@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Loader2, Plus, Receipt } from "lucide-react";
 
@@ -33,15 +34,22 @@ export function OpenComandaDialog({
   defaultCustomerUserId,
   triggerLabel = "Abrir comanda",
 }: Props) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [state, dispatch] = useActionState<ComandaActionState, FormData>(
     openComandaAction,
     initialComandaActionState,
   );
 
-  // openComandaAction faz redirect em sucesso, então não precisa useEffect
+  useEffect(() => {
+    if (state.ok && state.comandaId) {
+      setOpen(false);
+      router.push(`/admin/comandas/${state.comandaId}`);
+    }
+  }, [state, router]);
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
           type="button"

@@ -209,6 +209,14 @@ export async function createBooking(args: CreateBookingArgs): Promise<CreateBook
         },
         select: { id: true },
       });
+      // Marca como cliente da org (idempotente). source='booking' default.
+      if (userId) {
+        await db.customerOrg.upsert({
+          where: { organizationId_userId: { organizationId, userId } },
+          create: { organizationId, userId, source: "booking" },
+          update: {},
+        });
+      }
       return {
         appointmentId: appointment.id,
         startsAtUtc,
@@ -323,6 +331,40 @@ export async function markNoShow(args: SimpleTransitionArgs): Promise<void> {
   });
 }
 
+export type PayAndCompleteArgs = SimpleTransitionArgs & {
+  paymentMethod: "CASH" | "PIX" | "CREDIT" | "DEBIT" | "CORTESIA";
+};
+
+/**
+ * Atalho PDV: marca COMPLETED + registra forma de pagamento direto no
+ * appointment (sem precisar abrir Comanda). Para fluxo simples — barbearia
+ * que so cobra o servico do agendamento sem extras. Idempotente em
+ * COMPLETED (caso re-submit).
+ */
+export async function markPaidAndCompleted(args: PayAndCompleteArgs): Promise<void> {
+  await withTenant(args.organizationId, async (db) => {
+    const appt = await db.appointment.findUniqueOrThrow({
+      where: { id: args.appointmentId },
+      select: { status: true },
+    });
+    if (appt.status === "COMPLETED") return;
+    if (appt.status !== "CONFIRMED") {
+      throw new BookingError(
+        `Agendamento já está ${appt.status.toLowerCase()}.`,
+        "VALIDATION",
+      );
+    }
+    await db.appointment.update({
+      where: { id: args.appointmentId },
+      data: {
+        status: "COMPLETED",
+        paymentMethod: args.paymentMethod,
+        paidAt: new Date(),
+      },
+    });
+  });
+}
+
 // ──────────────────────────────────────────────────────────────
 // quickCreateBooking — encaixe admin (PBI-09, RN-11)
 // ──────────────────────────────────────────────────────────────
@@ -381,6 +423,67 @@ export async function quickCreateBooking(
         select: { id: true },
       });
       return { appointmentId: created.id };
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        (err.code === "P2002" || /23P01|exclusion_violation/i.test(err.message))
+      ) {
+        throw new BookingError(
+          "Conflito com outro agendamento nesse horário.",
+          "SLOT_UNAVAILABLE",
+        );
+      }
+      throw err;
+    }
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// updateAppointment — edição admin (PDV)
+// ──────────────────────────────────────────────────────────────
+
+export type UpdateAppointmentArgs = {
+  organizationId: string;
+  appointmentId: string;
+  startsAt: Date;
+  notes?: string | null;
+};
+
+/**
+ * Edita um agendamento CONFIRMED. Mantem serviceId e professionalId — pra
+ * trocar isso, cancele e recrie. Recalcula endsAt pela duracao do servico
+ * atual. RN-04 (anti-conflito) barra via EXCLUDE do Postgres.
+ */
+export async function updateAppointment(args: UpdateAppointmentArgs): Promise<void> {
+  await withTenant(args.organizationId, async (db) => {
+    const appt = await db.appointment.findUniqueOrThrow({
+      where: { id: args.appointmentId },
+      select: {
+        status: true,
+        service: { select: { durationMinutes: true, active: true } },
+      },
+    });
+    if (appt.status !== "CONFIRMED") {
+      throw new BookingError(
+        `Agendamento já está ${appt.status.toLowerCase()}, não pode editar.`,
+        "VALIDATION",
+      );
+    }
+    if (!appt.service.active) throw new BookingError("Serviço inativo.", "VALIDATION");
+
+    const endsAtUtc = new Date(
+      args.startsAt.getTime() + appt.service.durationMinutes * 60_000,
+    );
+
+    try {
+      await db.appointment.update({
+        where: { id: args.appointmentId },
+        data: {
+          startsAt: args.startsAt,
+          endsAt: endsAtUtc,
+          notes: args.notes ?? undefined,
+        },
+      });
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&

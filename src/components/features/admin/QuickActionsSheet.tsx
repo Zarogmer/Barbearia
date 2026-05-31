@@ -37,9 +37,9 @@ const ACTIONS: Action[] = [
     tone: "ok",
   },
   {
-    href: "/admin/clientes/importar",
+    href: "/admin/clientes",
     label: "Cadastrar cliente",
-    description: "Adicionar manualmente ou via CSV",
+    description: "Novo cliente avulso ou importar em massa",
     Icon: UserPlus,
     tone: "subtle",
   },

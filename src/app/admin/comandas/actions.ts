@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import {
@@ -66,8 +65,9 @@ export async function openComandaAction(
   }
 
   revalidatePath("/admin/comandas");
-  // Após criar, redireciona pra detalhe pra começar a adicionar itens
-  redirect(`/admin/comandas/${id}`);
+  // Retorna ok + id pro client navegar (server redirect dentro de dialog
+  // pode falhar silenciosamente quando o form vem de useActionState).
+  return { ok: true, comandaId: id };
 }
 
 export async function addItemAction(

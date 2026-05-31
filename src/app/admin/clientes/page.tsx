@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FileSpreadsheet, Search, UserX } from "lucide-react";
 
+import { CreateCustomerDialog } from "@/components/features/admin/CreateCustomerDialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CustomersIllustration } from "@/components/ui/empty-state-illustrations";
 import { auth } from "@/lib/auth";
@@ -76,6 +77,7 @@ export default async function CustomersListPage({
             <FileSpreadsheet className="h-4 w-4" />
             Importar CSV
           </Link>
+          <CreateCustomerDialog />
         </div>
       </header>
 

@@ -490,6 +490,27 @@
   .serif {
     font-family: var(--font-serif), Georgia, serif;
   }
+
+  /* iOS Safari faz zoom automático ao focar input com font-size < 16px.
+     Forçar 16px no mobile elimina o zoom sem mexer no design (desktop
+     mantém os tamanhos via Tailwind text-sm/xs). max-width 768px = tablet+. */
+  @media (max-width: 768px) {
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="number"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="time"],
+    input:not([type]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
 }
 
 /* =========================================================

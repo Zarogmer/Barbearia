@@ -9,7 +9,7 @@
  *
  * Cache version bumped manualmente quando shape do app muda.
  */
-const CACHE = "lustro-v1";
+const CACHE = "lustro-v2";
 
 const STATIC_ASSETS = [
   "/manifest.json",

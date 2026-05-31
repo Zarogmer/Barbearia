@@ -44,6 +44,11 @@ model Organization {
   //   horario (encaixe). Quando false, esconde "Forcar" no QuickBooking
   allowMultipleSimultaneousBookings Boolean @default(false)
   allowOverbookEncaixe              Boolean @default(true)
+  // PBI-45: taxas do cartão (basis points × 10: 4.99% = 499). Usadas
+  // nos relatórios pra mostrar receita liquida apos taxa de adquirencia.
+  // 0 = sem taxa configurada (default).
+  creditCardFeeBp Int @default(0)
+  debitCardFeeBp  Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

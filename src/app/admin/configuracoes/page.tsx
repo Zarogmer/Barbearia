@@ -61,6 +61,8 @@ export default async function SettingsPage() {
             businessHours: org.businessHours,
             allowMultipleSimultaneousBookings: org.allowMultipleSimultaneousBookings,
             allowOverbookEncaixe: org.allowOverbookEncaixe,
+            creditCardFeeBp: org.creditCardFeeBp,
+            debitCardFeeBp: org.debitCardFeeBp,
           }}
         />
       </div>

@@ -24,6 +24,8 @@ export type AdminOrganization = {
   reminderTemplate: string | null;
   allowMultipleSimultaneousBookings: boolean;
   allowOverbookEncaixe: boolean;
+  creditCardFeeBp: number;
+  debitCardFeeBp: number;
 };
 
 /**
@@ -51,6 +53,8 @@ export async function getOrganizationForAdmin(
         reminderTemplate: true,
         allowMultipleSimultaneousBookings: true,
         allowOverbookEncaixe: true,
+        creditCardFeeBp: true,
+        debitCardFeeBp: true,
       },
     });
     return {
@@ -105,6 +109,8 @@ export async function updateOrganization(
           allowMultipleSimultaneousBookings:
             input.allowMultipleSimultaneousBookings ?? false,
           allowOverbookEncaixe: input.allowOverbookEncaixe ?? true,
+          creditCardFeeBp: input.creditCardFeeBp ?? 0,
+          debitCardFeeBp: input.debitCardFeeBp ?? 0,
           coverImageUrl: input.coverImageUrl ?? null,
           tagline: input.tagline ?? null,
           address: input.address ?? null,
@@ -130,6 +136,8 @@ export async function updateOrganization(
           reminderTemplate: true,
           allowMultipleSimultaneousBookings: true,
           allowOverbookEncaixe: true,
+          creditCardFeeBp: true,
+          debitCardFeeBp: true,
         },
       });
       return {

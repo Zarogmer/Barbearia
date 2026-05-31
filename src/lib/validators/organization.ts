@@ -50,6 +50,9 @@ export const updateOrganizationSchema = z.object({
   // PBI-43
   allowMultipleSimultaneousBookings: z.boolean().default(false),
   allowOverbookEncaixe: z.boolean().default(true),
+  // PBI-45 — taxa em basis points × 10 (4.99% = 499). 0 = sem taxa.
+  creditCardFeeBp: z.coerce.number().int().min(0).max(5000).default(0),
+  debitCardFeeBp: z.coerce.number().int().min(0).max(5000).default(0),
   // Vitrine (PBI-26)
   coverImageUrl: URL_OR_EMPTY.optional(),
   tagline: z
@@ -113,6 +116,12 @@ export function organizationFormDataToInput(formData: FormData): unknown {
     allowOverbookEncaixe:
       formData.get("allowOverbookEncaixe") === "on" ||
       formData.get("allowOverbookEncaixe") === "true",
+    creditCardFeeBp: Math.round(
+      Number(formData.get("creditCardFeePercent") ?? 0) * 100,
+    ),
+    debitCardFeeBp: Math.round(
+      Number(formData.get("debitCardFeePercent") ?? 0) * 100,
+    ),
     coverImageUrl: formData.get("coverImageUrl") ?? "",
     tagline: formData.get("tagline") ?? "",
     address: formData.get("address") ?? "",

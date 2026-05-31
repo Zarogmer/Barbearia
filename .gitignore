@@ -48,3 +48,6 @@ yarn-error.log*
 
 # Prisma generated
 prisma/migrations/dev.db*
+
+# Devtools profiling dumps (gigantes, >100MB rejeitados pelo GitHub)
+docs/mobiledesign/profiling-data.*.json

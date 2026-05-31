@@ -71,6 +71,7 @@ model Organization {
   products           Product[]
   inventoryMovements InventoryMovement[]
   customerOrgs       CustomerOrg[]
+  messageTemplates   MessageTemplate[]
 
   @@map("organizations")
 }
@@ -501,6 +502,29 @@ model InventoryMovement {
 // ─── Job runs (self-trigger de cron interno) ──────────────
 // Registra cada execução do job diário de notificações pra evitar
 // duplicar quando múltiplos admins abrirem o painel no mesmo dia.
+
+// Templates de mensagens (PBI-31). Dono cadastra textos prontos pra
+// disparar via WhatsApp web (wa.me) — sem integracao com WhatsApp
+// Cloud API (custos altos no MVP). Placeholders: {nome}, {data},
+// {hora}, {servico}, {profissional}, {barbearia}, {endereco}.
+//
+// `key` permite seed de defaults reutilizaveis (CONFIRMAR, LEMBRETE,
+// ANIVERSARIO, etc) — null/CUSTOM = template proprio.
+model MessageTemplate {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  title          String
+  body           String
+  key            String?  // CONFIRMAR | LEMBRETE | ANIVERSARIO | SUMIDO | CUSTOM
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, active])
+  @@map("message_templates")
+}
 
 model JobRun {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

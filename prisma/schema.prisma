@@ -78,6 +78,7 @@ model Organization {
   expenses           Expense[]
   miscRevenues       MiscRevenue[]
   customerPhotos     CustomerPhoto[]
+  rooms              Room[]
 
   @@map("organizations")
 }
@@ -265,6 +266,9 @@ model Appointment {
   // Null = nao pago / status diferente de COMPLETED.
   paymentMethod  PaymentMethod?
   paidAt         DateTime?
+  // PBI-41: sala/cadeira ocupada. Opcional. MVP NAO bloqueia conflito
+  // por sala no slot calculator (so prof). Hook automatico fica pra v2.
+  roomId         String?           @db.Uuid
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -272,6 +276,7 @@ model Appointment {
   professional Professional @relation(fields: [professionalId], references: [id])
   service      Service      @relation(fields: [serviceId], references: [id])
   user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  room         Room?        @relation(fields: [roomId], references: [id], onDelete: SetNull)
   review       Review?
 
   @@index([organizationId, professionalId, startsAt])
@@ -686,6 +691,24 @@ model CustomerPhoto {
 
   @@index([organizationId, customerUserId, createdAt])
   @@map("customer_photos")
+}
+
+// Salas/cadeiras (PBI-41). Posto de trabalho fisico que pode ser
+// ocupado por 1 appointment por vez. Opcional — barbearia simples
+// (1 cadeira por prof) nao precisa cadastrar.
+model Room {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  name           String
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@index([organizationId, active])
+  @@map("rooms")
 }
 
 model JobRun {

@@ -15,6 +15,7 @@ import {
 import { toZonedTime } from "date-fns-tz";
 
 import { BirthDateEditor } from "@/components/features/admin/BirthDateEditor";
+import { CustomerPackagesSection } from "@/components/features/admin/CustomerPackagesSection";
 import { DeleteNoteButton } from "@/components/features/admin/DeleteNoteButton";
 import { NewNoteDialog } from "@/components/features/admin/NewNoteDialog";
 import { SendMessageDialog } from "@/components/features/admin/SendMessageDialog";
@@ -27,6 +28,10 @@ import { listCustomerNotes } from "@/lib/server/customerNotes";
 import { getLoyaltyStatusForCustomer } from "@/lib/server/loyalty";
 import { listMessageTemplates } from "@/lib/server/messages";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
+import {
+  listCustomerPackages,
+  listPackages,
+} from "@/lib/server/packages";
 import { withTenant } from "@/lib/db";
 import { cn, formatBRL } from "@/lib/utils";
 
@@ -74,12 +79,23 @@ export default async function CustomerDetailPage({
   }
   const orgId = membership.organizationId;
 
-  const [detail, appointments, notes, templates, org, timezone] = await Promise.all([
+  const [
+    detail,
+    appointments,
+    notes,
+    templates,
+    org,
+    customerPackages,
+    availablePackages,
+    timezone,
+  ] = await Promise.all([
     getCustomerDetail(orgId, id),
     listCustomerAppointments(orgId, id),
     listCustomerNotes(orgId, id),
     listMessageTemplates(orgId, { onlyActive: true }),
     getOrganizationForAdmin(orgId),
+    listCustomerPackages(orgId, id),
+    listPackages(orgId, { onlyActive: true }),
     withTenant(orgId, (db) =>
       db.organization
         .findUniqueOrThrow({ where: { id: orgId }, select: { timezone: true } })
@@ -186,6 +202,19 @@ export default async function CustomerDetailPage({
           tone="brand"
         />
       </section>
+
+      <CustomerPackagesSection
+        customerUserId={detail.userId}
+        customerName={detail.name}
+        active={customerPackages}
+        availablePackages={availablePackages.map((p) => ({
+          id: p.id,
+          name: p.name,
+          serviceName: p.serviceName,
+          sessionsCount: p.sessionsCount,
+          priceLabel: formatBRL(p.priceCents),
+        }))}
+      />
 
       <div className="grid gap-3 sm:grid-cols-3 rounded-md border border-line bg-surface p-4 mono text-[11px]">
         <Meta

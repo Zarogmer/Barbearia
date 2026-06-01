@@ -72,6 +72,8 @@ model Organization {
   inventoryMovements InventoryMovement[]
   customerOrgs       CustomerOrg[]
   messageTemplates   MessageTemplate[]
+  packages           Package[]
+  customerPackages   CustomerPackage[]
 
   @@map("organizations")
 }
@@ -147,6 +149,7 @@ model Service {
   organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   professionalServices ProfessionalService[]
   appointments         Appointment[]
+  packages             Package[]
 
   @@index([organizationId, active])
   @@map("services")
@@ -502,6 +505,54 @@ model InventoryMovement {
 // ─── Job runs (self-trigger de cron interno) ──────────────
 // Registra cada execução do job diário de notificações pra evitar
 // duplicar quando múltiplos admins abrirem o painel no mesmo dia.
+
+// Pacote de sessoes pre-pago (PBI-26). Cliente compra N sessoes de um
+// servico adiantado por preco fixo (geralmente menor que N x preco_servico).
+// Cada appointment COMPLETED desse servico pode "consumir" 1 sessao
+// do saldo — admin decide no momento do pagamento.
+//
+// expiresInDays: NULL = nao expira; senao, expiresAt = purchasedAt + N dias
+model Package {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String   @db.Uuid
+  serviceId       String   @db.Uuid
+  name            String
+  sessionsCount   Int
+  priceCents      Int
+  expiresInDays   Int?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  service          Service           @relation(fields: [serviceId], references: [id])
+  customerPackages CustomerPackage[]
+
+  @@index([organizationId, active])
+  @@map("packages")
+}
+
+// Saldo de pacote comprado por 1 cliente. sessionsRemaining decrementa
+// quando consome (>=0). Cancel de appointment que consumiu sessao deve
+// estornar +1 (controle via PackageUsage ou re-execucao da regra).
+model CustomerPackage {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String    @db.Uuid
+  packageId         String    @db.Uuid
+  customerUserId    String    @db.Uuid
+  sessionsRemaining Int
+  purchasedAt       DateTime  @default(now())
+  expiresAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  package      Package      @relation(fields: [packageId], references: [id])
+
+  @@index([organizationId, customerUserId])
+  @@index([organizationId, expiresAt])
+  @@map("customer_packages")
+}
 
 // Templates de mensagens (PBI-31). Dono cadastra textos prontos pra
 // disparar via WhatsApp web (wa.me) — sem integracao com WhatsApp

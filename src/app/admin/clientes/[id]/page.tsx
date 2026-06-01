@@ -16,6 +16,7 @@ import { toZonedTime } from "date-fns-tz";
 
 import { BirthDateEditor } from "@/components/features/admin/BirthDateEditor";
 import { CustomerPackagesSection } from "@/components/features/admin/CustomerPackagesSection";
+import { CustomerPhotosSection } from "@/components/features/admin/CustomerPhotosSection";
 import { DeleteNoteButton } from "@/components/features/admin/DeleteNoteButton";
 import { NewNoteDialog } from "@/components/features/admin/NewNoteDialog";
 import { SendMessageDialog } from "@/components/features/admin/SendMessageDialog";
@@ -26,6 +27,7 @@ import {
 } from "@/lib/server/customers";
 import { listCustomerNotes } from "@/lib/server/customerNotes";
 import { getLoyaltyStatusForCustomer } from "@/lib/server/loyalty";
+import { listCustomerPhotos } from "@/lib/server/customer-photos";
 import { listMessageTemplates } from "@/lib/server/messages";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
 import {
@@ -87,6 +89,7 @@ export default async function CustomerDetailPage({
     org,
     customerPackages,
     availablePackages,
+    photos,
     timezone,
   ] = await Promise.all([
     getCustomerDetail(orgId, id),
@@ -96,6 +99,7 @@ export default async function CustomerDetailPage({
     getOrganizationForAdmin(orgId),
     listCustomerPackages(orgId, id),
     listPackages(orgId, { onlyActive: true }),
+    listCustomerPhotos(orgId, id),
     withTenant(orgId, (db) =>
       db.organization
         .findUniqueOrThrow({ where: { id: orgId }, select: { timezone: true } })
@@ -214,6 +218,12 @@ export default async function CustomerDetailPage({
           sessionsCount: p.sessionsCount,
           priceLabel: formatBRL(p.priceCents),
         }))}
+      />
+
+      <CustomerPhotosSection
+        customerUserId={detail.userId}
+        customerName={detail.name}
+        photos={photos}
       />
 
       <div className="grid gap-3 sm:grid-cols-3 rounded-md border border-line bg-surface p-4 mono text-[11px]">

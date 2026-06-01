@@ -76,6 +76,7 @@ model Organization {
   customerPackages   CustomerPackage[]
   waitlistEntries    Waitlist[]
   expenses           Expense[]
+  miscRevenues       MiscRevenue[]
 
   @@map("organizations")
 }
@@ -638,6 +639,27 @@ model MessageTemplate {
 
   @@index([organizationId, active])
   @@map("message_templates")
+}
+
+// Lancamentos avulsos de receita (PBI-42). Venda fora de comanda
+// (ex: cliente paga produto avulso sem abrir conta, dica de gorjeta,
+// venda balcao rapida). Soma no relatorio financeiro junto com
+// comandas fechadas. Despesas avulsas usam Expense (PBI-36).
+model MiscRevenue {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  name           String
+  amountCents    Int
+  occurredAt     DateTime @db.Date
+  paymentMethod  PaymentMethod?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, occurredAt])
+  @@map("misc_revenues")
 }
 
 model JobRun {

@@ -75,6 +75,7 @@ model Organization {
   packages           Package[]
   customerPackages   CustomerPackage[]
   waitlistEntries    Waitlist[]
+  expenses           Expense[]
 
   @@map("organizations")
 }
@@ -513,9 +514,6 @@ model InventoryMovement {
 // admin registra preferencia. Quando libera slot (cancel/no-show),
 // admin abre a tela e ve matches por servico + janela de data +
 // profissional (opcional ANY).
-//
-// status: WAITING (aguardando), NOTIFIED (admin avisou), SCHEDULED
-// (virou appointment), EXPIRED (passou da janela).
 enum WaitlistStatus {
   WAITING
   NOTIFIED
@@ -546,6 +544,29 @@ model Waitlist {
   @@index([organizationId, status, preferredDateStart])
   @@index([organizationId, serviceId, status])
   @@map("waitlist")
+}
+
+// Despesas (PBI-36). MVP simplificado: lancamentos avulsos com
+// data, valor, categoria livre (string) e flag paid. Modos avancados
+// (FIXED_MONTHLY recorrente, INSTALLMENT parcelado) ficam pra v2 quando
+// precisar de cron — por enquanto admin lanca manualmente cada mes.
+model Expense {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  name           String
+  amountCents    Int
+  expenseDate    DateTime @db.Date
+  category       String?
+  notes          String?
+  paid           Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, expenseDate])
+  @@index([organizationId, paid])
+  @@map("expenses")
 }
 
 // Pacote de sessoes pre-pago (PBI-26). Cliente compra N sessoes de um

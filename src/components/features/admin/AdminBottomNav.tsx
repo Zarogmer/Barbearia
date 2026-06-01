@@ -21,6 +21,7 @@ import {
   UserCircle2,
   UserX,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 
@@ -56,6 +57,7 @@ const SECONDARY: NavItem[] = [
   { href: "/admin/profissionais", label: "Profissionais", Icon: Users },
   { href: "/admin/comissoes", label: "Comissões", Icon: Percent },
   { href: "/admin/relatorios", label: "Relatórios", Icon: BarChart3 },
+  { href: "/admin/despesas", label: "Despesas", Icon: Wallet },
   { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
   { href: "/admin/mensagens", label: "Mensagens", Icon: MessageCircle },
   { href: "/admin/pacotes", label: "Pacotes", Icon: Package },

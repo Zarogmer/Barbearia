@@ -79,6 +79,7 @@ model Organization {
   miscRevenues       MiscRevenue[]
   customerPhotos     CustomerPhoto[]
   rooms              Room[]
+  quotes             Quote[]
 
   @@map("organizations")
 }
@@ -709,6 +710,66 @@ model Room {
 
   @@index([organizationId, active])
   @@map("rooms")
+}
+
+// Orcamentos (PBI-39). Lista de servicos/produtos cotada antes de
+// virar atendimento real (kit casamento, dia da noiva, combo familia).
+// Cliente pode aceitar via WhatsApp e dono converte em Comanda.
+//
+// MVP simplificado: sem PDF gerado nem pagina publica — dono compartilha
+// resumo via wa.me com texto. Aceitacao automatica = mudanca de status
+// manual. Comanda inicial fica pra v2.
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  EXPIRED
+}
+
+model Quote {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String      @db.Uuid
+  customerUserId String?     @db.Uuid
+  customerName   String
+  customerPhone  String?
+  status         QuoteStatus @default(DRAFT)
+  expiresAt      DateTime?   @db.Date
+  discountCents  Int         @default(0)
+  totalCents     Int         @default(0)
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        QuoteItem[]
+
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, customerUserId])
+  @@map("quotes")
+}
+
+// Item de orcamento. type (SERVICE/PRODUCT/MANUAL) + refId opcional
+// pra ligar a Service/Product reais — name copy-on-write evita
+// quebrar valor passado se item original for renomeado depois.
+enum QuoteItemType {
+  SERVICE
+  PRODUCT
+  MANUAL
+}
+
+model QuoteItem {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quoteId        String        @db.Uuid
+  type           QuoteItemType
+  refId          String?       @db.Uuid
+  name           String
+  quantity       Int           @default(1)
+  unitPriceCents Int
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([quoteId])
+  @@map("quote_items")
 }
 
 model JobRun {

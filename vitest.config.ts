@@ -1,8 +1,14 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
+    alias: {
+      // Em testes Node, "server-only" nao existe — stub vazio impede o
+      // throw que esse pacote dispara fora do bundler do Next.
+      "server-only": resolve(__dirname, "./tests/stubs/server-only.ts"),
+    },
   },
   test: {
     environment: "node",

@@ -92,7 +92,7 @@ function RequestStep({
           className="mt-0.5 h-4 w-4 rounded border-line accent-[hsl(var(--brand))]"
         />
         <span className="text-subtle">
-          Aceito receber SMS com código de confirmação e concordo com os{" "}
+          Aceito receber WhatsApp com código de confirmação e concordo com os{" "}
           <span className="text-ink underline-offset-2 hover:underline">
             termos de cancelamento
           </span>{" "}
@@ -134,7 +134,7 @@ function RequestSubmit() {
       ) : (
         <>
           <Phone className="h-4 w-4" />
-          Enviar código por SMS
+          Enviar código por WhatsApp
         </>
       )}
     </button>

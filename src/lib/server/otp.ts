@@ -3,7 +3,7 @@ import "server-only";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/db";
-import { getSmsProvider } from "./sms";
+import { getWhatsAppProvider } from "./whatsapp";
 
 const TTL_MINUTES = 5;
 const MAX_ATTEMPTS = 3;
@@ -12,7 +12,11 @@ const IP_LIMIT_PER_HOUR = 10;
 
 export type OtpResult =
   | { ok: true; expiresAt: Date }
-  | { ok: false; code: "RATE_LIMIT_PHONE" | "RATE_LIMIT_IP" | "SMS_FAILED"; message: string };
+  | {
+      ok: false;
+      code: "RATE_LIMIT_PHONE" | "RATE_LIMIT_IP" | "SEND_FAILED";
+      message: string;
+    };
 
 export type VerifyResult =
   | { ok: true }
@@ -29,9 +33,9 @@ function generateCode(): string {
 }
 
 /**
- * Solicita envio de codigo SMS pra confirmar agendamento.
+ * Solicita envio de codigo via WhatsApp pra confirmar agendamento.
  * Aplica rate limit por telefone (3/10min) e por IP (10/h).
- * Salva codeHash bcrypt — codigo em claro so existe no SMS.
+ * Salva codeHash bcrypt — codigo em claro so existe na mensagem.
  */
 export async function requestOtp(input: {
   phone: string;
@@ -81,17 +85,18 @@ export async function requestOtp(input: {
   });
 
   try {
-    const provider = getSmsProvider();
+    const provider = getWhatsAppProvider();
     await provider.send(
       input.phone,
       `Lustro: seu código de confirmação é ${code}. Válido por ${TTL_MINUTES} minutos.`,
     );
   } catch (err) {
-    console.error("SMS send failed:", err);
+    console.error("WhatsApp send failed:", err);
     return {
       ok: false,
-      code: "SMS_FAILED",
-      message: "Não foi possível enviar o SMS. Verifique o número e tente outra vez.",
+      code: "SEND_FAILED",
+      message:
+        "Não foi possível enviar a mensagem. Verifique se o número tem WhatsApp e tente outra vez.",
     };
   }
 

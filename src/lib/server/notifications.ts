@@ -5,14 +5,14 @@ import { toZonedTime } from "date-fns-tz";
 
 import { prismaAdmin } from "@/lib/db";
 import { firstName, renderReminder } from "@/lib/reminder-template";
-import { getSmsProvider } from "@/lib/server/sms";
+import { getWhatsAppProvider } from "@/lib/server/whatsapp";
 
 /**
  * Job diário de notificações.
  *
- * 1. Lembrete cliente (SMS, 24h antes): pra cada Appointment CONFIRMED
- *    com startsAt na janela [now+23h, now+25h] e reminderSentAt NULL,
- *    envia SMS e marca reminderSentAt.
+ * 1. Lembrete cliente (WhatsApp via Evolution API, 24h antes): pra cada
+ *    Appointment CONFIRMED com startsAt na janela [now+23h, now+25h] e
+ *    reminderSentAt NULL, envia WhatsApp e marca reminderSentAt.
  *
  * 2. Digest dono (email): pra cada org com appointments amanhã, manda
  *    1 email pro owner com agenda do dia seguinte.
@@ -20,7 +20,7 @@ import { getSmsProvider } from "@/lib/server/sms";
  * Usa prismaAdmin (cross-tenant) porque o cron roda fora de contexto
  * de usuário — não há sessão pra fixar current_org_id.
  *
- * Idempotente: rodar 2x no mesmo dia não duplica SMS (reminderSentAt
+ * Idempotente: rodar 2x no mesmo dia não duplica mensagem (reminderSentAt
  * impede). Email pode duplicar se rodar 2x (sem flag por enquanto —
  * recomendação: cron 1x/dia às 9h).
  */
@@ -67,42 +67,53 @@ const MIN_HOURS_BETWEEN_RUNS = 23;
 export async function maybeRunDailyJob(): Promise<
   { ran: true; result: DailyJobResult } | { ran: false; reason: string }
 > {
-  // Race-safe: SELECT...FOR UPDATE-style via $transaction
-  return prismaAdmin.$transaction(async (tx) => {
+  // Fase 1 — claim atomico: le ultima run e cria jobRun nova se >=23h.
+  // Curto (apenas 2 queries), nao corre risco de timeout. Dois admins
+  // abrindo o painel ao mesmo tempo: o primeiro insere a row, o
+  // segundo ve startedAt recente e pula.
+  const claim = await prismaAdmin.$transaction(async (tx) => {
     const last = await tx.jobRun.findFirst({
       where: { name: JOB_NAME },
       orderBy: { startedAt: "desc" },
-      select: { startedAt: true, finishedAt: true },
+      select: { startedAt: true },
     });
 
     if (last) {
       const ageHours = (Date.now() - last.startedAt.getTime()) / 1000 / 3600;
       if (ageHours < MIN_HOURS_BETWEEN_RUNS) {
-        return { ran: false as const, reason: `last run ${ageHours.toFixed(1)}h ago` };
+        return {
+          skip: true as const,
+          reason: `last run ${ageHours.toFixed(1)}h ago`,
+        };
       }
     }
 
-    // Cria o registro ANTES de rodar pra travar outros admins concorrentes
     const run = await tx.jobRun.create({
       data: { name: JOB_NAME },
       select: { id: true },
     });
-
-    // Executa fora da transação (job é longo, não deve segurar o lock)
-    // Trade-off: se crashar, jobRun fica órfão sem finishedAt. Próximo
-    // self-trigger ainda vai pular por 23h. Aceitável pra MVP.
-    const result = await runDailyNotificationsJob();
-
-    await tx.jobRun.update({
-      where: { id: run.id },
-      data: {
-        finishedAt: new Date(),
-        result: result as unknown as Prisma.InputJsonValue,
-      },
-    });
-
-    return { ran: true as const, result };
+    return { skip: false as const, runId: run.id };
   });
+
+  if (claim.skip) {
+    return { ran: false, reason: claim.reason };
+  }
+
+  // Fase 2 — fora da transacao: job pode demorar (HTTP pra Evolution,
+  // Resend etc.). Se crashar aqui, jobRun fica orfao sem finishedAt
+  // mas com startedAt recente — proximo self-trigger pula por 23h.
+  // Aceitavel pra MVP.
+  const result = await runDailyNotificationsJob();
+
+  await prismaAdmin.jobRun.update({
+    where: { id: claim.runId },
+    data: {
+      finishedAt: new Date(),
+      result: result as unknown as Prisma.InputJsonValue,
+    },
+  });
+
+  return { ran: true, result };
 }
 
 // ─── Lembretes 24h pro cliente ────────────────────────────
@@ -142,7 +153,7 @@ async function sendBookingReminders(
 
   let sent = 0;
   let failed = 0;
-  const sms = getSmsProvider();
+  const whatsapp = getWhatsAppProvider();
 
   for (const a of pending) {
     if (!a.customerPhone) continue;
@@ -168,7 +179,7 @@ async function sendBookingReminders(
     });
 
     try {
-      await sms.send(a.customerPhone, body);
+      await whatsapp.send(a.customerPhone, body);
       await prismaAdmin.appointment.update({
         where: { id: a.id },
         data: { reminderSentAt: new Date() },

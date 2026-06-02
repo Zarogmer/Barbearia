@@ -70,7 +70,7 @@ export function ReminderTemplateEditor({ initial, orgName }: Props) {
           Mensagem do lembrete
         </h3>
         <p className="text-xs text-subtle">
-          Texto enviado 24h antes do agendamento via SMS/WhatsApp. Use os
+          Texto enviado 24h antes do agendamento via WhatsApp. Use os
           placeholders pra personalizar com nome, serviço, etc.
         </p>
       </div>

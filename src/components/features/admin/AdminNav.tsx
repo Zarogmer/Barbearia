@@ -8,6 +8,7 @@ import {
   Calendar,
   Image as ImageIcon,
   LayoutDashboard,
+  MessageSquare,
   Package,
   Percent,
   Receipt,
@@ -29,6 +30,7 @@ const NAV = [
   { href: "/admin/comissoes", label: "Comissões", icon: Percent },
   { href: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/admin/feed", label: "Feed", icon: ImageIcon },
+  { href: "/admin/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 

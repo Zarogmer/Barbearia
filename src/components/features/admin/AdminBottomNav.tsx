@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageCircle,
+  MessageSquare,
   MoreHorizontal,
   Package,
   Percent,
@@ -60,6 +61,7 @@ const SECONDARY: NavItem[] = [
   { href: "/admin/despesas", label: "Despesas", Icon: Wallet },
   { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
   { href: "/admin/mensagens", label: "Mensagens", Icon: MessageCircle },
+  { href: "/admin/whatsapp", label: "WhatsApp", Icon: MessageSquare },
   { href: "/admin/pacotes", label: "Pacotes", Icon: Package },
   { href: "/admin/configuracoes", label: "Configurações", Icon: Settings },
 ];

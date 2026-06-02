@@ -280,7 +280,7 @@ function Features() {
           <FeatureCard
             icon={<Smartphone className="h-5 w-5" />}
             title="Agendamento 24/7"
-            description="Cliente agenda pelo celular em 3 toques. Confirma por SMS — sem precisar criar conta. Sua agenda fecha sozinha."
+            description="Cliente agenda pelo celular em 3 toques. Confirma por WhatsApp — sem precisar criar conta. Sua agenda fecha sozinha."
           />
           <FeatureCard
             icon={<Receipt className="h-5 w-5" />}
@@ -392,7 +392,7 @@ function ProductPreview() {
               barbearia, avaliações. Parece app instalado.
             </p>
             <ul className="space-y-2 text-sm">
-              <FeatureBullet>Confirmação por SMS sem criar conta</FeatureBullet>
+              <FeatureBullet>Confirmação por WhatsApp sem criar conta</FeatureBullet>
               <FeatureBullet>Lembrete automático no dia anterior</FeatureBullet>
               <FeatureBullet>Avalia o atendimento em 1 toque</FeatureBullet>
             </ul>

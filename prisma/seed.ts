@@ -116,37 +116,51 @@ async function main() {
   console.log(`  Admin:    admin@demo.com / senha123`);
 }
 
-function upsertService(
+/**
+ * Idempotente por (organizationId, name) — NÃO por ID. IDs determinísticos
+ * derivados só do nome colidiam quando duas orgs tinham serviços com mesmo
+ * nome ("Corte" na Demo e na Viking compartilhavam ID), criando vínculos
+ * cross-tenant.
+ */
+async function upsertService(
   organizationId: string,
   name: string,
   description: string,
   durationMinutes: number,
   priceCents: number,
 ) {
-  return db.service.upsert({
-    where: { id: `00000000-0000-0000-0000-${slugToHex(name).padStart(12, "0")}` },
-    update: {},
-    create: {
-      id: `00000000-0000-0000-0000-${slugToHex(name).padStart(12, "0")}`,
-      organizationId,
-      name,
-      description,
-      durationMinutes,
-      priceCents,
-    },
+  const existing = await db.service.findFirst({
+    where: { organizationId, name },
+    select: { id: true },
+  });
+  if (existing) {
+    return db.service.update({
+      where: { id: existing.id },
+      data: { description, durationMinutes, priceCents },
+    });
+  }
+  return db.service.create({
+    data: { organizationId, name, description, durationMinutes, priceCents },
   });
 }
 
-function upsertProfessional(organizationId: string, name: string, bio: string) {
-  return db.professional.upsert({
-    where: { id: `10000000-0000-0000-0000-${slugToHex(name).padStart(12, "0")}` },
-    update: { name, bio, organizationId },
-    create: {
-      id: `10000000-0000-0000-0000-${slugToHex(name).padStart(12, "0")}`,
-      organizationId,
-      name,
-      bio,
-    },
+async function upsertProfessional(
+  organizationId: string,
+  name: string,
+  bio: string,
+) {
+  const existing = await db.professional.findFirst({
+    where: { organizationId, name },
+    select: { id: true },
+  });
+  if (existing) {
+    return db.professional.update({
+      where: { id: existing.id },
+      data: { bio },
+    });
+  }
+  return db.professional.create({
+    data: { organizationId, name, bio },
   });
 }
 
@@ -156,15 +170,6 @@ async function linkProfessionalService(professionalId: string, serviceId: string
     update: {},
     create: { professionalId, serviceId },
   });
-}
-
-// Generates a deterministic 12-char hex from a string (so upserts stay idempotent).
-function slugToHex(s: string): string {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h).toString(16).slice(0, 12);
 }
 
 main()

@@ -59,6 +59,11 @@ model Organization {
   // /admin/* enquanto trialEndsAt > now() OR subscriptionStatus=active.
   // Null = sem trial (ex: org criada via seed/admin manual).
   trialEndsAt DateTime?
+  // PBI-51: instância Evolution dedicada (multi-tenant). Null = ainda não
+  // conectou WhatsApp. Quando setado, todos os envios da org (OTP booking,
+  // lembrete 24h, mensagens diretas) usam essa instância. Fallback global
+  // EVOLUTION_INSTANCE só pra signups (orgs ainda não criadas).
+  evolutionInstance String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

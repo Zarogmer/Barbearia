@@ -7,7 +7,10 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BookingError, createBooking } from "@/lib/server/booking-service";
 import { sendBookingConfirmation } from "@/lib/server/email/booking-confirmation";
-import { getOrgBySlug } from "@/lib/server/orgs";
+import {
+  getOrgBySlug,
+  getOrgEvolutionInstanceBySlug,
+} from "@/lib/server/orgs";
 import {
   getProfessionalById,
   listProfessionalsForService,
@@ -60,7 +63,11 @@ export async function requestOtpAction(
   const data = parsed.data;
 
   const ip = await clientIp();
-  const result = await requestOtp({ phone: data.phone, ip });
+  // PBI-51: roteia OTP pra instância Evolution da org. Null = usa fallback
+  // global (compat com orgs antigas e desenvolvimento).
+  const instance =
+    (await getOrgEvolutionInstanceBySlug(data.orgSlug)) ?? undefined;
+  const result = await requestOtp({ phone: data.phone, ip, instance });
   if (!result.ok) {
     return { step: "request", error: result.message };
   }

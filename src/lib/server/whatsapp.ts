@@ -2,12 +2,16 @@ import "server-only";
 
 export interface WhatsAppProvider {
   /**
-   * Envia mensagem de texto via WhatsApp. Resolve em sucesso ou rejeita
-   * (lanca) em falha. Implementacoes especificas (Evolution API etc.)
-   * tratam codigos de erro do provider e re-lancam com mensagem
-   * amigavel.
+   * Envia mensagem de texto via WhatsApp.
+   *
+   * `instance` define qual sessão Evolution usar. Quando omitido, o provider
+   * recorre ao fallback global (EVOLUTION_INSTANCE env var). Esse fallback
+   * existe pra signups (que rodam antes da org existir) e pra orgs antigas
+   * que ainda não migraram pra instância própria (PBI-51).
+   *
+   * Resolve em sucesso ou rejeita (lança) em falha.
    */
-  send(phone: string, body: string): Promise<void>;
+  send(phone: string, body: string, instance?: string): Promise<void>;
 }
 
 /**
@@ -15,25 +19,18 @@ export interface WhatsAppProvider {
  * Nunca usado em producao (NODE_ENV === "production" forca Evolution).
  */
 class FakeWhatsAppProvider implements WhatsAppProvider {
-  async send(phone: string, body: string): Promise<void> {
-    console.log(`\n[FakeWhatsApp] -> ${phone}\n   ${body}\n`);
+  async send(phone: string, body: string, instance?: string): Promise<void> {
+    console.log(
+      `\n[FakeWhatsApp] -> ${phone}${instance ? ` via instance=${instance}` : ""}\n   ${body}\n`,
+    );
   }
 }
 
 /**
  * Provider Evolution API (WhatsApp nao-oficial via Baileys).
  *
- * Setup no Railway:
- *  1. Deploy Evolution API + Redis + Postgres (template oficial).
- *  2. Copiar AUTHENTICATION_API_KEY do service Evolution.
- *  3. Criar instancia:
- *       POST {url}/instance/create
- *       Header: apikey: {key}
- *       Body: { "instanceName": "barbearia", "qrcode": true,
- *               "integration": "WHATSAPP-BAILEYS" }
- *  4. Escanear QR code com o WhatsApp do dono da barbearia.
- *  5. Setar EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
- *     no .env do Barbearia.
+ * Multi-tenant (PBI-51): cada Organization tem sua própria evolutionInstance.
+ * O provider só conhece url+key (compartilhados); a instance vem por chamada.
  *
  * Endpoint usado:
  *   POST {url}/message/sendText/{instance}
@@ -46,15 +43,21 @@ class EvolutionWhatsAppProvider implements WhatsAppProvider {
   constructor(
     private url: string,
     private key: string,
-    private instance: string,
+    private fallbackInstance: string | null,
   ) {}
 
-  async send(phone: string, body: string): Promise<void> {
+  async send(phone: string, body: string, instance?: string): Promise<void> {
+    const targetInstance = instance ?? this.fallbackInstance;
+    if (!targetInstance) {
+      throw new Error(
+        "Nenhuma instância WhatsApp configurada. Conecte em /admin/whatsapp.",
+      );
+    }
     const number = phone.replace(/\D/g, "");
     if (!number) throw new Error(`Telefone invalido: "${phone}"`);
 
     const base = this.url.replace(/\/$/, "");
-    const endpoint = `${base}/message/sendText/${this.instance}`;
+    const endpoint = `${base}/message/sendText/${targetInstance}`;
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -78,13 +81,13 @@ export function getWhatsAppProvider(): WhatsAppProvider {
   if (_provider) return _provider;
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
-  const instance = process.env.EVOLUTION_INSTANCE;
-  if (url && key && instance) {
-    _provider = new EvolutionWhatsAppProvider(url, key, instance);
+  const fallbackInstance = process.env.EVOLUTION_INSTANCE ?? null;
+  if (url && key) {
+    _provider = new EvolutionWhatsAppProvider(url, key, fallbackInstance);
   } else {
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        "WhatsApp provider nao configurado em producao. Defina EVOLUTION_API_URL, EVOLUTION_API_KEY e EVOLUTION_INSTANCE.",
+        "WhatsApp provider nao configurado em producao. Defina EVOLUTION_API_URL e EVOLUTION_API_KEY.",
       );
     }
     _provider = new FakeWhatsAppProvider();

@@ -9,14 +9,13 @@ import "server-only";
  * - Listar conversas + mensagens
  * - Verificar se um numero tem WhatsApp ativo
  *
- * Reusa as mesmas env vars do whatsapp.ts (EVOLUTION_API_URL/KEY/INSTANCE).
- * Quando vazias, retorna NOT_CONFIGURED e a UI mostra setup instructions.
+ * PBI-51: cada chamada exige `instance` (Organization.evolutionInstance).
+ * URL/KEY continuam globais (uma Evolution serve todas as orgs).
  */
 
-export type EvolutionConfig = {
+export type EvolutionBaseConfig = {
   url: string;
   key: string;
-  instance: string;
 };
 
 export type EvolutionUnconfigured = { ok: false; reason: "NOT_CONFIGURED" };
@@ -26,23 +25,26 @@ export type EvolutionResult<T> =
   | EvolutionUnconfigured
   | EvolutionApiError;
 
-export function getEvolutionConfig(): EvolutionConfig | null {
+export function getEvolutionBaseConfig(): EvolutionBaseConfig | null {
   const url = process.env.EVOLUTION_API_URL?.trim();
   const key = process.env.EVOLUTION_API_KEY?.trim();
-  const instance = process.env.EVOLUTION_INSTANCE?.trim();
-  if (!url || !key || !instance) return null;
+  if (!url || !key) return null;
   return {
     url: url.replace(/\/$/, ""),
     key,
-    instance,
   };
+}
+
+/** Fallback global usado por signups e orgs ainda não migradas. */
+export function getFallbackInstance(): string | null {
+  return process.env.EVOLUTION_INSTANCE?.trim() ?? null;
 }
 
 async function call<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<EvolutionResult<T>> {
-  const cfg = getEvolutionConfig();
+  const cfg = getEvolutionBaseConfig();
   if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
   try {
     const res = await fetch(`${cfg.url}${path}`, {
@@ -85,15 +87,12 @@ export type ConnectionStatus = {
   ownerName?: string | null;
 };
 
-export async function getConnectionStatus(): Promise<
-  EvolutionResult<ConnectionStatus>
-> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
-
+export async function getConnectionStatus(
+  instance: string,
+): Promise<EvolutionResult<ConnectionStatus>> {
   const stateRes = await call<{
     instance: { instanceName: string; state: string };
-  }>(`/instance/connectionState/${cfg.instance}`);
+  }>(`/instance/connectionState/${instance}`);
   if (!stateRes.ok) return stateRes;
 
   // Tenta puxar info do owner (numero + nome). Endpoint variado por
@@ -109,7 +108,7 @@ export async function getConnectionStatus(): Promise<
       }>
     >(`/instance/fetchInstances`);
     if (fetchInst.ok && Array.isArray(fetchInst.data)) {
-      const found = fetchInst.data.find((i) => i.name === cfg.instance);
+      const found = fetchInst.data.find((i) => i.name === instance);
       if (found?.ownerJid) {
         ownerNumber = found.ownerJid.replace(/@.*$/, "");
       }
@@ -131,7 +130,7 @@ export async function getConnectionStatus(): Promise<
     ok: true,
     data: {
       state,
-      instanceName: cfg.instance,
+      instanceName: instance,
       ownerNumber,
       ownerName,
     },
@@ -143,16 +142,15 @@ export type QrCode = {
   pairingCode: string | null;
 };
 
-export async function getQrCode(): Promise<EvolutionResult<QrCode>> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
-
+export async function getQrCode(
+  instance: string,
+): Promise<EvolutionResult<QrCode>> {
   const res = await call<{
     base64?: string;
     code?: string;
     pairingCode?: string;
     qrcode?: { base64?: string; code?: string };
-  }>(`/instance/connect/${cfg.instance}`);
+  }>(`/instance/connect/${instance}`);
   if (!res.ok) return res;
 
   const data = res.data;
@@ -164,20 +162,20 @@ export async function getQrCode(): Promise<EvolutionResult<QrCode>> {
   };
 }
 
-export async function restartInstance(): Promise<EvolutionResult<true>> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
-  const res = await call<unknown>(`/instance/restart/${cfg.instance}`, {
+export async function restartInstance(
+  instance: string,
+): Promise<EvolutionResult<true>> {
+  const res = await call<unknown>(`/instance/restart/${instance}`, {
     method: "POST",
   });
   if (!res.ok) return res;
   return { ok: true, data: true };
 }
 
-export async function logoutInstance(): Promise<EvolutionResult<true>> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
-  const res = await call<unknown>(`/instance/logout/${cfg.instance}`, {
+export async function logoutInstance(
+  instance: string,
+): Promise<EvolutionResult<true>> {
+  const res = await call<unknown>(`/instance/logout/${instance}`, {
     method: "DELETE",
   });
   if (!res.ok) return res;
@@ -235,13 +233,11 @@ function parseTimestamp(v: unknown): Date | null {
 }
 
 export async function listChats(
+  instance: string,
   limit = 50,
 ): Promise<EvolutionResult<ChatRow[]>> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
-
   const res = await call<EvolutionChat[] | { records?: EvolutionChat[] }>(
-    `/chat/findChats/${cfg.instance}`,
+    `/chat/findChats/${instance}`,
     { method: "POST", body: JSON.stringify({}) },
   );
   if (!res.ok) return res;
@@ -309,15 +305,13 @@ type EvolutionMessage = {
 };
 
 export async function listMessages(
+  instance: string,
   remoteJid: string,
   limit = 50,
 ): Promise<EvolutionResult<MessageRow[]>> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
-
   const res = await call<
     EvolutionMessage[] | { records?: EvolutionMessage[]; messages?: { records?: EvolutionMessage[] } }
-  >(`/chat/findMessages/${cfg.instance}`, {
+  >(`/chat/findMessages/${instance}`, {
     method: "POST",
     body: JSON.stringify({
       where: { key: { remoteJid } },
@@ -376,10 +370,9 @@ export type NumberCheck = {
 };
 
 export async function checkWhatsAppNumber(
+  instance: string,
   phone: string,
 ): Promise<EvolutionResult<NumberCheck>> {
-  const cfg = getEvolutionConfig();
-  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
   const digits = phone.replace(/\D/g, "");
   if (!digits) {
     return {
@@ -391,7 +384,7 @@ export async function checkWhatsAppNumber(
 
   const res = await call<
     Array<{ exists?: boolean; jid?: string; number?: string }>
-  >(`/chat/whatsappNumbers/${cfg.instance}`, {
+  >(`/chat/whatsappNumbers/${instance}`, {
     method: "POST",
     body: JSON.stringify({ numbers: [digits] }),
   });

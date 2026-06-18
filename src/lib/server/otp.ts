@@ -36,10 +36,15 @@ function generateCode(): string {
  * Solicita envio de codigo via WhatsApp pra confirmar agendamento.
  * Aplica rate limit por telefone (3/10min) e por IP (10/h).
  * Salva codeHash bcrypt — codigo em claro so existe na mensagem.
+ *
+ * `instance` opcional (PBI-51): instância Evolution da org alvo. Quando
+ * omitido, usa fallback global (EVOLUTION_INSTANCE) — caso típico do
+ * signup, que roda antes da org existir.
  */
 export async function requestOtp(input: {
   phone: string;
   ip?: string;
+  instance?: string;
 }): Promise<OtpResult> {
   const now = new Date();
   const tenMinAgo = new Date(now.getTime() - 10 * 60_000);
@@ -89,6 +94,7 @@ export async function requestOtp(input: {
     await provider.send(
       input.phone,
       `Lustro: seu código de confirmação é ${code}. Válido por ${TTL_MINUTES} minutos.`,
+      input.instance,
     );
   } catch (err) {
     console.error("WhatsApp send failed:", err);

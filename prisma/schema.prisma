@@ -55,6 +55,10 @@ model Organization {
   loyaltyEnabled     Boolean @default(false)
   loyaltyGoal        Int     @default(10)
   loyaltyRewardLabel String? @default("Corte grátis")
+  // PBI-49: trial de 14d setado no signup. PBI-52 (Billing) usa pra liberar
+  // /admin/* enquanto trialEndsAt > now() OR subscriptionStatus=active.
+  // Null = sem trial (ex: org criada via seed/admin manual).
+  trialEndsAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 
 import { loginAction, type LoginActionResult } from "./actions";
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({
+  next,
+  defaultEmail,
+}: {
+  next?: string;
+  defaultEmail?: string;
+}) {
   const [state, formAction] = useActionState<LoginActionResult, FormData>(loginAction, undefined);
 
   return (
@@ -24,6 +30,8 @@ export function LoginForm({ next }: { next?: string }) {
           type="email"
           autoComplete="email"
           required
+          defaultValue={defaultEmail}
+          autoFocus={!defaultEmail}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>

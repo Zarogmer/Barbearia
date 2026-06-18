@@ -47,6 +47,16 @@ export default async function LoginPage({ searchParams }: Props) {
         Demo: <code className="rounded bg-muted px-1">admin@demo.com</code> /{" "}
         <code className="rounded bg-muted px-1">senha123</code>
       </p>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        <Link href="/termos" className="hover:underline">
+          Termos
+        </Link>{" "}
+        ·{" "}
+        <Link href="/privacidade" className="hover:underline">
+          Privacidade
+        </Link>
+      </p>
     </main>
   );
 }

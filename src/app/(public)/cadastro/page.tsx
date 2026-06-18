@@ -20,6 +20,16 @@ export default function SignupPage() {
           </Link>
         </p>
       </div>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        <Link href="/termos" className="hover:underline">
+          Termos
+        </Link>{" "}
+        ·{" "}
+        <Link href="/privacidade" className="hover:underline">
+          Privacidade
+        </Link>
+      </p>
     </main>
   );
 }

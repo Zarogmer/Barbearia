@@ -12,6 +12,7 @@ const baseState: OrgBillingState = {
   subscriptionStatus: null,
   stripeCustomerId: null,
   stripeSubscriptionId: null,
+  deletionScheduledFor: null,
 };
 
 beforeEach(() => {
@@ -68,6 +69,16 @@ describe("isOrgActive", () => {
 
   it("null state bloqueia", () => {
     expect(isOrgActive(null)).toBe(false);
+  });
+
+  it("PBI-54: deletionScheduledFor bloqueia (mesmo com sub active)", () => {
+    expect(
+      isOrgActive({
+        ...baseState,
+        subscriptionStatus: "active",
+        deletionScheduledFor: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      }),
+    ).toBe(false);
   });
 });
 

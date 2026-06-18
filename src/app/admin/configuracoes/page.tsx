@@ -7,8 +7,11 @@ import { ReminderTemplateEditor } from "@/components/features/admin/ReminderTemp
 import { ThemeSelector } from "@/components/features/admin/ThemeSelector";
 import { auth } from "@/lib/auth";
 import { getAppointmentColors } from "@/lib/server/appointment-colors";
+import { prismaAdmin } from "@/lib/db";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
 import { getThemeState } from "@/lib/server/theme";
+
+import { AccountSection } from "./AccountSection";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -31,10 +34,14 @@ export default async function SettingsPage() {
     );
   }
 
-  const [org, themeState, apptColors] = await Promise.all([
+  const [org, themeState, apptColors, userRow] = await Promise.all([
     getOrganizationForAdmin(ownerMembership.organizationId),
     getThemeState(ownerMembership.organizationId),
     getAppointmentColors(ownerMembership.organizationId),
+    prismaAdmin.user.findUnique({
+      where: { id: session.user.id },
+      select: { deletionScheduledFor: true },
+    }),
   ]);
 
   return (
@@ -115,6 +122,14 @@ export default async function SettingsPage() {
           </Link>
         </div>
       </div>
+
+      <AccountSection
+        userName={session.user.name ?? "—"}
+        userEmail={session.user.email ?? "—"}
+        deletionScheduledFor={
+          userRow?.deletionScheduledFor?.toISOString() ?? null
+        }
+      />
 
       <div className="text-center">
         <Link

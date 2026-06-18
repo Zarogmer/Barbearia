@@ -108,8 +108,25 @@ function RequestStep({
           className="mt-0.5 h-4 w-4 rounded border-input"
         />
         <span className="text-muted-foreground">
-          Aceito receber WhatsApp com código de confirmação e concordo com os
-          termos de uso.
+          Aceito receber WhatsApp com código de confirmação e concordo com os{" "}
+          <a
+            href="/termos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            termos de uso
+          </a>{" "}
+          e a{" "}
+          <a
+            href="/privacidade"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            política de privacidade
+          </a>
+          .
         </span>
       </label>
       {state.fieldErrors?.acceptedTerms && (

@@ -72,6 +72,10 @@ model Organization {
   stripeCustomerId      String?  @unique
   stripeSubscriptionId  String?  @unique
   subscriptionStatus    String?
+  // PBI-54: soft delete com grace de 30d. Quando setado, gate de billing
+  // bloqueia /admin/* (isOrgActive volta false) e dono ve mensagem com
+  // opção de cancelar a exclusão. Cron limpa após scheduledFor.
+  deletionScheduledFor DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -111,6 +115,13 @@ model User {
   // pra cálculos relativos). Ano pode ser placeholder (1900) se cliente
   // não quiser revelar idade.
   birthDate       DateTime? @db.Date
+  // PBI-54: timestamp do clique no checkbox "aceito termos" durante signup.
+  // Null em users antigos ou criados via seed.
+  acceptedTermsAt DateTime?
+  // PBI-54: soft delete com grace period de 30d. Quando setado, login
+  // permanece bloqueado mas data ainda pode ser restaurada. Cron limpa
+  // depois de scheduledFor.
+  deletionScheduledFor DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

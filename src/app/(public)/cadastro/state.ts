@@ -14,6 +14,16 @@ export type SignupState =
       error?: string;
       fieldErrors?: Record<string, string>;
       attemptsRemaining?: number;
+    }
+  | {
+      step: "org";
+      name: string;
+      email: string;
+      phone: string;
+      passwordHash: string;
+      error?: string;
+      fieldErrors?: Record<string, string>;
+      values?: { orgName?: string; slug?: string };
     };
 
 export const initialSignupState: SignupState = { step: "request" };

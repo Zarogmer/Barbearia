@@ -1,13 +1,23 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { AlertCircle, Check, Loader2, Phone, RotateCw } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  Check,
+  Loader2,
+  Phone,
+  RotateCw,
+  Store,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { slugifyOrgName } from "@/lib/validators/auth";
 
 import {
+  createOrgAction,
   requestSignupAction,
   resendSignupOtpAction,
   verifySignupAction,
@@ -18,18 +28,21 @@ const RESEND_COOLDOWN_SEC = 60;
 
 export function SignupForm() {
   const [state, dispatch] = useActionState<SignupState, FormData>(
-    (prev, fd) =>
-      prev.step === "verify"
-        ? verifySignupAction(prev, fd)
-        : requestSignupAction(prev, fd),
+    (prev, fd) => {
+      if (prev.step === "verify") return verifySignupAction(prev, fd);
+      if (prev.step === "org") return createOrgAction(prev, fd);
+      return requestSignupAction(prev, fd);
+    },
     initialSignupState,
   );
 
-  return state.step === "verify" ? (
-    <VerifyStep state={state} dispatch={dispatch} />
-  ) : (
-    <RequestStep state={state} dispatch={dispatch} />
-  );
+  if (state.step === "verify") {
+    return <VerifyStep state={state} dispatch={dispatch} />;
+  }
+  if (state.step === "org") {
+    return <OrgStep state={state} dispatch={dispatch} />;
+  }
+  return <RequestStep state={state} dispatch={dispatch} />;
 }
 
 // ─── Etapa 1: dados + telefone ──────────────────────────────────────
@@ -228,7 +241,124 @@ function VerifySubmit() {
       ) : (
         <>
           <Check className="mr-2 h-4 w-4" />
-          Confirmar e criar conta
+          Confirmar código
+        </>
+      )}
+    </Button>
+  );
+}
+
+// ─── Etapa 3: criar barbearia ───────────────────────────────────────
+
+function OrgStep({
+  state,
+  dispatch,
+}: {
+  state: Extract<SignupState, { step: "org" }>;
+  dispatch: (fd: FormData) => void;
+}) {
+  const [orgName, setOrgName] = useState(state.values?.orgName ?? "");
+  const [slugEdited, setSlugEdited] = useState(!!state.values?.slug);
+  const [slug, setSlug] = useState(state.values?.slug ?? "");
+
+  // Slug auto-gerado enquanto user não edita manualmente.
+  const autoSlug = useMemo(() => slugifyOrgName(orgName), [orgName]);
+  const finalSlug = slugEdited ? slug : autoSlug;
+
+  return (
+    <form action={dispatch} className="space-y-4">
+      <input type="hidden" name="name" value={state.name} />
+      <input type="hidden" name="email" value={state.email} />
+      <input type="hidden" name="phone" value={state.phone} />
+      <input type="hidden" name="passwordHash" value={state.passwordHash} />
+      <input type="hidden" name="slug" value={finalSlug} />
+
+      <div className="rounded-md border bg-muted/30 p-3 text-xs">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          Quase lá, {state.name.split(" ")[0]}
+        </div>
+        <div className="text-sm">
+          Falta nomear sua barbearia. Você pode mudar tudo depois.
+        </div>
+      </div>
+
+      {state.error && !state.fieldErrors && (
+        <ErrorAlert message={state.error} />
+      )}
+
+      <Field
+        id="orgName"
+        label="Nome da barbearia / salão"
+        defaultValue={orgName}
+        onChange={setOrgName}
+        autoComplete="organization"
+        required
+        minLength={2}
+        maxLength={60}
+        placeholder="Ex: Salão do José"
+        error={state.fieldErrors?.orgName}
+        hint="Como aparece pros seus clientes."
+      />
+
+      <div className="space-y-1">
+        <label htmlFor="slug-input" className="text-sm font-medium">
+          Endereço público
+        </label>
+        <div
+          className={cn(
+            "flex items-center rounded-md border bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring",
+            state.fieldErrors?.slug ? "border-destructive" : "border-input",
+          )}
+        >
+          <span className="select-none pl-3 font-mono text-xs text-muted-foreground">
+            lustro.app/
+          </span>
+          <input
+            id="slug-input"
+            value={finalSlug}
+            onChange={(e) => {
+              setSlugEdited(true);
+              setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+            }}
+            minLength={3}
+            maxLength={40}
+            placeholder={autoSlug || "salao-do-jose"}
+            className="w-full bg-transparent px-1 py-2 font-mono text-sm outline-none"
+          />
+        </div>
+        {state.fieldErrors?.slug ? (
+          <p className="text-xs text-destructive">{state.fieldErrors.slug}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            URL que você vai divulgar pros clientes agendarem.
+          </p>
+        )}
+      </div>
+
+      <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs">
+        🎁 Você ganhou <strong>14 dias grátis</strong> pra testar tudo.
+        Sem cartão, sem pegadinha.
+      </div>
+
+      <OrgSubmit />
+    </form>
+  );
+}
+
+function OrgSubmit() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Criando…
+        </>
+      ) : (
+        <>
+          <Store className="mr-2 h-4 w-4" />
+          Criar minha barbearia
+          <ArrowRight className="ml-2 h-4 w-4" />
         </>
       )}
     </Button>
@@ -261,6 +391,7 @@ function Field({
   maxLength,
   error,
   hint,
+  onChange,
 }: {
   id: string;
   label: string;
@@ -273,6 +404,7 @@ function Field({
   maxLength?: number;
   error?: string;
   hint?: string;
+  onChange?: (v: string) => void;
 }) {
   return (
     <div className="space-y-1">
@@ -290,6 +422,7 @@ function Field({
         minLength={minLength}
         maxLength={maxLength}
         aria-invalid={!!error}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         className={cn(
           "w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring",
           error ? "border-destructive" : "border-input",

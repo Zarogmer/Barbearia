@@ -7,11 +7,14 @@ import bcrypt from "bcryptjs";
 import { prismaAdmin } from "@/lib/db";
 import { requestOtp, verifyOtp } from "@/lib/server/otp";
 import {
+  createOrgSchema,
   requestSignupSchema,
   verifySignupSchema,
 } from "@/lib/validators/auth";
 
 import type { SignupState } from "./state";
+
+const TRIAL_DAYS = 14;
 
 function fieldErrorsFrom(
   issues: { path: (string | number)[]; message: string }[],
@@ -158,9 +161,57 @@ export async function verifySignupAction(
     };
   }
 
-  // Race-check: outro signup pode ter consumido email/telefone entre etapa 1
-  // e 2. Re-valida antes de inserir.
-  const [emailTaken, phoneTaken] = await Promise.all([
+  // OTP consumido pelo verifyOtp. Avança pra etapa 3: criar Organization.
+  // NÃO cria o User aqui — só depois que o dono escolher nome+slug da org,
+  // criamos tudo em transação única.
+  return {
+    step: "org",
+    name: data.name,
+    email: data.email,
+    phone: data.phone,
+    passwordHash: data.passwordHash,
+  };
+}
+
+/**
+ * Etapa 3 — recebe nome + slug da barbearia e cria User + Organization +
+ * Membership(OWNER) numa transação única. Trial de 14 dias começa aqui.
+ * Logo após, faz login automático e redireciona pro painel.
+ */
+export async function createOrgAction(
+  prev: SignupState,
+  formData: FormData,
+): Promise<SignupState> {
+  const prevOrg = prev.step === "org" ? prev : null;
+
+  const raw = {
+    name: prevOrg?.name ?? formData.get("name")?.toString() ?? "",
+    email: prevOrg?.email ?? formData.get("email")?.toString() ?? "",
+    phone: prevOrg?.phone ?? formData.get("phone")?.toString() ?? "",
+    passwordHash:
+      prevOrg?.passwordHash ?? formData.get("passwordHash")?.toString() ?? "",
+    orgName: formData.get("orgName")?.toString() ?? "",
+    slug: formData.get("slug")?.toString() ?? "",
+  };
+
+  const parsed = createOrgSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      step: "org",
+      name: raw.name,
+      email: raw.email,
+      phone: raw.phone,
+      passwordHash: raw.passwordHash,
+      error: "Confira os campos destacados.",
+      fieldErrors: fieldErrorsFrom(parsed.error.issues),
+      values: { orgName: raw.orgName, slug: raw.slug },
+    };
+  }
+  const data = parsed.data;
+
+  // Race-check: alguém pode ter pegado email/telefone/slug enquanto o dono
+  // ainda escolhia o nome da barbearia.
+  const [emailTaken, phoneTaken, slugTaken] = await Promise.all([
     prismaAdmin.user.findUnique({
       where: { email: data.email },
       select: { id: true },
@@ -169,32 +220,74 @@ export async function verifySignupAction(
       where: { phone: data.phone },
       select: { id: true },
     }),
+    prismaAdmin.organization.findUnique({
+      where: { slug: data.slug },
+      select: { id: true },
+    }),
   ]);
   if (emailTaken || phoneTaken) {
     return {
       step: "request",
       error: emailTaken
-        ? "Email já cadastrado durante a verificação."
-        : "Telefone já cadastrado durante a verificação.",
+        ? "Email já cadastrado. Tente entrar."
+        : "Telefone já cadastrado. Tente entrar.",
+    };
+  }
+  if (slugTaken) {
+    return {
+      step: "org",
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      passwordHash: data.passwordHash,
+      error: "Esse endereço já está em uso.",
+      fieldErrors: { slug: "Já existe uma barbearia com esse endereço" },
+      values: { orgName: data.orgName, slug: data.slug },
     };
   }
 
-  await prismaAdmin.user.create({
-    data: {
-      email: data.email,
-      name: data.name,
-      phone: data.phone,
-      passwordHash: data.passwordHash,
-    },
+  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
+  // Tudo numa tx única: User + Organization + Membership(OWNER). Se qualquer
+  // passo falhar, nada é persistido — dono pode tentar de novo sem deixar
+  // User órfão sem Org ou Org sem dono.
+  await prismaAdmin.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        phone: data.phone,
+        passwordHash: data.passwordHash,
+      },
+      select: { id: true },
+    });
+    const org = await tx.organization.create({
+      data: {
+        slug: data.slug,
+        name: data.orgName,
+        trialEndsAt,
+      },
+      select: { id: true },
+    });
+    await tx.membership.create({
+      data: {
+        userId: user.id,
+        organizationId: org.id,
+        role: "OWNER",
+      },
+    });
   });
 
-  redirect("/login?signup=ok");
+  // Não dá pra auto-login: credentials provider precisa do plaintext da
+  // senha, e a essa altura só temos o hash. Levamos pro /login com hint
+  // pra UX explicar "conta criada, faça login".
+  redirect(`/login?signup=ok&email=${encodeURIComponent(data.email)}`);
 }
 
 /**
  * Reenvio de OTP na etapa 2. Usa o telefone do state da verify — rate limit
  * do requestOtp protege contra abuso. Retorna void: cliente só usa pra
- * disparar novo SMS, feedback fica no badge de cooldown.
+ * disparar novo WhatsApp, feedback fica no badge de cooldown.
  */
 export async function resendSignupOtpAction(phone: string): Promise<void> {
   if (!phone || !phone.startsWith("+")) return;

@@ -144,6 +144,7 @@ async function sendBookingReminders(
           timezone: true,
           whatsapp: true,
           reminderTemplate: true,
+          evolutionInstance: true,
         },
       },
       service: { select: { name: true } },
@@ -179,7 +180,11 @@ async function sendBookingReminders(
     });
 
     try {
-      await whatsapp.send(a.customerPhone, body);
+      await whatsapp.send(
+        a.customerPhone,
+        body,
+        a.organization.evolutionInstance ?? undefined,
+      );
       await prismaAdmin.appointment.update({
         where: { id: a.id },
         data: { reminderSentAt: new Date() },

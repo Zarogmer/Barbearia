@@ -1,15 +1,17 @@
 import { redirect } from "next/navigation";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Smartphone } from "lucide-react";
 
 import { auth } from "@/lib/auth";
+import { prismaAdmin } from "@/lib/db";
 import { listMessageTemplates } from "@/lib/server/messages";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
 import {
   getConnectionStatus,
-  getEvolutionConfig,
+  getEvolutionBaseConfig,
   listChats,
 } from "@/lib/server/whatsapp-api";
 
+import { CreateInstancePanel } from "./CreateInstancePanel";
 import { WhatsAppDashboard } from "./WhatsAppDashboard";
 
 export default async function WhatsAppPage({
@@ -34,7 +36,7 @@ export default async function WhatsAppPage({
   const sp = await searchParams;
   const activeTab = sp.tab ?? "conexao";
 
-  const cfg = getEvolutionConfig();
+  const cfg = getEvolutionBaseConfig();
   if (!cfg) {
     return (
       <div className="mx-auto max-w-3xl space-y-6 p-4 lg:p-8">
@@ -50,34 +52,59 @@ export default async function WhatsAppPage({
             Evolution API não configurada
           </div>
           <p className="text-subtle">
-            Defina <span className="mono">EVOLUTION_API_URL</span>,{" "}
-            <span className="mono">EVOLUTION_API_KEY</span> e{" "}
-            <span className="mono">EVOLUTION_INSTANCE</span> no .env (dev)
-            ou Railway (prod). Setup detalhado em{" "}
+            Defina <span className="mono">EVOLUTION_API_URL</span> e{" "}
+            <span className="mono">EVOLUTION_API_KEY</span> no .env (dev) ou
+            Railway (prod). Setup detalhado em{" "}
             <span className="mono">.env.example</span>.
-          </p>
-          <p className="mt-2 text-subtle">
-            Enquanto não configurar, OTP de agendamento e lembretes 24h
-            continuam saindo via <strong>FakeWhatsAppProvider</strong> (loga
-            no console em dev, crasha em prod).
           </p>
         </div>
       </div>
     );
   }
 
+  // PBI-51: instância vem da org logada, não mais de env var global.
+  const orgWithInstance = await prismaAdmin.organization.findUnique({
+    where: { id: owner.organizationId },
+    select: { slug: true, evolutionInstance: true },
+  });
+  const instance = orgWithInstance?.evolutionInstance ?? null;
+
+  // Org ainda não tem instância? Mostra painel de criar/conectar.
+  if (!instance) {
+    const org = await getOrganizationForAdmin(owner.organizationId);
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 p-4 lg:p-8">
+        <header>
+          <div className="eyebrow mb-3">CRM</div>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">
+            WhatsApp
+          </h1>
+          <p className="text-sm text-subtle">
+            <Smartphone className="mr-1 inline h-3 w-3" />
+            Conecte o WhatsApp da {org.name}
+          </p>
+        </header>
+        <CreateInstancePanel orgSlug={orgWithInstance?.slug ?? ""} />
+      </div>
+    );
+  }
+
   // Carrega status + chats em paralelo. Lista vazia se desconectado.
   const [statusRes, chatsRes, templates, org] = await Promise.all([
-    getConnectionStatus(),
-    listChats(60),
+    getConnectionStatus(instance),
+    listChats(instance, 60),
     listMessageTemplates(owner.organizationId, { onlyActive: true }),
     getOrganizationForAdmin(owner.organizationId),
   ]);
 
-  const initialStatus =
-    statusRes.ok
-      ? statusRes.data
-      : { state: "unknown" as const, instanceName: cfg.instance, ownerNumber: null, ownerName: null };
+  const initialStatus = statusRes.ok
+    ? statusRes.data
+    : {
+        state: "unknown" as const,
+        instanceName: instance,
+        ownerNumber: null,
+        ownerName: null,
+      };
 
   const chats = chatsRes.ok ? chatsRes.data : [];
 

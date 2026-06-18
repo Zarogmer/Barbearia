@@ -17,6 +17,21 @@ export type PublicOrg = {
 };
 
 /**
+ * PBI-51: lookup direto da instância WhatsApp da org. Usado pra rotear
+ * envios (OTP de booking etc.) pra instância correta sem carregar a
+ * org inteira.
+ */
+export async function getOrgEvolutionInstanceBySlug(
+  slug: string,
+): Promise<string | null> {
+  const org = await prismaAdmin.organization.findUnique({
+    where: { slug },
+    select: { evolutionInstance: true },
+  });
+  return org?.evolutionInstance ?? null;
+}
+
+/**
  * Resolve um slug público em Organization. Usa `prismaAdmin` (bypass RLS)
  * porque o lookup acontece ANTES do contexto tenant existir — é
  * exatamente o caso documentado em src/lib/db.ts.

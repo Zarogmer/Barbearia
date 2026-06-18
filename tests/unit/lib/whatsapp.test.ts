@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 describe("EvolutionWhatsAppProvider", () => {
-  it("monta endpoint, headers e body corretos", async () => {
+  it("usa fallback EVOLUTION_INSTANCE quando instance nao e passada", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
@@ -116,6 +116,29 @@ describe("getWhatsAppProvider factory", () => {
 
     expect(() => getWhatsAppProvider()).toThrow(
       /WhatsApp provider nao configurado em producao/,
+    );
+  });
+
+  // PBI-51: multi-tenant
+  it("usa instance passada por chamada (sobrescreve fallback)", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+
+    const provider = getWhatsAppProvider();
+    await provider.send("+5511999998888", "msg pra org X", "lustro-org-x");
+
+    const [url] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("https://evo.example.com/message/sendText/lustro-org-x");
+  });
+
+  it("falha com mensagem clara quando nao ha instance nem fallback", async () => {
+    vi.stubEnv("EVOLUTION_INSTANCE", "");
+    __setWhatsAppProviderForTest(null);
+
+    const provider = getWhatsAppProvider();
+    await expect(provider.send("+5511999998888", "msg")).rejects.toThrow(
+      /Nenhuma instância WhatsApp configurada/,
     );
   });
 });

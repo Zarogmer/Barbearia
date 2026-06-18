@@ -64,6 +64,14 @@ model Organization {
   // lembrete 24h, mensagens diretas) usam essa instância. Fallback global
   // EVOLUTION_INSTANCE só pra signups (orgs ainda não criadas).
   evolutionInstance String?  @unique
+  // PBI-52: Stripe billing. Customer e Subscription são criados no primeiro
+  // checkout. subscriptionStatus reflete o último estado conhecido vindo
+  // do webhook — "trialing" | "active" | "past_due" | "canceled" | "incomplete".
+  // Null = ainda não passou pelo checkout (mas pode estar em trial via
+  // trialEndsAt > now).
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?  @unique
+  subscriptionStatus    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

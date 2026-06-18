@@ -6,6 +6,7 @@ import {
   BarChart3,
   Cake,
   Calendar,
+  CreditCard,
   Image as ImageIcon,
   LayoutDashboard,
   MessageSquare,
@@ -31,6 +32,7 @@ const NAV = [
   { href: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/admin/feed", label: "Feed", icon: ImageIcon },
   { href: "/admin/whatsapp", label: "WhatsApp", icon: MessageSquare },
+  { href: "/admin/billing", label: "Assinatura", icon: CreditCard },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 

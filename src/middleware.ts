@@ -47,6 +47,12 @@ export default function middleware(req: NextRequest) {
     }
   }
 
+  // Adiciona pathname como header pra layouts terem acesso. Sem isso, o
+  // layout admin não sabe se a rota atual é /admin/billing (bypass do
+  // billing guard) ou /admin/agenda (precisa de billing ativo).
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+
   // ──── 2) SLUG HEADER pra rotas públicas /[slug]/* ────
   const firstSegment = pathname.split("/")[1] ?? "";
   const looksLikeSlug =
@@ -54,14 +60,10 @@ export default function middleware(req: NextRequest) {
     !RESERVED_TOP_SEGMENTS.has(firstSegment) &&
     !firstSegment.includes(".");
   if (looksLikeSlug) {
-    // Reescreve a request adicionando o header — server components leem
-    // via headers() do next/headers.
-    const requestHeaders = new Headers(req.headers);
     requestHeaders.set("x-org-slug", firstSegment);
-    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {

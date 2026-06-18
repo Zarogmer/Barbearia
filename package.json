@@ -53,6 +53,7 @@
     "react": "19.0.0",
     "react-day-picker": "^10.0.1",
     "react-dom": "19.0.0",
+    "stripe": "^22.2.1",
     "tailwind-merge": "^2.5.5",
     "zod": "^3.24.1"
   },

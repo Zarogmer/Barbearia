@@ -87,6 +87,34 @@ export const createOrgSchema = z.object({
 export type CreateOrgInput = z.infer<typeof createOrgSchema>;
 
 /**
+ * PBI-50: pedido inicial de reset — só email. Sucesso retorna 200
+ * sempre (não revela se email existe), então schema é mínimo.
+ */
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Email inválido").max(254),
+});
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+/**
+ * PBI-50: troca da senha com token vindo do email. Token formato
+ * `<uuid>.<random>` validado em verifyAndResetPassword.
+ */
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(20, "Link inválido"),
+    password: z
+      .string()
+      .min(8, "Senha precisa ter pelo menos 8 caracteres")
+      .max(72),
+    confirmPassword: z.string().min(8).max(72),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "As senhas não conferem",
+  });
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+/**
  * Gera slug determinístico a partir de um nome humano.
  * "Salão do José" → "salao-do-jose"
  * Não garante unicidade — checagem é no banco.

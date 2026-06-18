@@ -101,11 +101,12 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  memberships  Membership[]
-  appointments Appointment[]
-  accounts     Account[]
-  sessions     Session[]
-  customerOrgs CustomerOrg[]
+  memberships         Membership[]
+  appointments        Appointment[]
+  accounts            Account[]
+  sessions            Session[]
+  customerOrgs        CustomerOrg[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -744,6 +745,28 @@ model OtpToken {
   @@index([phone, createdAt])
   @@index([expiresAt])
   @@map("otp_tokens")
+}
+
+// PBI-50: reset de senha via link com token. TTL 1h, single-use.
+// Token plaintext só existe no email — DB guarda bcrypt(token).
+// userId pode ser null se request veio pra email que NAO existe:
+// salvamos o row mesmo assim pra rate-limit por email (anti-enumeration).
+model PasswordResetToken {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String?   @db.Uuid
+  tokenHash  String    @unique // bcrypt do token random opaque
+  email      String    // pra rate limit mesmo se user nao existir
+  ip         String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, createdAt])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 // ─── NextAuth adapter ─────────────────────────────────────

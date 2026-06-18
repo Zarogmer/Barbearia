@@ -33,6 +33,8 @@ export async function GET() {
     {
       ok,
       version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "dev",
+      release: process.env.SENTRY_RELEASE ?? null,
+      env: process.env.NODE_ENV,
       uptime: process.uptime(),
       db: {
         ok: dbOk,

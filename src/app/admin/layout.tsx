@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { LogOut, Scissors } from "lucide-react";
 
@@ -7,12 +8,35 @@ import { AdminMobileTopBar } from "@/components/features/admin/AdminMobileTopBar
 import { AdminNav } from "@/components/features/admin/AdminNav";
 import { PageTransition } from "@/components/ui/page-transition";
 import { auth } from "@/lib/auth";
+import {
+  getOrgBillingState,
+  isOrgActive,
+} from "@/lib/server/billing";
 import { maybeRunDailyJob } from "@/lib/server/notifications";
+
+// Rotas /admin/* que ficam acessíveis MESMO com billing inativo. Sem isso
+// a página de billing fica inalcançável quando o trial expira.
+const BILLING_BYPASS_PATHS = ["/admin/billing", "/admin/configuracoes"];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) {
     redirect("/login?next=/admin/dashboard");
+  }
+
+  // PBI-52: bloqueio de billing. Só pra OWNER que tem org. Outros roles
+  // (STAFF) seguem normal — o dono que assina, não eles.
+  const owner = session.user.memberships.find((m) => m.role === "OWNER");
+  if (owner) {
+    const h = await headers();
+    const path = h.get("x-pathname") ?? "";
+    const bypass = BILLING_BYPASS_PATHS.some((p) => path.startsWith(p));
+    if (!bypass) {
+      const state = await getOrgBillingState(owner.organizationId);
+      if (!isOrgActive(state)) {
+        redirect("/admin/billing?reason=inactive");
+      }
+    }
   }
 
   // Self-trigger fire-and-forget: cada admin que abre o painel dispara

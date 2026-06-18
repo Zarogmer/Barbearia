@@ -258,6 +258,10 @@ export async function createOrgAction(
         name: data.name,
         phone: data.phone,
         passwordHash: data.passwordHash,
+        // PBI-54: aceite dos termos foi exigido na etapa 1 do signup
+        // (validador requestSignupSchema). Persistimos o timestamp na hora
+        // da criação efetiva da conta.
+        acceptedTermsAt: new Date(),
       },
       select: { id: true },
     });

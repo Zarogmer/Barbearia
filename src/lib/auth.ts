@@ -39,9 +39,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // User é tabela global (sem RLS, mas a query precede o contexto tenant).
         const user = await prismaAdmin.user.findUnique({
           where: { email: email.toLowerCase() },
-          select: { id: true, email: true, name: true, passwordHash: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            passwordHash: true,
+            deletionScheduledFor: true,
+          },
         });
         if (!user?.passwordHash) return null;
+        // PBI-54: conta marcada pra exclusão fica bloqueada no login.
+        // Cancelamento da exclusão é feito por link no email enviado na
+        // hora do schedule (TODO PBI futuro implementar esse email).
+        if (user.deletionScheduledFor) return null;
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;

@@ -14,6 +14,9 @@ export type OrgBillingState = {
   subscriptionStatus: string | null;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
+  // PBI-54: se setado, dono pediu exclusão da conta — bloqueia /admin/*
+  // mesmo com billing ativo.
+  deletionScheduledFor: Date | null;
 };
 
 export async function getOrgBillingState(
@@ -27,6 +30,7 @@ export async function getOrgBillingState(
       subscriptionStatus: true,
       stripeCustomerId: true,
       stripeSubscriptionId: true,
+      deletionScheduledFor: true,
     },
   });
   if (!row) return null;
@@ -36,6 +40,7 @@ export async function getOrgBillingState(
     subscriptionStatus: row.subscriptionStatus,
     stripeCustomerId: row.stripeCustomerId,
     stripeSubscriptionId: row.stripeSubscriptionId,
+    deletionScheduledFor: row.deletionScheduledFor,
   };
 }
 
@@ -51,6 +56,9 @@ export async function getOrgBillingState(
  */
 export function isOrgActive(state: OrgBillingState | null): boolean {
   if (!state) return false;
+  // PBI-54: conta marcada pra delete bloqueia tudo (mesmo com Stripe off
+  // em dev). Dono cancela a exclusão pra reativar.
+  if (state.deletionScheduledFor) return false;
   if (!isStripeConfigured()) return true;
 
   if (state.subscriptionStatus === "active") return true;

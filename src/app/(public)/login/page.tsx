@@ -3,11 +3,16 @@ import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 
 type Props = {
-  searchParams: Promise<{ next?: string; signup?: string; email?: string }>;
+  searchParams: Promise<{
+    next?: string;
+    signup?: string;
+    email?: string;
+    reset?: string;
+  }>;
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next, signup, email } = await searchParams;
+  const { next, signup, email, reset } = await searchParams;
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-12">
@@ -20,6 +25,11 @@ export default async function LoginPage({ searchParams }: Props) {
         {signup === "ok" ? (
           <p className="mb-4 rounded-md border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700">
             🎉 Barbearia criada! Entre com seu email e senha pra começar.
+          </p>
+        ) : null}
+        {reset === "ok" ? (
+          <p className="mb-4 rounded-md border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700">
+            ✅ Senha redefinida. Faça login com a nova senha.
           </p>
         ) : null}
 

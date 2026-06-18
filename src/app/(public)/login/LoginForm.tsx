@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
@@ -37,9 +38,17 @@ export function LoginForm({
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium">
-          Senha
-        </label>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="password" className="text-sm font-medium">
+            Senha
+          </label>
+          <Link
+            href="/esqueci-senha"
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Esqueci a senha
+          </Link>
+        </div>
         <input
           id="password"
           name="password"

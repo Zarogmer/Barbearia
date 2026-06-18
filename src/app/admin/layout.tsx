@@ -13,6 +13,8 @@ import {
   isOrgActive,
 } from "@/lib/server/billing";
 import { maybeRunDailyJob } from "@/lib/server/notifications";
+import { prismaAdmin } from "@/lib/db";
+import { setSentryUserContext } from "@/lib/server/sentry";
 
 // Rotas /admin/* que ficam acessíveis MESMO com billing inativo. Sem isso
 // a página de billing fica inalcançável quando o trial expira.
@@ -27,6 +29,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // PBI-52: bloqueio de billing. Só pra OWNER que tem org. Outros roles
   // (STAFF) seguem normal — o dono que assina, não eles.
   const owner = session.user.memberships.find((m) => m.role === "OWNER");
+
+  // PBI-53: tagga Sentry com user + org pra todo erro capturado no resto
+  // do handler ser filtrável por tenant no dashboard.
+  if (session.user.id) {
+    const orgId = owner?.organizationId;
+    let orgSlug: string | undefined;
+    if (orgId) {
+      const org = await prismaAdmin.organization.findUnique({
+        where: { id: orgId },
+        select: { slug: true },
+      });
+      orgSlug = org?.slug;
+    }
+    setSentryUserContext({
+      userId: session.user.id,
+      email: session.user.email ?? undefined,
+      orgId,
+      orgSlug,
+    });
+  }
+
   if (owner) {
     const h = await headers();
     const path = h.get("x-pathname") ?? "";

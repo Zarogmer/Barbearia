@@ -14,14 +14,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { MESSAGE_PLACEHOLDERS } from "@/lib/server/messages";
+import { MESSAGE_PLACEHOLDERS } from "@/lib/messages-shared";
 import { cn } from "@/lib/utils";
 
 import { saveMessageTemplateAction } from "./actions";
-import {
-  initialMessageTemplateState,
-  type MessageTemplateState,
-} from "./state";
+import { initialMessageTemplateState, type MessageTemplateState } from "./state";
 
 type Props = {
   mode: "create" | "edit";
@@ -84,9 +81,7 @@ export function TemplateFormDialog({ mode, defaults }: Props) {
 
         <form action={dispatch} className="flex min-h-0 flex-1 flex-col">
           <div className="flex-1 space-y-3.5 overflow-y-auto px-6 py-4">
-            {defaults?.id && (
-              <input type="hidden" name="id" value={defaults.id} />
-            )}
+            {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
 
             {state.error && !state.fieldErrors && (
               <div
@@ -110,7 +105,7 @@ export function TemplateFormDialog({ mode, defaults }: Props) {
             <div>
               <label
                 htmlFor="body"
-                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
               >
                 Mensagem *
               </label>
@@ -132,14 +127,12 @@ export function TemplateFormDialog({ mode, defaults }: Props) {
                 )}
               />
               {state.fieldErrors?.body && (
-                <p className="mt-1 text-[11px] text-danger">
-                  {state.fieldErrors.body}
-                </p>
+                <p className="mt-1 text-[11px] text-danger">{state.fieldErrors.body}</p>
               )}
             </div>
 
             <div>
-              <div className="mb-1.5 mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+              <div className="mono mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
                 Inserir placeholder
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -148,7 +141,7 @@ export function TemplateFormDialog({ mode, defaults }: Props) {
                     key={p}
                     type="button"
                     onClick={() => insertPlaceholder(p)}
-                    className="tap rounded-md bg-surface-2 px-2.5 py-1 mono text-[11px] text-ink transition-colors hover:bg-brand-soft hover:text-brand"
+                    className="tap mono rounded-md bg-surface-2 px-2.5 py-1 text-[11px] text-ink transition-colors hover:bg-brand-soft hover:text-brand"
                   >
                     {"{" + p + "}"}
                   </button>
@@ -163,16 +156,8 @@ export function TemplateFormDialog({ mode, defaults }: Props) {
                   Templates inativos não aparecem no seletor de envio.
                 </div>
               </label>
-              <Switch
-                id="active"
-                checked={active}
-                onCheckedChange={setActive}
-              />
-              <input
-                type="hidden"
-                name="active"
-                value={active ? "true" : "false"}
-              />
+              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <input type="hidden" name="active" value={active ? "true" : "false"} />
             </div>
           </div>
 
@@ -203,11 +188,7 @@ function SubmitButton() {
         pending ? "cursor-wait opacity-75" : "hover:-translate-y-px hover:shadow-lg",
       )}
     >
-      {pending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Save className="h-4 w-4" />
-      )}
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
       Salvar
     </button>
   );
@@ -232,7 +213,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+        className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
       >
         {label}
       </label>
@@ -245,9 +226,7 @@ function Field({
         aria-invalid={!!error}
         className={cn(
           "h-11 w-full rounded-lg border bg-surface px-3.5 text-sm outline-none transition-all",
-          error
-            ? "border-danger"
-            : "border-line focus:border-brand focus:shadow-glow",
+          error ? "border-danger" : "border-line focus:border-brand focus:shadow-glow",
         )}
       />
       {error && <p className="mt-1 text-[11px] text-danger">{error}</p>}

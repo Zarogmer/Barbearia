@@ -161,7 +161,19 @@ export function BookingPickerMobile({
 
     const qs = buildQuery(merged);
     startTransition(() => router.replace(`${basePath}?${qs}`));
-    setOpenSheet(null);
+
+    // PBI-64: escolher data no calendario NAO fecha o Dialog — os horarios
+    // aparecem embaixo (mesmo Dialog "time" ja tem calendario + horarios).
+    // Antes fechava e o cliente precisava clicar de novo no card pra ver os
+    // horarios. Fluxo continua aberto ate ele escolher HORA — ai sim fecha.
+    const onlyChangedDate =
+      next.date !== undefined &&
+      next.time === undefined &&
+      next.serviceId === undefined &&
+      next.professionalId === undefined;
+    if (!onlyChangedDate) {
+      setOpenSheet(null);
+    }
   }
 
   function goConfirm() {

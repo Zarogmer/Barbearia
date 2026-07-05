@@ -28,7 +28,8 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset --skip-seed",
-    "db:setup-roles": "tsx prisma/setup-app-user.ts"
+    "db:setup-roles": "tsx prisma/setup-app-user.ts",
+    "superadmin:grant": "tsx scripts/superadmin-grant.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

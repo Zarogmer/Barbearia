@@ -542,6 +542,71 @@ Manifest PWA, ícones, meta tags para compartilhamento, favicon, loading states,
 
 ---
 
+## D8 — Operação (pós-MVP)
+
+### PBI-55 — Painel super-admin (`/superadmin/*`)
+
+**Tags:** `[frontend]` `[backend]` `[seguranca]` `[infra]`
+**Estimativa:** 16h (login-as fica pra v2 — PBI-56)
+**Depende de:** PBI-49 (signup+trial), PBI-52 (billing Stripe), PBI-54 (LGPD)
+
+**Contexto:**
+Precisamos ver e operar todas as barbearias/salões do SaaS: quem tá em trial, quem pagou, quem sumiu, quem pediu exclusão. Inspiração: painel do cardapiocode.app/admin/lojas. Sem isso, suporte e billing viram trabalho manual via psql.
+
+Painel roda em `/superadmin/*` — **totalmente separado** de `/admin/*` (que é o dono da barbearia). Usa `prismaAdmin` (bypass RLS via `DIRECT_URL`) já existente em `src/lib/db.ts`. Login-as (impersonate) fica para **PBI-56 — v2**.
+
+**AC (critérios de aceite):**
+
+- [ ] Migration adiciona `User.isSuperAdmin Boolean @default(false)` + `Organization.suspendedAt DateTime?` + tabela `AdminAuditLog`.
+- [ ] `Session.user.isSuperAdmin` disponível em Server Components (callback `session()` popula).
+- [ ] Script `pnpm superadmin:grant <email>` promove user existente. Não há UI pra criar super-admin (defesa contra escalação).
+- [ ] Middleware bloqueia `/superadmin/*` sem cookie de sessão → redirect `/login?next=...`.
+- [ ] Layout `/superadmin/layout.tsx` checa `session.user.isSuperAdmin` no server → 404 se falso (não 403, pra não vazar existência).
+- [ ] `/superadmin/lojas` lista todas as `Organization` com métricas agregadas: nome+slug+email owner, cidade (address), serviços count, agendamentos (hoje + 30d), clientes (CustomerOrg count), faturamento mês (soma comandas CLOSED), plano (trial/active/past_due/canceled/none), status (Ativa/Suspensa/Deletando).
+- [ ] Busca (nome/slug/email) + filtros (Todas/Ativas/Suspensas/Trialing/Canceladas/Deletando).
+- [ ] Ações por linha: ver detalhes (drawer), editar (nome/slug/plano manual), suspender/reativar, agendar exclusão.
+- [ ] `/superadmin/dashboard` — cards MRR, ARR, novas orgs 30d, churn 30d, total agendamentos hoje.
+- [ ] `/superadmin/faturamento` — lista Subscriptions com status Stripe + próximas cobranças + inadimplentes.
+- [ ] `/superadmin/auditoria` — timeline do `AdminAuditLog` (quem, quando, o quê, targetOrgId, diff).
+- [ ] **Toda ação** de super-admin escreve em `AdminAuditLog` (suspender, reativar, editar plano, exportar).
+- [ ] Testes de integração: (a) user não-super vê 404 em `/superadmin/*`; (b) super consegue listar orgs; (c) suspender orgA não afeta orgB.
+
+**Arquivos:**
+
+- `prisma/schema.prisma` (add `isSuperAdmin`, `suspendedAt`, model `AdminAuditLog`)
+- `prisma/migrations/<data>_superadmin_and_audit/migration.sql`
+- `src/types/auth.d.ts` (add `isSuperAdmin` ao Session)
+- `src/lib/auth.ts` (callback `session()` popula `isSuperAdmin`)
+- `src/middleware.ts` (proteger `/superadmin/*`)
+- `src/lib/server/superadmin/audit.ts` (helper `logAdminAction`)
+- `src/lib/server/superadmin/orgs.ts` (queries cross-tenant com métricas)
+- `src/lib/server/superadmin/billing.ts` (agrega Subscriptions)
+- `src/app/superadmin/layout.tsx`
+- `src/app/superadmin/lojas/page.tsx`
+- `src/app/superadmin/lojas/actions.ts`
+- `src/app/superadmin/dashboard/page.tsx`
+- `src/app/superadmin/faturamento/page.tsx`
+- `src/app/superadmin/auditoria/page.tsx`
+- `src/components/features/superadmin/SuperAdminNav.tsx`
+- `src/components/features/superadmin/OrgsTable.tsx`
+- `scripts/superadmin-grant.ts`
+- `tests/integration/superadmin.test.ts`
+
+**Para agentes Claude:**
+
+1. **Nunca importar `db-superadmin` ou `prismaAdmin` em rotas `/admin/*` (tenant).** É brecha de RLS. Só rotas `/superadmin/*` e helpers em `src/lib/server/superadmin/*` podem tocar `prismaAdmin`.
+2. Loop de audit: pense em `logAdminAction()` como não-opcional — se você adicionar action nova, obrigatoriamente chama antes ou depois. Sem log = PR reprovado.
+3. **404 em vez de 403** ao gatear rota — não vazar existência do painel pra user comum.
+4. Métricas agregadas: use `groupBy` do Prisma quando puder. Se ficar N+1 em orgs count, faz `raw` com aggregate.
+5. Reusar componentes de UI de `src/components/ui/*` (mesmo tokens `bg-surface`, `border-line`, `text-subtle` do admin layout).
+
+**Notas para v2 (não pegar aqui):**
+
+- **PBI-56 (login-as)**: impersonate. Precisa cookie separado (`superadmin.impersonate`), banner amarelo persistente em toda tela `/admin/*`, auditoria pesada.
+- **PBI-57 (planos múltiplos)**: hoje Stripe só tem 1 price (R$49). Painel mostra badge "PLUS" como placeholder até criarmos Basic/Pro/Enterprise.
+
+---
+
 ## Backlog futuro (NÃO MVP — não pegar nesta semana)
 
 - Lembrete por WhatsApp (Cloud API)

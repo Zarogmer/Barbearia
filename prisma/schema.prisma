@@ -76,10 +76,15 @@ model Organization {
   // bloqueia /admin/* (isOrgActive volta false) e dono ve mensagem com
   // opção de cancelar a exclusão. Cron limpa após scheduledFor.
   deletionScheduledFor DateTime?
+  // PBI-55: suspensão manual pelo super-admin (cliente inadimplente, abuso,
+  // etc). Quando setado, isOrgActive() volta false — mesmo com trial/sub
+  // ativos. Reativação só via /superadmin/lojas.
+  suspendedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   memberships        Membership[]
+  adminAuditEntries  AdminAuditLog[]
   services           Service[]
   professionals      Professional[]
   appointments       Appointment[]
@@ -122,6 +127,10 @@ model User {
   // permanece bloqueado mas data ainda pode ser restaurada. Cron limpa
   // depois de scheduledFor.
   deletionScheduledFor DateTime?
+  // PBI-55: acesso ao painel /superadmin/*. Promovido via script
+  // `pnpm superadmin:grant <email>`. NAO ha UI pra criar — defesa contra
+  // escalação por bug de rota. Nao herdado por Google OAuth novo.
+  isSuperAdmin    Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -131,6 +140,7 @@ model User {
   sessions            Session[]
   customerOrgs        CustomerOrg[]
   passwordResetTokens PasswordResetToken[]
+  adminAuditEntries   AdminAuditLog[]
 
   @@map("users")
 }
@@ -833,4 +843,29 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// ─── Super-admin (PBI-55) ─────────────────────────────────
+//
+// Log de TODA ação executada em /superadmin/*. Nunca é editada — só INSERT.
+// `action` é slug estável tipo "org.suspend", "org.reactivate", "org.plan.override".
+// `diff` guarda { before: {...}, after: {...} } pra reconstituir mudanças.
+// Consultada só via prismaAdmin (bypass RLS). App_user tem REVOKE via migration.
+model AdminAuditLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorUserId String   @db.Uuid
+  action      String
+  targetOrgId String?  @db.Uuid
+  diff        Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  actor      User          @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  targetOrg  Organization? @relation(fields: [targetOrgId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([targetOrgId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("admin_audit_log")
 }

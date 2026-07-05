@@ -9,6 +9,7 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       memberships: SessionMembership[];
+      isSuperAdmin: boolean;
     };
   }
 }
@@ -17,6 +18,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     sub: string;
     memberships: SessionMembership[];
+    isSuperAdmin: boolean;
   }
 }
 

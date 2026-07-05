@@ -30,9 +30,7 @@ export type GetAvailableSlotsArgs = {
  * Em `force: true`, antecedência mínima vai a zero (RN-11 — encaixe admin).
  * RN-04 anti-conflito segue ativo mesmo com force.
  */
-export async function getAvailableSlots(
-  args: GetAvailableSlotsArgs,
-): Promise<AvailableSlot[]> {
+export async function getAvailableSlots(args: GetAvailableSlotsArgs): Promise<AvailableSlot[]> {
   const { organizationId, professionalId, serviceId, date, now, force } = args;
 
   return withTenant(organizationId, async (db) => {
@@ -84,6 +82,40 @@ export async function getAvailableSlots(
       now,
     });
   });
+}
+
+// ──────────────────────────────────────────────────────────────
+// findNextAvailableDate — PBI-64: sugerir proximo dia com slots
+// quando o dia atual esta vazio. Usado pela UI 'Ver próximo dia
+// disponível' no fluxo cliente.
+// ──────────────────────────────────────────────────────────────
+
+export async function findNextAvailableDate(args: {
+  organizationId: string;
+  professionalId: string;
+  serviceId: string;
+  /** Data base (YYYY-MM-DD). Busca a partir do DIA SEGUINTE. */
+  afterDate: string;
+  /** Ate quantos dias procurar. Default 30. Cap max 90. */
+  maxDaysAhead?: number;
+  now?: Date;
+}): Promise<string | null> {
+  const max = Math.min(args.maxDaysAhead ?? 30, 90);
+  const start = new Date(`${args.afterDate}T00:00:00Z`);
+
+  for (let i = 1; i <= max; i++) {
+    const d = new Date(start.getTime() + i * 86_400_000);
+    const iso = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+    const slots = await getAvailableSlots({
+      organizationId: args.organizationId,
+      professionalId: args.professionalId,
+      serviceId: args.serviceId,
+      date: iso,
+      now: args.now,
+    });
+    if (slots.length > 0) return iso;
+  }
+  return null;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -148,10 +180,7 @@ export async function createBooking(args: CreateBookingArgs): Promise<CreateBook
   });
   const chosen = slots.find((s) => formatHHMMIn(s.startUtc, orgTz) === time);
   if (!chosen) {
-    throw new BookingError(
-      "Esse horário acabou de ser pego. Escolha outro.",
-      "SLOT_UNAVAILABLE",
-    );
+    throw new BookingError("Esse horário acabou de ser pego. Escolha outro.", "SLOT_UNAVAILABLE");
   }
 
   return withTenant(organizationId, async (db) => {
@@ -272,10 +301,7 @@ export async function cancelAppointment(args: CancelArgs): Promise<void> {
       select: { startsAt: true, status: true },
     });
     if (appt.status !== "CONFIRMED") {
-      throw new BookingError(
-        `Agendamento já está ${appt.status.toLowerCase()}.`,
-        "VALIDATION",
-      );
+      throw new BookingError(`Agendamento já está ${appt.status.toLowerCase()}.`, "VALIDATION");
     }
     if (cancelRequiresReason(appt.startsAt, now) && !reason) {
       throw new BookingError(
@@ -349,10 +375,7 @@ export async function markPaidAndCompleted(args: PayAndCompleteArgs): Promise<vo
     });
     if (appt.status === "COMPLETED") return;
     if (appt.status !== "CONFIRMED") {
-      throw new BookingError(
-        `Agendamento já está ${appt.status.toLowerCase()}.`,
-        "VALIDATION",
-      );
+      throw new BookingError(`Agendamento já está ${appt.status.toLowerCase()}.`, "VALIDATION");
     }
     await db.appointment.update({
       where: { id: args.appointmentId },
@@ -428,10 +451,7 @@ export async function quickCreateBooking(
         err instanceof Prisma.PrismaClientKnownRequestError &&
         (err.code === "P2002" || /23P01|exclusion_violation/i.test(err.message))
       ) {
-        throw new BookingError(
-          "Conflito com outro agendamento nesse horário.",
-          "SLOT_UNAVAILABLE",
-        );
+        throw new BookingError("Conflito com outro agendamento nesse horário.", "SLOT_UNAVAILABLE");
       }
       throw err;
     }
@@ -471,9 +491,7 @@ export async function updateAppointment(args: UpdateAppointmentArgs): Promise<vo
     }
     if (!appt.service.active) throw new BookingError("Serviço inativo.", "VALIDATION");
 
-    const endsAtUtc = new Date(
-      args.startsAt.getTime() + appt.service.durationMinutes * 60_000,
-    );
+    const endsAtUtc = new Date(args.startsAt.getTime() + appt.service.durationMinutes * 60_000);
 
     try {
       await db.appointment.update({
@@ -489,10 +507,7 @@ export async function updateAppointment(args: UpdateAppointmentArgs): Promise<vo
         err instanceof Prisma.PrismaClientKnownRequestError &&
         (err.code === "P2002" || /23P01|exclusion_violation/i.test(err.message))
       ) {
-        throw new BookingError(
-          "Conflito com outro agendamento nesse horário.",
-          "SLOT_UNAVAILABLE",
-        );
+        throw new BookingError("Conflito com outro agendamento nesse horário.", "SLOT_UNAVAILABLE");
       }
       throw err;
     }

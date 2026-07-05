@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { BookingPickerMobile } from "@/components/features/customer/BookingPickerMobile";
-import { getAvailableSlots } from "@/lib/server/booking-service";
+import { findNextAvailableDate, getAvailableSlots } from "@/lib/server/booking-service";
 import { getOrgBySlug } from "@/lib/server/orgs";
 import { listProfessionalsForService } from "@/lib/server/professionals";
 import { listActiveServices } from "@/lib/server/services-public";
@@ -43,6 +43,19 @@ export default async function AgendarPage({
         })
       : undefined;
 
+  // PBI-64: se o dia escolhido esta vazio, procura o proximo dia com slots
+  // pra sugerir com botao "Ver próximo dia disponível".
+  const nextAvailableDate =
+    slots && slots.length === 0 && sp.serviceId && sp.professionalId && sp.date
+      ? await findNextAvailableDate({
+          organizationId: org.id,
+          professionalId: sp.professionalId,
+          serviceId: sp.serviceId,
+          afterDate: sp.date,
+          maxDaysAhead: MAX_DAYS_AHEAD,
+        })
+      : null;
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-5 sm:max-w-2xl">
       <header className="mb-6 flex items-center justify-between">
@@ -57,12 +70,8 @@ export default async function AgendarPage({
 
       <div className="mb-6">
         <div className="eyebrow mb-3">Agendamento</div>
-        <h1 className="font-display text-2xl font-extrabold tracking-tight">
-          Agende seu horário
-        </h1>
-        <p className="text-sm text-subtle">
-          Em {org.name} · escolha e confirme em 3 toques.
-        </p>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">Agende seu horário</h1>
+        <p className="text-sm text-subtle">Em {org.name} · escolha e confirme em 3 toques.</p>
       </div>
 
       <BookingPickerMobile
@@ -77,6 +86,7 @@ export default async function AgendarPage({
         }}
         professionals={professionals}
         slots={slots}
+        nextAvailableDate={nextAvailableDate}
         maxDaysAhead={MAX_DAYS_AHEAD}
         basePath={`/${orgSlug}/agendar`}
       />

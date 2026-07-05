@@ -388,7 +388,10 @@ export function BookingPickerMobile({
               Com {selectedProfessional?.name.split(" ")[0] ?? "o profissional"}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          {/* PBI-64 fix: max-h + overflow-y-auto — sem isso, dias com muitos
+              horarios (manha + tarde + noite) sao cortados no bottom do modal.
+              70vh deixa espaco pro header + margem visual do Dialog. */}
+          <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
             <div className="rounded-md border border-line bg-surface p-2">
               <Calendar
                 mode="single"

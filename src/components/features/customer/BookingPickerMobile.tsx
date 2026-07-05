@@ -392,9 +392,14 @@ export function BookingPickerMobile({
               horarios (manha + tarde + noite) sao cortados no bottom do modal.
               70vh deixa espaco pro header + margem visual do Dialog. */}
           <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
-            <div className="rounded-md border border-line bg-surface p-2">
+            {/* PBI-64 fix: Calendar padrao vem com w-fit + --cell-size:2rem
+                (32px), o que deixa espaco lateral vazio no Dialog. Override
+                pra ocupar largura total + celulas maiores (40px). */}
+            <div className="rounded-md border border-line bg-surface p-1">
               <Calendar
                 mode="single"
+                className="w-full [--cell-size:2.5rem]"
+                classNames={{ root: "w-full" }}
                 selected={selected.date ? fromIsoDate(selected.date) : undefined}
                 onSelect={(d) => {
                   if (d) pushSelection({ date: toIsoDate(d) });

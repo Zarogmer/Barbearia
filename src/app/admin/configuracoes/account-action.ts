@@ -1,42 +1,16 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
+import { exportOrganizationData } from "@/lib/server/account";
 
-import { auth, signOut } from "@/lib/auth";
-import {
-  cancelAccountDeletion,
-  exportOrganizationData,
-  scheduleAccountDeletion,
-} from "@/lib/server/account";
-
-export type DeleteAccountResult =
-  | { ok: true; scheduledFor: string }
-  | { ok: false; error: string };
-
-export async function requestAccountDeletionAction(): Promise<DeleteAccountResult> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { ok: false, error: "Sessão expirada." };
-  }
-  const r = await scheduleAccountDeletion(session.user.id);
-  if (!r.ok) return r;
-  // Forçar logout — usuário não consegue mais entrar até cancelar.
-  await signOut({ redirectTo: "/" });
-  return { ok: true, scheduledFor: r.scheduledFor.toISOString() };
-}
-
-export async function cancelAccountDeletionAction(): Promise<{
-  ok: boolean;
-  error?: string;
-}> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { ok: false, error: "Sessão expirada." };
-  }
-  await cancelAccountDeletion(session.user.id);
-  revalidatePath("/admin/configuracoes");
-  return { ok: true };
-}
+// PBI-55 (revisao 2026-07-05): exclusao de conta virou responsabilidade
+// SÓ do super-admin (/superadmin/lojas). Dono nao pede mais self-service —
+// se quiser sair, contata suporte. LGPD art. 18 continua atendido:
+// portabilidade (export abaixo) e cancelamento via canal humano.
+//
+// Funcoes server em src/lib/server/account.ts (scheduleAccountDeletion,
+// cancelAccountDeletion) continuam existindo — sao usadas pelo super-admin
+// via /superadmin/lojas/actions.ts.
 
 export type ExportDataResult =
   | { ok: true; json: string; filename: string }

@@ -1506,11 +1506,383 @@
       ]
     },
     {
+      "id": "PBI-59",
+      "name": "PBI-59 — Confirmação imediata do agendamento via WhatsApp",
+      "idList": "backlog",
+      "idLabels": ["backend", "frontend", "p0"],
+      "pos": 59,
+      "estimateHours": 2,
+      "dependsOn": ["PBI-51"],
+      "desc": "**Estimativa:** 2h · **Depende:** PBI-51 (WhatsApp multi-tenant)\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\nAssim que cliente confirma agendamento, dispara mensagem no WhatsApp dele — nao so email. 90% dos clientes leem WhatsApp na hora; email fica pra depois ou vira spam.\n\n## Mensagem exemplo\n```\nOlá {nome}! Seu horário na {barbearia} tá confirmado:\n📅 {data-friendly}\n💇 {servico} com {profissional}\n📍 {endereco}\n\nPrecisa reagendar? Responda AGENDAR.\n```",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/server/whatsapp-messages/booking-confirmation.ts (template + render)",
+            "Reusa evolutionInstance da Org (PBI-51). Fallback silencioso se instance null",
+            "Chamar em src/app/(public)/[orgSlug]/agendar/confirmar/actions.ts apos createBooking",
+            "Fire-and-forget: nao bloqueia resposta se WA falhar, log em Sentry",
+            "Idempotencia: Appointment.confirmationSentAt (nullable) — evita duplicar em race"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Tela /agendamento/[id]: badge 'WhatsApp enviado' com checkmark verde se confirmationSentAt setado",
+            "Se telefone invalido/sem WA: aviso 'nao conseguimos enviar por WhatsApp — confira o email'"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Só envia se Appointment.customerPhone tiver 10+ digitos",
+            "Template renderiza {barbearia}, {nome}, {data}, {hora}, {servico}, {profissional}, {endereco}",
+            "Endereco vem de Organization.address (se null, omite linha 📍)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: renderiza template com todos placeholders",
+            "Unit: telefone < 10 digitos → skip",
+            "Manual: agendar como cliente → WhatsApp chega em <5s"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Migration: Appointment.confirmationSentAt DateTime? nullable",
+            "Sem Evolution API configurada = feature disabled sem erro"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-60",
+      "name": "PBI-60 — Bot WhatsApp: reagendar/cancelar respondendo",
+      "idList": "backlog",
+      "idLabels": ["backend", "p0"],
+      "pos": 60,
+      "estimateHours": 10,
+      "dependsOn": ["PBI-59"],
+      "desc": "**Estimativa:** 10h · **Depende:** PBI-59\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\nCliente responde AGENDAR ou CANCELAR na mensagem do bot, sistema executa sem ele abrir link/formulario. Mata no-show.\n\n## Fluxo\n1. Cliente recebeu confirmacao (PBI-59) e reage: AGENDAR ou CANCELAR\n2. Webhook Evolution recebe mensagem inbound\n3. Sistema identifica telefone → Appointment aberto proximo\n4. Se AGENDAR: manda 3 proximos slots livres do mesmo prof → cliente responde 1/2/3\n5. Se CANCELAR: pede confirmacao SIM CANCELAR → cancela + libera slot + chama waitlist",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Endpoint webhook /api/whatsapp/inbound (POST, verifica assinatura Evolution)",
+            "Roteador de intents: regex simples (AGENDAR, CANCELAR, SIM, numero 1-3)",
+            "BotConversation table (phone, orgId, appointmentId, step, expiresAt 30min)",
+            "Handler AGENDAR: getAvailableSlots do mesmo prof/servico proximos 7 dias, escolhe 3, monta mensagem",
+            "Handler CANCELAR: pede confirmacao SIM CANCELAR: cancela + libera slot + trigger waitlist notify",
+            "Handler AJUDA fallback"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "(nada direto pro cliente — tudo no WhatsApp)",
+            "/admin/whatsapp aba Conversas ja existe — bot aparece como mensagem manual"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Bot só entende cliente com Appointment CONFIRMED nos proximos 7 dias",
+            "Cliente com 2+ agendamentos futuros: bot lista e pede 'reagendar 1 ou 2?'",
+            "Cancelamento < 2h antes: adiciona nota no cancelReason 'via WhatsApp bot' (dono ve pra decidir taxa)",
+            "Bot nao interpreta livre — so keywords"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Integration: AGENDAR → 3 slots retornam",
+            "Integration: '1' → reagenda, antigo cancela",
+            "Integration: CANCELAR + SIM CANCELAR → status CANCELLED, slot liberado, waitlist notify",
+            "Manual E2E: fluxo completo via WhatsApp real"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Migration: BotConversation",
+            "Configurar webhook na Evolution API",
+            "Cron limpa BotConversation expiradas 1x/dia"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-61",
+      "name": "PBI-61 — Landing /[orgSlug] com identidade forte da barbearia",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p1"],
+      "pos": 61,
+      "estimateHours": 4,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 4h · **Depende:** —\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\nHoje a landing publica e generica. Primeira dobra deve ter: foto de capa grande, nome, avaliacao, endereco, CTA gigante Agendar. Converte primeiro clique.\n\n## Mudancas\n- Cover image top 40% viewport (Organization.coverImageUrl ja existe)\n- Nome + tagline eyebrow\n- Rating estrelas grandes\n- Endereco clicavel abre Maps\n- CTA sticky bottom mobile Agendar horario\n- Section Serviços 4 top (foto/preco)\n- Section Profissionais avatares grandes\n- Section Avaliações 3 depoimentos",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "getOrgLandingData(slug): org + cover + 4 top services + 6 professionals + 3 reviews",
+            "Query agregada em src/lib/server/orgs.ts (uma so com include)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Hero: cover full-bleed com overlay gradient + nome/tagline/rating sobreposto",
+            "CTA sticky bottom mobile 'Agendar horário' sempre visivel",
+            "Section Serviços: 4 cards foto/preco/duracao — link /agendar?serviceId=X",
+            "Section Profissionais: avatares grandes em grid",
+            "Section Avaliações: 3 depoimentos estrela + nome + trecho + data",
+            "Section Contato: endereco Maps, instagram, whatsapp wa.me"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Sem cover: bg gradient da paleta da org (fallback bonito)",
+            "Sem reviews: esconde section",
+            "Sem tagline: nome so"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Lighthouse mobile Perf ≥ 85 na landing",
+            "Manual: cada section com/sem dados",
+            "E2E: click no CTA → cai em /agendar"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Cover otimizada via Cloudinary transformations",
+            "Smoke: 3 orgs com dados diferentes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-62",
+      "name": "PBI-62 — Reativação de cliente sumido (retorno via WhatsApp)",
+      "idList": "backlog",
+      "idLabels": ["backend", "p0"],
+      "pos": 62,
+      "estimateHours": 6,
+      "dependsOn": ["PBI-51", "PBI-29"],
+      "desc": "**Estimativa:** 6h · **Depende:** PBI-51 (WhatsApp), PBI-29 (Retornos sumidos ja mapeados)\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\nCliente que nao volta ha X dias (default 30 pra corte) recebe mensagem automatica. Cliente reativado = 3x mais barato que trazer novo. Dinheiro parado.\n\n## Mensagem\n```\nOi {nome}! Faz {dias} dias desde seu ultimo corte na {barbearia}.\nBora agendar? 👉 {link}\n```",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Organization.reactivationThresholdDays default 30",
+            "src/lib/server/reactivation.ts: sendReactivationCampaign(now)",
+            "Query: clientes com lastAppointment.startsAt < now - threshold AND (lastReactivationSentAt null OR < now - 30d)",
+            "Template com {nome}, {dias}, {barbearia}, {link}",
+            "Link: /{slug}/agendar?serviceId=X&professionalId=Y — prefill do ultimo agendamento",
+            "Integrar em runDailyNotificationsJob"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/configuracoes: campo 'Reativar clientes sumidos apos ___ dias' (default 30, min 15)",
+            "/admin/clientes/sumidos: coluna 'Ultima reativacao enviada'",
+            "Botao 'Reenviar agora' (respeita cooldown 30d)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Cliente sem CustomerOrg.userId (guest) nao entra",
+            "Cliente com deletionScheduledFor nao recebe",
+            "Cooldown 30 dias entre reativacoes pro mesmo cliente",
+            "Se cliente responder AGENDAR — cai no bot PBI-60"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: query filtra (threshold + cooldown)",
+            "Integration: 100 clientes, 20 sumidos, campanha manda 20",
+            "Manual: reagendar → lastReactivationSentAt limpa"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Migration: CustomerOrg.lastReactivationSentAt DateTime? nullable",
+            "Migration: Organization.reactivationThresholdDays Int default 30",
+            "Depende de cron OU self-trigger diario"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-63",
+      "name": "PBI-63 — Confirmação 2h antes (mata no-show)",
+      "idList": "backlog",
+      "idLabels": ["backend", "p1"],
+      "pos": 63,
+      "estimateHours": 4,
+      "dependsOn": ["PBI-51", "PBI-60"],
+      "desc": "**Estimativa:** 4h · **Depende:** PBI-51, PBI-60\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\n2h antes do agendamento: 'vai vir mesmo?'. Se SIM ok. Se REMARCAR cai no bot. Sem resposta em 1h: notifica dono + libera pro waitlist.\n\n## Mensagem\n```\n{nome}, seu horário é hoje às {hora}. Tudo certo pra vir?\nResponda SIM ou REMARCAR.\n```",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "sendPreConfirmations() rodando em cron 30min",
+            "Query: Appointment CONFIRMED startsAt entre now+1.5h e now+2.5h AND preConfirmSentAt null",
+            "Se nao responder ate 1h antes: preConfirmNoAnswer + notify dono + trigger waitlist",
+            "Integrar com PBI-60 bot: respostas SIM/REMARCAR tratadas la"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/agenda: badge amarelo em blocos com preConfirmSentAt E preConfirmedAt null",
+            "/admin/configuracoes: toggle 'Enviar confirmacao 2h antes' (default off, opt-in por causa de taxa)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "So clientes com telefone valido recebem",
+            "So Appointments CONFIRMED (nao CANCELLED, nao COMPLETED)",
+            "Se ja foi reagendado pelo bot ha < 1h: nao envia (redundante)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Unit: janela 1.5h-2.5h",
+            "Integration: SIM → preConfirmedAt setado",
+            "Integration: 1h sem resposta → notify dono + waitlist"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Migration: Appointment.preConfirmSentAt, preConfirmedAt, preConfirmNoAnswer",
+            "Migration: Organization.enablePreConfirm Boolean default false",
+            "Cron 30min — self-trigger nao aguenta, precisa cron externo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-64",
+      "name": "PBI-64 — Polimento visual do fluxo de agendamento",
+      "idList": "backlog",
+      "idLabels": ["frontend", "p1"],
+      "pos": 64,
+      "estimateHours": 3,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 3h · **Depende:** —\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\nPolir /agendar pra parecer app nativo, nao formulario web.\n\n## Mudancas\n1. Slot picker: 3 secoes 'Manhã / Tarde / Noite' com chips grandes\n2. Skeleton loading (chips cinzas piscando) em vez de spinner\n3. Progress bar sutil no topo mostrando passo N/4\n4. Botao 'Ver próximo dia disponível' quando dia vazio\n5. Foto do profissional no topo das telas 3-4-confirmar",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": ["getAvailableSlots retorna proximo dia com slots (parametro suggestNext=true)"]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "SlotPicker: agrupar manhã (06-12h), tarde (12-18h), noite (18-24h)",
+            "Chips 44x44 min tap target, 3 colunas responsivas",
+            "Skeleton: 8 chips gray-200 animate-pulse durante loading",
+            "StepProgressBar: barra fina no topo, 4 segmentos preenchendo",
+            "ProfessionalBadge: circulo 32x32 com foto + nome no topo direito das telas 3, 4, confirmar",
+            "Botao 'Ver próximo dia disponível' navega pra proxima data com slot"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Periodos manhã 06-12h, tarde 12-18h, noite 18-24h (config global)",
+            "Sem foto: iniciais no badge (avatar-ring)"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Manual: fluxo mobile com 3 dedos (nao encosta por acidente)",
+            "Manual: dia com 0 slots → botao proximo dia",
+            "Manual: progresso mostra 4/4 na confirmar"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": ["Bundle: animate-pulse Tailwind ja disponivel", "Smoke: fluxo completo mobile"]
+        }
+      ]
+    },
+    {
+      "id": "PBI-65",
+      "name": "PBI-65 — Tela Confirmado virou hub pós-agendamento",
+      "idList": "backlog",
+      "idLabels": ["frontend", "backend", "p1"],
+      "pos": 65,
+      "estimateHours": 4,
+      "dependsOn": ["PBI-27"],
+      "desc": "**Estimativa:** 4h · **Depende:** PBI-27 (Loyalty ja existe)\n**Origem:** Analise UX 2026-07-05\n\n## 🎯 Objetivo\nTela /agendamento/{id} vira HUB: calendar sync, maps, reagendar, cancelar, fidelidade.\n\n## Melhorias\n- Checklist do que vai rolar (lembrete WA 24h antes, endereço)\n- Botao 'Adicionar ao Google Calendar' (link .ics)\n- Botao 'Como chegar' (Maps)\n- Botao 'Reagendar' (prefill)\n- Botao 'Cancelar' (modal)\n- Progresso cartão fidelidade (se loyaltyEnabled)\n- Botao 'Compartilhar' (Web Share API)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "/api/appointments/[id]/ics/route.ts: gera .ics (SUMMARY, DTSTART, DTEND, LOCATION, DESCRIPTION)",
+            "getLoyaltyProgress(userId, orgId) — atendimentos concluidos / goal",
+            "cancelBookingByCustomerAction(id) — verifica ownership + respeita regra < 2h"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "Checklist do que vai rolar (5 bullets check verde)",
+            "Botao 'Adicionar ao Google Calendar' → /api/appointments/[id]/ics",
+            "Botao 'Como chegar' → https://www.google.com/maps/search/?api=1&query=<endereco>",
+            "Botao 'Reagendar' → /agendar?serviceId=X&professionalId=Y",
+            "Modal 'Cancelar' vermelho + cancelReason opcional",
+            "Card Fidelidade se loyaltyEnabled: X/Y stamps visuais (tesourinhas)",
+            "Botao 'Compartilhar' navigator.share (fallback copy link)"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Cancel < 2h: razao obrigatoria",
+            "Reagendar cancela old + cria new em transacao",
+            ".ics respeita timezone da org",
+            "Loyalty stamps isolados por CustomerOrg"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "E2E: baixar .ics + validar sintaxe RFC 5545",
+            "E2E: cancelar via botao → status + slot liberado",
+            "Manual: fallback share funciona desktop",
+            "Manual: loyalty 0, 5, 10 stamps"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Smoke: cliente cancela + recebe email",
+            "Smoke: adicionar ao Calendar iPhone (Apple) e Android"
+          ]
+        }
+      ]
+    },
+    {
       "id": "PBI-INC01",
       "name": "PBI-INC01 — Incidente: fix Server/Client boundary + CI build",
       "idList": "done",
       "idLabels": ["backend", "infra", "testes"],
-      "pos": 58,
+      "pos": 66,
       "estimateHours": 3,
       "dependsOn": [],
       "desc": "**Estimativa:** 3h (real: ~4h de investigação + fix)\n**Data:** 2026-07-05\n**Refs:** commits cda530c (fix messages), 878f22c (CI build), [PR #79](https://github.com/Zarogmer/Barbearia/pull/79)\n\n## 🎯 O que aconteceu\nDeploys do Railway env `dev` estavam falhando desde PR #64 (PBI-31 message templates, faz ~5 semanas). Ninguém notou porque:\n- Turbopack (`next dev --turbopack`) é permissivo com Server/Client boundary\n- Only `next build` (prod) valida strict\n- CI só rodava lint + typecheck + test — nunca `pnpm build`\n\nCada merge de PBI-32 até PBI-54 aumentou features no código mas nada rodava em prod. App vivo era versão anterior ao PR #64.\n\n## 🔎 Causa raiz\nsrc/app/admin/mensagens/TemplateFormDialog.tsx (client component) importava `MESSAGE_PLACEHOLDERS` de `@/lib/server/messages` — que tem `import 'server-only'`. Next.js recusa bundle client-side desse import em prod strict.\n\n## ✅ Fix (commit cda530c)\nCriado src/lib/messages-shared.ts (sem server-only) com type/const/helpers reusáveis. Client components importam de lá. server/messages.ts fica só com queries com withTenant.\n\n## 🔒 Prevenção (commit 878f22c)\nAdicionado job `Next build (prod)` no .github/workflows/ci.yml. Roda em cada PR/push. +3-5 min por CI mas nunca mais um merge com build quebrado passa.\n\n## Também no mesmo incidente\n- 12 migrations pendentes no Railway destravadas manualmente (message_templates, packages, etc — todas criadas sem RLS policy via prisma db push antigo)\n- 7 tabelas em prod ficaram sem RLS por semanas — corrigido com scripts one-shot (não commitados)",

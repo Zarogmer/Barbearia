@@ -114,12 +114,7 @@
       "id": "PBI-01",
       "name": "PBI-01 — Postgres local + RLS + migration inicial",
       "idList": "done",
-      "idLabels": [
-        "infra",
-        "backend",
-        "seguranca",
-        "p0"
-      ],
+      "idLabels": ["infra", "backend", "seguranca", "p0"],
       "pos": 1,
       "estimateHours": 2,
       "dependsOn": [],
@@ -139,9 +134,7 @@
         },
         {
           "name": "🎨 Frontend",
-          "items": [
-            "(nada — PBI puramente infra)"
-          ]
+          "items": ["(nada — PBI puramente infra)"]
         },
         {
           "name": "📜 Regra de negócio",
@@ -163,17 +156,10 @@
       "id": "PBI-02",
       "name": "PBI-02 — NextAuth v5 (Credentials + Prisma adapter)",
       "idList": "done",
-      "idLabels": [
-        "backend",
-        "seguranca",
-        "frontend",
-        "p0"
-      ],
+      "idLabels": ["backend", "seguranca", "frontend", "p0"],
       "pos": 2,
       "estimateHours": 4,
-      "dependsOn": [
-        "PBI-01"
-      ],
+      "dependsOn": ["PBI-01"],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-01\n**Refs:** [09-pbis.md#PBI-02](docs/09-pbis.md) · [04-seguranca.md](docs/04-seguranca.md)\n\n## 🎯 Objetivo\nLogin/cadastro com Credentials (bcrypt 12) + DB sessions. Custom session com memberships (org + role). Middleware protege (admin)/*.",
       "checklists": [
         {
@@ -221,16 +207,10 @@
       "id": "PBI-03",
       "name": "PBI-03 — Google OAuth + verificação de email (Resend)",
       "idList": "done",
-      "idLabels": [
-        "backend",
-        "seguranca",
-        "p1"
-      ],
+      "idLabels": ["backend", "seguranca", "p1"],
       "pos": 3,
       "estimateHours": 3,
-      "dependsOn": [
-        "PBI-02"
-      ],
+      "dependsOn": ["PBI-02"],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-02\n**Refs:** [09-pbis.md#PBI-03](docs/09-pbis.md)\n\n## 🎯 Objetivo\nGoogle como segundo provider (cliente) + email de verificação para signups Credentials (Resend; fallback console em dev).",
       "checklists": [
         {
@@ -272,16 +252,10 @@
       "id": "PBI-04",
       "name": "PBI-04 — CRUD serviços (admin)",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "p0"
-      ],
+      "idLabels": ["frontend", "backend", "p0"],
       "pos": 4,
       "estimateHours": 5,
-      "dependsOn": [
-        "PBI-02"
-      ],
+      "dependsOn": ["PBI-02"],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-02\n**Tela existente:** src/app/admin/servicos/ (mock atual)\n**Refs:** [09-pbis.md#PBI-04](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg)\n\n## 🎯 Objetivo\nOwner cria/edita/desativa serviços. Hard delete bloqueado se há appointment referenciando.",
       "checklists": [
         {
@@ -328,16 +302,10 @@
       "id": "PBI-05",
       "name": "PBI-05 — CRUD profissionais + horários + bloqueios",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "p0"
-      ],
+      "idLabels": ["frontend", "backend", "p0"],
       "pos": 5,
       "estimateHours": 6,
-      "dependsOn": [
-        "PBI-04"
-      ],
+      "dependsOn": ["PBI-04"],
       "desc": "**Estimativa:** 6h · **Depende:** PBI-04\n**Tela existente:** src/app/admin/profissionais/\n**Refs:** [09-pbis.md#PBI-05](docs/09-pbis.md)\n\n## 🎯 Objetivo\nCriar profissionais; editar WorkingHours por dia da semana (sem sobreposição); criar/listar TimeBlock; rejeitar bloqueio que cubra Appointment.",
       "checklists": [
         {
@@ -384,16 +352,10 @@
       "id": "PBI-06",
       "name": "PBI-06 — Slot calculator (algoritmo)",
       "idList": "done",
-      "idLabels": [
-        "backend",
-        "testes",
-        "p0"
-      ],
+      "idLabels": ["backend", "testes", "p0"],
       "pos": 6,
       "estimateHours": 5,
-      "dependsOn": [
-        "PBI-05"
-      ],
+      "dependsOn": ["PBI-05"],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-05\n**Diagrama:** [algoritmo-slot-calculator.svg](docs/diagramas/algoritmo-slot-calculator.svg)\n**Refs:** [09-pbis.md#PBI-06](docs/09-pbis.md) · [07-regras-negocio.md#RN-03](docs/07-regras-negocio.md)\n\n## 🎯 Objetivo\nFunção pura que retorna slots disponíveis dado prof+serviço+data. Coração do produto. Implementa RN-03/04/05.",
       "checklists": [
         {
@@ -408,9 +370,7 @@
         },
         {
           "name": "🎨 Frontend",
-          "items": [
-            "(consumido em PBI-07)"
-          ]
+          "items": ["(consumido em PBI-07)"]
         },
         {
           "name": "📜 Regra de negócio",
@@ -449,15 +409,10 @@
       "id": "PBI-07",
       "name": "PBI-07 — Fluxo cliente (4 passos sem submit)",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p0"
-      ],
+      "idLabels": ["frontend", "p0"],
       "pos": 7,
       "estimateHours": 5,
-      "dependsOn": [
-        "PBI-06"
-      ],
+      "dependsOn": ["PBI-06"],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-06\n**Diagrama:** [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n**Protótipo visual:** [docs/prototipo/index.html#cliente](docs/prototipo/index.html) — W-01..W-06 mockados em alta-fi\n**Telas existentes:** src/app/(public)/[orgSlug]/...\n**Refs:** [09-pbis.md#PBI-07](docs/09-pbis.md) · [08-prototipo.md W-01..W-04](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nLigar 4 telas do cliente ao back. State 100% URL. Sem submit (vai em PBI-08). Polimento visual final em PBI-16.",
       "checklists": [
         {
@@ -501,18 +456,10 @@
       "id": "PBI-08",
       "name": "PBI-08 — Confirmação + criação do agendamento",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "seguranca",
-        "p0"
-      ],
+      "idLabels": ["frontend", "backend", "seguranca", "p0"],
       "pos": 8,
       "estimateHours": 5,
-      "dependsOn": [
-        "PBI-07",
-        "PBI-03"
-      ],
+      "dependsOn": ["PBI-07", "PBI-03"],
       "desc": "**Estimativa:** 5h · **Depende:** PBI-07, PBI-03\n**Refs:** [09-pbis.md#PBI-08](docs/09-pbis.md) · [fluxo-cliente.svg](docs/diagramas/fluxo-cliente.svg)\n\n## 🎯 Objetivo\nFechar fluxo: form W-05 → SA confirma → cria User se anônimo → INSERT Appointment com captura de EXCLUDE → email → redirect W-06.",
       "checklists": [
         {
@@ -559,16 +506,10 @@
       "id": "PBI-09",
       "name": "PBI-09 — Agenda do dia (admin)",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "p0"
-      ],
+      "idLabels": ["frontend", "backend", "p0"],
       "pos": 9,
       "estimateHours": 6,
-      "dependsOn": [
-        "PBI-08"
-      ],
+      "dependsOn": ["PBI-08"],
       "desc": "**Estimativa:** 6h · **Depende:** PBI-08\n**Tela existente:** src/app/admin/agenda/\n**Protótipo visual:** [docs/prototipo/index.html#admin](docs/prototipo/index.html) — W-07/W-08/W-09 desktop frames\n**Refs:** [09-pbis.md#PBI-09](docs/09-pbis.md) · [fluxo-admin.svg](docs/diagramas/fluxo-admin.svg) · [08-prototipo.md W-08](docs/08-prototipo.md)\n\n## 🎯 Objetivo\nVisualização de agenda do dia por profissional. Bloco appt/bloco TimeBlock; ações de mudança de status; encaixe. Polimento visual final em PBI-16.",
       "checklists": [
         {
@@ -615,16 +556,10 @@
       "id": "PBI-10",
       "name": "PBI-10 — Configurações da organização",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "p2"
-      ],
+      "idLabels": ["frontend", "backend", "p2"],
       "pos": 10,
       "estimateHours": 3,
-      "dependsOn": [
-        "PBI-02"
-      ],
+      "dependsOn": ["PBI-02"],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-02\n**Tela existente:** src/app/admin/configuracoes/\n**Refs:** [09-pbis.md#PBI-10](docs/09-pbis.md)\n\n## 🎯 Objetivo\nOwner edita nome, slug (com confirma), timezone (read-only MVP), allowGuestBooking.",
       "checklists": [
         {
@@ -643,10 +578,7 @@
         },
         {
           "name": "📜 Regra de negócio",
-          "items": [
-            "RN-13: timezone fixo no MVP",
-            "RN-CB-02: horário verão n/a no Brasil"
-          ]
+          "items": ["RN-13: timezone fixo no MVP", "RN-CB-02: horário verão n/a no Brasil"]
         },
         {
           "name": "🧪 Testes",
@@ -661,29 +593,19 @@
       "id": "PBI-11",
       "name": "PBI-11 — Testes de isolamento cross-tenant",
       "idList": "done",
-      "idLabels": [
-        "testes",
-        "seguranca",
-        "p0"
-      ],
+      "idLabels": ["testes", "seguranca", "p0"],
       "pos": 11,
       "estimateHours": 4,
-      "dependsOn": [
-        "PBI-09"
-      ],
+      "dependsOn": ["PBI-09"],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-09\n**Refs:** [09-pbis.md#PBI-11](docs/09-pbis.md) · [arquitetura-multi-tenant.svg](docs/diagramas/arquitetura-multi-tenant.svg) · [04-seguranca.md](docs/04-seguranca.md)\n\n## 🎯 Objetivo\nProvar que vazamento cross-tenant é impossível. Sem isso, multi-tenant é teatro.",
       "checklists": [
         {
           "name": "🔧 Backend",
-          "items": [
-            "(só testes)"
-          ]
+          "items": ["(só testes)"]
         },
         {
           "name": "🎨 Frontend",
-          "items": [
-            "(nada)"
-          ]
+          "items": ["(nada)"]
         },
         {
           "name": "📜 Regra de negócio",
@@ -711,15 +633,10 @@
       "id": "PBI-12",
       "name": "PBI-12 — Suite mínima + coverage gates",
       "idList": "done",
-      "idLabels": [
-        "testes",
-        "p1"
-      ],
+      "idLabels": ["testes", "p1"],
       "pos": 12,
       "estimateHours": 4,
-      "dependsOn": [
-        "PBI-08"
-      ],
+      "dependsOn": ["PBI-08"],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-08\n**Refs:** [09-pbis.md#PBI-12](docs/09-pbis.md) · [05-testes.md](docs/05-testes.md)",
       "checklists": [
         {
@@ -732,15 +649,11 @@
         },
         {
           "name": "🎨 Frontend",
-          "items": [
-            "(nada)"
-          ]
+          "items": ["(nada)"]
         },
         {
           "name": "📜 Regra de negócio",
-          "items": [
-            "Cobertura mínima conforme 05-testes.md"
-          ]
+          "items": ["Cobertura mínima conforme 05-testes.md"]
         },
         {
           "name": "🧪 Testes",
@@ -757,16 +670,10 @@
       "id": "PBI-13",
       "name": "PBI-13 — CI no GitHub Actions",
       "idList": "done",
-      "idLabels": [
-        "infra",
-        "testes",
-        "p1"
-      ],
+      "idLabels": ["infra", "testes", "p1"],
       "pos": 13,
       "estimateHours": 3,
-      "dependsOn": [
-        "PBI-12"
-      ],
+      "dependsOn": ["PBI-12"],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-12\n**Refs:** [09-pbis.md#PBI-13](docs/09-pbis.md)",
       "checklists": [
         {
@@ -781,15 +688,11 @@
         },
         {
           "name": "🎨 Frontend",
-          "items": [
-            "(nada)"
-          ]
+          "items": ["(nada)"]
         },
         {
           "name": "📜 Regra de negócio",
-          "items": [
-            "Sem CI verde não merge em main"
-          ]
+          "items": ["Sem CI verde não merge em main"]
         },
         {
           "name": "🧪 Testes",
@@ -804,15 +707,10 @@
       "id": "PBI-14",
       "name": "PBI-14 — Deploy Vercel + Neon",
       "idList": "done",
-      "idLabels": [
-        "infra",
-        "p1"
-      ],
+      "idLabels": ["infra", "p1"],
       "pos": 14,
       "estimateHours": 3,
-      "dependsOn": [
-        "PBI-13"
-      ],
+      "dependsOn": ["PBI-13"],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-13\n**Refs:** [09-pbis.md#PBI-14](docs/09-pbis.md)",
       "checklists": [
         {
@@ -827,15 +725,11 @@
         },
         {
           "name": "🎨 Frontend",
-          "items": [
-            "(smoke manual)"
-          ]
+          "items": ["(smoke manual)"]
         },
         {
           "name": "📜 Regra de negócio",
-          "items": [
-            "Domínio .vercel.app no MVP; customizado em v2"
-          ]
+          "items": ["Domínio .vercel.app no MVP; customizado em v2"]
         },
         {
           "name": "🧪 Testes",
@@ -850,22 +744,15 @@
       "id": "PBI-15",
       "name": "PBI-15 — PWA + polimento UX",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p2"
-      ],
+      "idLabels": ["frontend", "p2"],
       "pos": 15,
       "estimateHours": 3,
-      "dependsOn": [
-        "PBI-08"
-      ],
+      "dependsOn": ["PBI-08"],
       "desc": "**Estimativa:** 3h · **Depende:** PBI-08\n**Refs:** [09-pbis.md#PBI-15](docs/09-pbis.md)",
       "checklists": [
         {
           "name": "🔧 Backend",
-          "items": [
-            "(nada)"
-          ]
+          "items": ["(nada)"]
         },
         {
           "name": "🎨 Frontend",
@@ -880,9 +767,7 @@
         },
         {
           "name": "📜 Regra de negócio",
-          "items": [
-            "Lighthouse mobile: Perf ≥80, A11y ≥90, BP ≥90"
-          ]
+          "items": ["Lighthouse mobile: Perf ≥80, A11y ≥90, BP ≥90"]
         },
         {
           "name": "🧪 Testes",
@@ -897,16 +782,10 @@
       "id": "PBI-16",
       "name": "PBI-16 — Aplicar design system Lustro (telas W-01..W-09)",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "docs",
-        "p1"
-      ],
+      "idLabels": ["frontend", "docs", "p1"],
       "pos": 16,
       "estimateHours": 4,
-      "dependsOn": [
-        "PBI-02"
-      ],
+      "dependsOn": ["PBI-02"],
       "desc": "**Estimativa:** 4h · **Depende:** PBI-02 (paraleliza com 04-09)\n**Protótipo:** [docs/prototipo/index.html](docs/prototipo/index.html) — abrir local + escolher paleta\n**Refs:** [08-prototipo.md#design-system--lustro](docs/08-prototipo.md) · [11-pbis-detalhado.md](docs/11-pbis-detalhado.md)\n\n## 🎯 Objetivo\nElevar fidelidade das telas existentes (W-01..W-09) de wireframe baixa-fi pro design system Lustro. Fontes premium, paleta escolhida (Charcoal default), microanimações, tokens unificados. Sem mudar fluxo nem regras — apenas visual.\n\n## DoD (além do universal)\n- Usuário humano escolhe entre Charcoal / Sunset / Editorial antes do PBI começar (1 das 3 vai pra prod; outras 2 ficam como variantes via data-theme)\n- Screenshots antes/depois no PR body de cada uma das 9 telas\n- Lighthouse Mobile mantém Perf ≥80 (não regredir)",
       "checklists": [
         {
@@ -949,17 +828,10 @@
       "id": "PBI-17",
       "name": "PBI-17 — Relatórios financeiros (v2)",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "v2"
-      ],
+      "idLabels": ["frontend", "backend", "v2"],
       "pos": 17,
       "estimateHours": 8,
-      "dependsOn": [
-        "PBI-08",
-        "PBI-09"
-      ],
+      "dependsOn": ["PBI-08", "PBI-09"],
       "desc": "**Estimativa:** 8h · **Depende:** PBI-08, PBI-09 · **NÃO faz parte do MVP de 7 dias**\n**Protótipo visual:** [docs/prototipo/index.html#v2](docs/prototipo/index.html) — W-17\n\n## 🎯 Objetivo\nPainel de relatórios financeiros pro dono: faturamento por período, comissões por profissional, ticket médio, tendência diária. Exportação PDF.\n\n## ⚠ Por que v2 (fora do MVP)\nAdiciona modelo de Commission/Payout, agregações SQL complexas, lib de gráficos, geração de PDF. Custo: 8-12h. MVP de 7 dias não suporta. Implementar após validar core com 1+ barbearia real em prod.",
       "checklists": [
         {
@@ -1007,17 +879,10 @@
       "id": "PBI-18",
       "name": "PBI-18 — Estoque de produtos + PDV (v2)",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "backend",
-        "v2"
-      ],
+      "idLabels": ["frontend", "backend", "v2"],
       "pos": 18,
       "estimateHours": 12,
-      "dependsOn": [
-        "PBI-04",
-        "PBI-09"
-      ],
+      "dependsOn": ["PBI-04", "PBI-09"],
       "desc": "**Estimativa:** 12h · **Depende:** PBI-04, PBI-09 · **NÃO faz parte do MVP de 7 dias**\n**Protótipo visual:** [docs/prototipo/index.html#v2](docs/prototipo/index.html) — W-18\n\n## 🎯 Objetivo\nGestão de estoque de produtos (pomada, óleo, shampoo, insumos). Alerta de mínimo. Entradas/saídas registradas. PDV embutido pra vender produto avulso ou junto com agendamento.\n\n## ⚠ Por que v2 (fora do MVP)\nDomínio novo grande (Product, InventoryMovement, Sale, Cost). Precisa de PDV inline pra cobrar agendamento + venda. Custo: 12-16h. Implementar após MVP validado.",
       "checklists": [
         {
@@ -1065,17 +930,10 @@
       "id": "PBI-23",
       "name": "PBI-23 — Agendamento anônimo confirmado por SMS OTP",
       "idList": "done",
-      "idLabels": [
-        "backend",
-        "frontend",
-        "seguranca",
-        "p1"
-      ],
+      "idLabels": ["backend", "frontend", "seguranca", "p1"],
       "pos": 23,
       "estimateHours": 8,
-      "dependsOn": [
-        "PBI-08"
-      ],
+      "dependsOn": ["PBI-08"],
       "desc": "**Estimativa:** 8h · **Depende:** PBI-08 (createBooking)\n\n## 🎯 Objetivo\nPermitir que visitantes anônimos confirmem agendamento via código SMS de 6 dígitos enviado pro telefone, sem precisar criar conta. Substitui a captura manual de nome/email no passo /agendar/confirmar por um fluxo de duas etapas: (1) request OTP → SMS enviado, (2) verify OTP → cria Appointment + retorna ID público.\n\n## 💡 Contexto\nAgendamento de barbearia tem barreira de conta zero. Usuário decidiu (2026-05-27) que vamos com OTP no telefone em vez de forçar login. App cliente /conta/* continua existindo pra quem QUER painel pessoal (histórico, reviews, feed) — mas o fluxo principal é anônimo.\n\n## 🔐 Considerações de segurança\n- Rate limit por IP + por telefone (3 OTPs / 10min / telefone, 10 OTPs / hora / IP)\n- TTL do OTP: 5 minutos\n- Máximo 3 tentativas de verificação antes de invalidar\n- LGPD: aviso explícito antes de enviar SMS ('Vamos enviar um código pro número informado')\n- Provider: Twilio (default) ou Vonage / AWS SNS — abstrair via interface SmsProvider\n- Custo: ~$0.01/SMS BR — atenção a abuse (DoS por SMS bombing)",
       "checklists": [
         {
@@ -1139,10 +997,7 @@
       "id": "PBI-24",
       "name": "PBI-24 — Polimento UX: tap feedback, page transitions, skeletons",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p1"
-      ],
+      "idLabels": ["frontend", "p1"],
       "pos": 24,
       "estimateHours": 4,
       "dependsOn": [],
@@ -1195,10 +1050,7 @@
       "id": "PBI-25",
       "name": "PBI-25 — Landing comercial Lustro em /",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p1"
-      ],
+      "idLabels": ["frontend", "p1"],
       "pos": 25,
       "estimateHours": 6,
       "dependsOn": [],
@@ -1250,18 +1102,10 @@
       "id": "PBI-26",
       "name": "PBI-26 — Vitrine do tenant /[orgSlug] (cover + fotos + reviews + endereço)",
       "idList": "done",
-      "idLabels": [
-        "backend",
-        "frontend",
-        "p1"
-      ],
+      "idLabels": ["backend", "frontend", "p1"],
       "pos": 26,
       "estimateHours": 8,
-      "dependsOn": [
-        "PBI-04",
-        "PBI-05",
-        "PBI-48-fase-5"
-      ],
+      "dependsOn": ["PBI-04", "PBI-05", "PBI-48-fase-5"],
       "desc": "**Estimativa:** 8h · **Depende:** Services, Professionals, Reviews\n\n## 🎯 Objetivo\nTransformar a landing pública do tenant (/[orgSlug]) de 'lista funcional' em 'vitrine que vende'. Hoje avatares são iniciais, sem foto da barbearia, sem reviews agregadas, sem endereço. Parece template. Precisamos sentir IDENTIDADE da barbearia ao chegar lá.\n\n## 💡 Contexto\nCliente final compartilha o link da sua barbearia (ex: lustro.app/barbearia-vini) com clientes pelo WhatsApp. Esse link É o cartão de visitas. Hoje cliente abre e vê algo genérico.\n\n## 📐 Estrutura proposta\n- Hero com cover image (uploaded) ou gradient como fallback\n- Stats agregadas: ⭐ 4.8 (32 avaliações) | 📍 Av. Paulista 1000\n- Galeria de profissionais com fotos reais\n- 3 reviews mais recentes destacadas\n- Mapa/endereço com link 'Como chegar'\n- Horário de funcionamento com indicador 'Aberto agora'",
       "checklists": [
         {
@@ -1323,17 +1167,10 @@
       "id": "PBI-27",
       "name": "PBI-27 — Empty states bonitos + onboarding wizard pós-cadastro",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p1"
-      ],
+      "idLabels": ["frontend", "p1"],
       "pos": 27,
       "estimateHours": 5,
-      "dependsOn": [
-        "PBI-04",
-        "PBI-05",
-        "PBI-10"
-      ],
+      "dependsOn": ["PBI-04", "PBI-05", "PBI-10"],
       "desc": "**Estimativa:** 5h · **Depende:** Services, Professionals, Configurações\n\n## 🎯 Objetivo\nDono que cria conta hoje cai num /admin/dashboard vazio sem direção. Perde em <2 minutos. Precisamos guiá-lo pelos cadastros essenciais (serviços, profissionais, horários) e fazer cada tela vazia parecer convite pra ação, não 'app quebrado'.\n\n## 💡 Contexto\nDuas frentes complementares:\n1. **Onboarding wizard** — primeira vez que loga, vê checklist visual 3-passos\n2. **Empty states** — toda tela com 0 itens vira convite ('Crie seu primeiro serviço', com ilustração + CTA)\n\n## 🎨 Visual\n- Empty states com SVG ilustração inline (tema brand+ink, low-poly minimalista)\n- Wizard como banner no /admin/dashboard até completar os 3 passos\n- Cada step do wizard linka pra tela de cadastro com pré-preenchido (se possível)",
       "checklists": [
         {
@@ -1374,15 +1211,10 @@
       "id": "PBI-29",
       "name": "PBI-29 — Refinar tipografia (Playfair Display) + paleta Tattoo Studio",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p2"
-      ],
+      "idLabels": ["frontend", "p2"],
       "pos": 29,
       "estimateHours": 1,
-      "dependsOn": [
-        "PBI-28"
-      ],
+      "dependsOn": ["PBI-28"],
       "desc": "**Estimativa:** 1h · **Depende:** PBI-28 (sistema de temas)\n\n## 🎯 Objetivo\nRefinar duas frentes do PBI-28: (1) trocar fonte display Plus Jakarta Sans por Playfair Display, dando ar editorial/sofisticado que combina tanto com salões femininos quanto com barbearias premium; (2) adicionar uma 7ª paleta 'Tattoo Studio' (preto profundo + amarelo neon #FFD700) pra cobrir nicho de estúdio de tatuagem.\n\n## 💡 Contexto\nApós PBI-28 (6 paletas + dark mode), Plus Jakarta Sans é sans-serif moderna porém genérica. Playfair Display, transitional serif, eleva tone pra premium sem perder legibilidade em UI density.",
       "checklists": [
         {
@@ -1414,10 +1246,7 @@
       "id": "PBI-28",
       "name": "PBI-28 — Sistema de temas (6 paletas por nicho) + dark mode",
       "idList": "done",
-      "idLabels": [
-        "frontend",
-        "p1"
-      ],
+      "idLabels": ["frontend", "p1"],
       "pos": 28,
       "estimateHours": 6,
       "dependsOn": [],
@@ -1459,6 +1288,271 @@
           "items": [
             "Verificar bundle size: 12 paletas em CSS = ~3kb a mais — aceitável",
             "Smoke test pós-deploy: trocar tema em prod, refresh, persistência OK"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-55",
+      "name": "PBI-55 — Painel super-admin cross-tenant",
+      "idList": "done",
+      "idLabels": ["backend", "frontend", "seguranca", "p1"],
+      "pos": 55,
+      "estimateHours": 16,
+      "dependsOn": ["PBI-49", "PBI-52", "PBI-54"],
+      "desc": "**Estimativa:** 16h · **Depende:** PBI-49, PBI-52, PBI-54\n**Refs:** [09-pbis.md#PBI-55](docs/09-pbis.md) · [PR #79](https://github.com/Zarogmer/Barbearia/pull/79)\n\n## 🎯 Objetivo\nPainel /superadmin/* separado do /admin/* do dono. Ver e operar todas as lojas do SaaS: dashboard global, tabela de lojas com métricas agregadas, faturamento Stripe, auditoria de ações. Login-as (impersonate) fica pra PBI-56.\n\n## ✅ Feito 2026-07-05\nMergeado em PR #79, deploy Railway dev online. Também destrancou 5 semanas de builds Railway falhados (bug do server-only import em client component desde PBI-31).",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Migration: User.isSuperAdmin + Organization.suspendedAt + admin_audit_log (REVOKE app_user)",
+            "src/lib/server/superadmin/orgs.ts: listOrgsForSuperAdmin() + getGlobalMetrics() (groupBy pra evitar N+1)",
+            "src/lib/server/superadmin/audit.ts: logAdminAction() com IP + UserAgent",
+            "src/lib/auth.ts: callback jwt/session popula isSuperAdmin",
+            "src/lib/server/billing.ts: isOrgActive() respeita suspendedAt",
+            "src/middleware.ts: gate /superadmin/*",
+            "Actions: suspendOrgAction, reactivateOrgAction, scheduleOrgDeletionAction, cancelOrgDeletionAction — todas auditadas"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/superadmin/layout.tsx: notFound() se !isSuperAdmin (não 403, pra não vazar existência)",
+            "/superadmin/dashboard: 8 KPIs (MRR, ARR, novas orgs 30d, churn, agend hoje, trial, ativas, suspensas)",
+            "/superadmin/lojas: tabela agregada (serviços, agend 30d, clientes, faturamento mês, plano, status) + busca + 6 filtros + ações",
+            "/superadmin/faturamento: subs Stripe + trials + inadimplentes",
+            "/superadmin/auditoria: timeline dos últimos 200 logs",
+            "SuperAdminNav (dashboard/lojas/faturamento/auditoria) + logout"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "isSuperAdmin promoção só via script (pnpm superadmin:grant <email>) — sem UI",
+            "Toda ação em /superadmin/* loga em admin_audit_log (INSERT only)",
+            "prismaAdmin (bypass RLS via DIRECT_URL) só em src/lib/server/superadmin/* e páginas /superadmin/*",
+            "admin_audit_log com REVOKE ALL FROM app_user — defesa em profundidade",
+            "suspendedAt bloqueia login dos membros (via isOrgActive) mesmo com trial ou sub ativos"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "billing.test.ts: +2 casos pra suspendedAt (bloqueia active, bloqueia dev sem Stripe)",
+            "TODO: integration cross-tenant (user comum vê 404 em /superadmin, super consegue listar, suspender A não afeta B)",
+            "Manual: /superadmin/lojas carrega, filtros funcionam, suspender + reativar loga em auditoria"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Migration aplicada no Railway env dev (2026-07-05)",
+            "pnpm superadmin:grant admin@demo.com executado",
+            "PR #79 mergeado, deploy Railway ACTIVE",
+            "Smoke test manual /superadmin/*",
+            "TODO: repetir em Railway env production quando ele voltar (build failed 3 semanas atrás, ver PBI-INC01)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-56",
+      "name": "PBI-56 — Login-as (impersonate) do super-admin",
+      "idList": "backlog",
+      "idLabels": ["backend", "frontend", "seguranca", "v2"],
+      "pos": 56,
+      "estimateHours": 8,
+      "dependsOn": ["PBI-55"],
+      "desc": "**Estimativa:** 8h · **Depende:** PBI-55\n**Refs:** [09-pbis.md#PBI-55 (notas v2)](docs/09-pbis.md)\n\n## 🎯 Objetivo\nSuper-admin conseguir 'entrar como' dono de uma loja pra dar suporte sem pedir senha. Requer isolamento forte pra evitar confusão entre a sessão real e a assumida.\n\n## ⚠️ Riscos que precisam ser respeitados\n- Nunca gravar dado com identidade errada — todo write durante impersonate loga em admin_audit_log com actor real (o super) + org alvo\n- Banner amarelo persistente em TODAS as telas /admin/* enquanto assumido\n- Cookie separado (superadmin.impersonate) — não sobrescreve cookie da sessão real",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Cookie superadmin.impersonate com {actorUserId, targetOrgId, expiresAt} assinado (HMAC)",
+            "Server action startImpersonateAction(orgId) + endImpersonateAction()",
+            "getEffectiveSession() helper: retorna org alvo se impersonate ativo, senão sessão normal",
+            "Toda mutation em /admin/* durante impersonate loga admin_audit_log com action='impersonate.write'",
+            "TTL default 30 min. Renovação exige clique explicito"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/superadmin/lojas: botão '🖥 Entrar' na linha da loja (icone do print original)",
+            "Banner amarelo fixo top: 'Modo assumido: [nome-loja]. Sair.' visível em toda /admin/*",
+            "Banner tem contador regressivo dos 30 min",
+            "Sair (endImpersonate): clica banner → volta pra /superadmin/lojas"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Impersonate NÃO permite: mudar senha do dono, apagar conta, mudar plano Stripe (safeguards no server)",
+            "Se cookie superadmin.impersonate presente + cookie session normal do dono também presente = prioriza impersonate",
+            "Após TTL, request retorna 401 e banner some — precisa reiniciar"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Integration: superA assume orgB → escreve → log tem actor=A, target=orgB",
+            "Integration: superA impersonando orgB não consegue ler dados de orgC",
+            "Integration: user comum tentando setar cookie de impersonate manualmente é rejeitado (HMAC)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-57",
+      "name": "PBI-57 — Planos múltiplos Stripe (Basic/Pro/Enterprise)",
+      "idList": "backlog",
+      "idLabels": ["backend", "v2"],
+      "pos": 57,
+      "estimateHours": 6,
+      "dependsOn": ["PBI-52"],
+      "desc": "**Estimativa:** 6h · **Depende:** PBI-52\n**Refs:** [09-pbis.md#PBI-55 (notas v2)](docs/09-pbis.md)\n\n## 🎯 Objetivo\nHoje só existe 1 plano no Stripe (R$49/mês). Cliente médio quer 3 tiers com feature-gating. Painel /superadmin/lojas mostra badge 'PRO' como placeholder até isso existir.\n\n## Tiers propostos\n- Basic (R$29/mês): 2 profissionais, sem WhatsApp\n- Pro (R$49/mês): 5 profissionais, WhatsApp, relatórios\n- Enterprise (R$99/mês): ilimitado, multi-loja",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "3 Price IDs no Stripe (env vars STRIPE_PRICE_BASIC/PRO/ENTERPRISE)",
+            "Organization.stripePriceId (guardar qual plano ativo)",
+            "Middleware feature-gate: max profs, WhatsApp on/off, relatórios etc",
+            "Migração de orgs existentes: todas viram PRO (mantém acesso)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "/admin/billing: 3 cards de plano com botão Assinar/Trocar",
+            "Empty state feature-gated: 'Este recurso é do plano Pro. Upgrade'",
+            "/superadmin/lojas badge reflete plano real"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Downgrade só no fim do ciclo (Stripe cancel_at_period_end)",
+            "Upgrade proporcional automático (Stripe proration)",
+            "Excedeu limite depois de downgrade? Bloqueia adição de mais + banner 'você tem 6, plano permite 5, remova ou upgrade'"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Webhook Stripe: mudança de price → Organization.stripePriceId atualiza",
+            "Feature gate: Basic tenta usar WhatsApp → 403 + banner",
+            "Downgrade Pro→Basic com 5 profs → bloqueia até remover 3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-58",
+      "name": "PBI-58 — Rebrand pra Lustro (domínio + strings hardcoded)",
+      "idList": "backlog",
+      "idLabels": ["frontend", "infra", "docs", "p1"],
+      "pos": 58,
+      "estimateHours": 4,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 4h · **Depende:** —\n**Origem:** Print /admin/configuracoes 2026-07-05 mostrando prefixo `barbearia.app/` hardcoded, dominio Railway `barbearia-dev.up.railway.app`.\n\n## 🎯 Objetivo\nProduto se chama Lustro (`STRIPE_PRICE_ID` em `.env.example` diz \"Lustro Pro\"), mas o codigo/dominio ainda dizem `barbearia`. Rebrand pra consistencia: dominio publico, strings hardcoded, config form, labels UI.\n\n## Escopo\n- Renomear subdominio Railway env dev → `lustro-dev.up.railway.app` (ou custom domain `lustro.com.br`/`lustro.app` se quiser investir)\n- Trocar hardcoded `barbearia.app/` em 2 componentes (form config + bio link)\n- Substituir por leitura de `NEXT_PUBLIC_APP_URL` — mudou dominio, UI atualiza sozinha\n- Rever titulo/label 'Barbearia SaaS' em 3 arquivos + `mock-data.ts`\n- Atualizar `.env.example`, `NEXTAUTH_URL`, docs\n\n## Fora do escopo\n- Renomear pasta/repo `barbearia/` — nao vale o esforco (breaking pra imports, git history, colaboradores). Fica so como nome interno.\n- Rebrand visual (logo, cores) — se quiser, PBI separado.",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "Ajustar `.env.example`: comentario `# ─── Banco — Railway (DEV) ───` fica; adicionar exemplo `NEXT_PUBLIC_APP_URL=\"https://lustro-dev.up.railway.app\"`",
+            "Setar `NEXTAUTH_URL` e `NEXT_PUBLIC_APP_URL` novos no Railway env dev (obrigatório — sem, callbacks OAuth quebram)",
+            "Se custom domain: env production tambem"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "src/components/features/admin/OrgConfigForm.tsx:131 — trocar `barbearia.app/` hardcoded por util `getPublicHost()` que lê `NEXT_PUBLIC_APP_URL`",
+            "src/app/admin/configuracoes/page.tsx:113 — mesmo tratamento pro link bio",
+            "src/app/page.tsx — revisar mencao 'Barbearia' (landing/titulo)",
+            "src/app/(public)/login/page.tsx — revisar",
+            "src/components/features/admin/ReminderTemplateEditor.tsx — revisar",
+            "src/lib/mock-data.ts — 'Barbearia Demo' → 'Lustro Demo' (ou trocar seed pra 'Lustro Piloto')"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Todo texto user-facing que diz 'Barbearia' vira 'Lustro' quando for nome do produto — mas mantem 'barbearia' quando for o segmento do cliente (ex: 'sua barbearia')",
+            "URL do slug reflete dominio real (nao hardcoded)",
+            "Signup/login/emails de reset senha usam novo dominio automaticamente via NEXTAUTH_URL"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "Manual: apos rebrand, /admin/configuracoes mostra o dominio real (nao 'barbearia.app/')",
+            "Manual: login redireciona pra novo dominio",
+            "Manual: email de reset senha (se RESEND setado) tem link com novo dominio",
+            "Manual: bio publica /<slug>/bio abre pelo novo dominio"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "Railway: renomear subdominio Public Networking (Settings → Networking do service Barbearia)",
+            "Atualizar NEXTAUTH_URL + NEXT_PUBLIC_APP_URL no Railway",
+            "Se OAuth Google configurado: adicionar novo dominio nas Authorized redirect URIs no Google Cloud Console",
+            "Se Stripe webhook configurado: atualizar endpoint URL no dashboard Stripe",
+            "Redeploy + smoke test"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PBI-INC01",
+      "name": "PBI-INC01 — Incidente: fix Server/Client boundary + CI build",
+      "idList": "done",
+      "idLabels": ["backend", "infra", "testes"],
+      "pos": 58,
+      "estimateHours": 3,
+      "dependsOn": [],
+      "desc": "**Estimativa:** 3h (real: ~4h de investigação + fix)\n**Data:** 2026-07-05\n**Refs:** commits cda530c (fix messages), 878f22c (CI build), [PR #79](https://github.com/Zarogmer/Barbearia/pull/79)\n\n## 🎯 O que aconteceu\nDeploys do Railway env `dev` estavam falhando desde PR #64 (PBI-31 message templates, faz ~5 semanas). Ninguém notou porque:\n- Turbopack (`next dev --turbopack`) é permissivo com Server/Client boundary\n- Only `next build` (prod) valida strict\n- CI só rodava lint + typecheck + test — nunca `pnpm build`\n\nCada merge de PBI-32 até PBI-54 aumentou features no código mas nada rodava em prod. App vivo era versão anterior ao PR #64.\n\n## 🔎 Causa raiz\nsrc/app/admin/mensagens/TemplateFormDialog.tsx (client component) importava `MESSAGE_PLACEHOLDERS` de `@/lib/server/messages` — que tem `import 'server-only'`. Next.js recusa bundle client-side desse import em prod strict.\n\n## ✅ Fix (commit cda530c)\nCriado src/lib/messages-shared.ts (sem server-only) com type/const/helpers reusáveis. Client components importam de lá. server/messages.ts fica só com queries com withTenant.\n\n## 🔒 Prevenção (commit 878f22c)\nAdicionado job `Next build (prod)` no .github/workflows/ci.yml. Roda em cada PR/push. +3-5 min por CI mas nunca mais um merge com build quebrado passa.\n\n## Também no mesmo incidente\n- 12 migrations pendentes no Railway destravadas manualmente (message_templates, packages, etc — todas criadas sem RLS policy via prisma db push antigo)\n- 7 tabelas em prod ficaram sem RLS por semanas — corrigido com scripts one-shot (não commitados)",
+      "checklists": [
+        {
+          "name": "🔧 Backend",
+          "items": [
+            "src/lib/messages-shared.ts criado (client-safe)",
+            "src/lib/server/messages.ts limpo (só server, re-exporta shared)",
+            "MESSAGE_PLACEHOLDERS, MessageTemplate, renderTemplate, buildWhatsAppLink migrados",
+            "Scripts one-shot rodados em prod (RLS enable + policy tenant_isolation em 7 tabelas)"
+          ]
+        },
+        {
+          "name": "🎨 Frontend",
+          "items": [
+            "TemplateCard.tsx → import de @/lib/messages-shared",
+            "TemplateFormDialog.tsx → import de @/lib/messages-shared"
+          ]
+        },
+        {
+          "name": "📜 Regra de negócio",
+          "items": [
+            "Client components NUNCA importam de arquivo com 'import server-only'",
+            "Módulo shared (sem server-only, sem hooks React): tipos, constantes, helpers puros → em src/lib/*-shared.ts",
+            "Servidor pode importar de shared. Client também pode. Server-only só pra queries/mutations"
+          ]
+        },
+        {
+          "name": "🧪 Testes",
+          "items": [
+            "CI job build (Next build prod) roda em cada PR/push",
+            "Bloqueia merge se build quebra",
+            "SKIP_ENV_VALIDATION=true no CI (env vars de terceiros não obrigatórias pra build)"
+          ]
+        },
+        {
+          "name": "🚀 Deploy",
+          "items": [
+            "PR #79 mergeado 2026-07-05",
+            "Railway env dev voltou a deployar (destravou 15 features acumuladas)",
+            "TODO: Railway env production continua com mesmo build failed de 3 semanas — investigar quando precisar dele"
           ]
         }
       ]

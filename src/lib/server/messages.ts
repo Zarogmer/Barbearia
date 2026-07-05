@@ -11,73 +11,16 @@ import { withTenant } from "@/lib/db";
  * card do cliente e o sistema abre wa.me com mensagem ja preenchida.
  */
 
-export type MessageTemplate = {
-  id: string;
-  organizationId: string;
-  title: string;
-  body: string;
-  key: string | null;
-  active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
+// Tipos, placeholders e helpers puros vivem em @/lib/messages-shared
+// (sem "server-only") porque client components também usam. Re-export
+// mantém a API antiga pros consumidores server.
+export * from "@/lib/messages-shared";
 
-export type CreateMessageTemplateInput = {
-  title: string;
-  body: string;
-  key?: string | null;
-  active?: boolean;
-};
-
-export type UpdateMessageTemplateInput = CreateMessageTemplateInput & {
-  id: string;
-};
-
-/** Variáveis aceitas em placeholders. Reaproveita o domínio existente. */
-export type MessageRenderVars = {
-  nome?: string;
-  data?: string;
-  hora?: string;
-  servico?: string;
-  profissional?: string;
-  barbearia?: string;
-  endereco?: string;
-  whatsapp?: string;
-};
-
-export const MESSAGE_PLACEHOLDERS: Array<keyof MessageRenderVars> = [
-  "nome",
-  "data",
-  "hora",
-  "servico",
-  "profissional",
-  "barbearia",
-  "endereco",
-  "whatsapp",
-];
-
-/**
- * Substitui {placeholders} no template. Vars ausentes ficam como
- * "—" (em vez de string vazia) pra ficar visível pro user que faltou
- * dado, mas sem ficar `{nome}` sem renderizar.
- */
-export function renderTemplate(body: string, vars: MessageRenderVars): string {
-  return body.replace(/\{(\w+)\}/g, (_, key) => {
-    const v = vars[key as keyof MessageRenderVars];
-    return v && v.trim().length > 0 ? v : "—";
-  });
-}
-
-/**
- * Gera link wa.me com texto ja codificado. Auto-prefix 55 (BR). Telefone
- * pode vir com mascara — sanitiza pra so digitos.
- */
-export function buildWhatsAppLink(phone: string, text: string): string | null {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 10) return null;
-  const normalized = digits.startsWith("55") ? digits : `55${digits}`;
-  return `https://wa.me/${normalized}?text=${encodeURIComponent(text)}`;
-}
+import type {
+  CreateMessageTemplateInput,
+  MessageTemplate,
+  UpdateMessageTemplateInput,
+} from "@/lib/messages-shared";
 
 // ──── CRUD ────
 
@@ -136,10 +79,7 @@ export async function updateMessageTemplate(
   });
 }
 
-export async function deleteMessageTemplate(
-  organizationId: string,
-  id: string,
-): Promise<void> {
+export async function deleteMessageTemplate(organizationId: string, id: string): Promise<void> {
   await withTenant(organizationId, async (db) => {
     await db.messageTemplate.delete({ where: { id } });
   });

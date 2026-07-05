@@ -68,17 +68,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (shouldRefresh && token.sub) {
         // prismaAdmin: a query é "quais orgs eu pertenço?" — sem contexto tenant
         // ainda, e o filtro por userId já isola por usuário.
-        const memberships = await prismaAdmin.membership.findMany({
-          where: { userId: token.sub },
-          select: { organizationId: true, role: true, professionalId: true },
-        });
+        const [memberships, self] = await Promise.all([
+          prismaAdmin.membership.findMany({
+            where: { userId: token.sub },
+            select: { organizationId: true, role: true, professionalId: true },
+          }),
+          // PBI-55: flag de super-admin. Refresh no mesmo trigger dos
+          // memberships (login + trigger update + jwt sem cache).
+          prismaAdmin.user.findUnique({
+            where: { id: token.sub },
+            select: { isSuperAdmin: true },
+          }),
+        ]);
         token.memberships = memberships satisfies SessionMembership[];
+        token.isSuperAdmin = self?.isSuperAdmin ?? false;
       }
       return token;
     },
     session: async ({ session, token }) => {
       session.user.id = token.sub;
       session.user.memberships = token.memberships ?? [];
+      session.user.isSuperAdmin = token.isSuperAdmin ?? false;
       return session;
     },
   },

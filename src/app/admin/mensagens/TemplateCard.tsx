@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { Trash2 } from "lucide-react";
 
-import type { MessageTemplate } from "@/lib/server/messages";
+import type { MessageTemplate } from "@/lib/messages-shared";
 import { cn } from "@/lib/utils";
 
 import { deleteMessageTemplateAction } from "./actions";
@@ -31,16 +31,14 @@ export function TemplateCard({ template }: { template: MessageTemplate }) {
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="truncate font-display text-sm font-bold">
-              {template.title}
-            </h3>
+            <h3 className="truncate font-display text-sm font-bold">{template.title}</h3>
             {template.key && (
-              <span className="rounded-full bg-brand-soft px-1.5 py-0.5 mono text-[9px] font-semibold text-brand">
+              <span className="mono rounded-full bg-brand-soft px-1.5 py-0.5 text-[9px] font-semibold text-brand">
                 {template.key}
               </span>
             )}
             {!template.active && (
-              <span className="rounded-full bg-surface-2 px-1.5 py-0.5 mono text-[9px] font-semibold text-subtle">
+              <span className="mono rounded-full bg-surface-2 px-1.5 py-0.5 text-[9px] font-semibold text-subtle">
                 inativo
               </span>
             )}

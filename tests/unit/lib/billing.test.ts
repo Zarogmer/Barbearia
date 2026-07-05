@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  describeBilling,
-  isOrgActive,
-  type OrgBillingState,
-} from "@/lib/server/billing";
+import { describeBilling, isOrgActive, type OrgBillingState } from "@/lib/server/billing";
 
 const baseState: OrgBillingState = {
   organizationId: "org-1",
@@ -13,6 +9,7 @@ const baseState: OrgBillingState = {
   stripeCustomerId: null,
   stripeSubscriptionId: null,
   deletionScheduledFor: null,
+  suspendedAt: null,
 };
 
 beforeEach(() => {
@@ -30,27 +27,19 @@ describe("isOrgActive", () => {
   });
 
   it("status=active libera", () => {
-    expect(
-      isOrgActive({ ...baseState, subscriptionStatus: "active" }),
-    ).toBe(true);
+    expect(isOrgActive({ ...baseState, subscriptionStatus: "active" })).toBe(true);
   });
 
   it("status=trialing libera", () => {
-    expect(
-      isOrgActive({ ...baseState, subscriptionStatus: "trialing" }),
-    ).toBe(true);
+    expect(isOrgActive({ ...baseState, subscriptionStatus: "trialing" })).toBe(true);
   });
 
   it("status=past_due bloqueia", () => {
-    expect(
-      isOrgActive({ ...baseState, subscriptionStatus: "past_due" }),
-    ).toBe(false);
+    expect(isOrgActive({ ...baseState, subscriptionStatus: "past_due" })).toBe(false);
   });
 
   it("status=canceled bloqueia", () => {
-    expect(
-      isOrgActive({ ...baseState, subscriptionStatus: "canceled" }),
-    ).toBe(false);
+    expect(isOrgActive({ ...baseState, subscriptionStatus: "canceled" })).toBe(false);
   });
 
   it("trial implicito (trialEndsAt futuro) libera", () => {
@@ -77,6 +66,26 @@ describe("isOrgActive", () => {
         ...baseState,
         subscriptionStatus: "active",
         deletionScheduledFor: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      }),
+    ).toBe(false);
+  });
+
+  it("PBI-55: suspendedAt bloqueia (mesmo com sub active)", () => {
+    expect(
+      isOrgActive({
+        ...baseState,
+        subscriptionStatus: "active",
+        suspendedAt: new Date(),
+      }),
+    ).toBe(false);
+  });
+
+  it("PBI-55: suspendedAt bloqueia mesmo em dev sem Stripe", () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "");
+    expect(
+      isOrgActive({
+        ...baseState,
+        suspendedAt: new Date(),
       }),
     ).toBe(false);
   });

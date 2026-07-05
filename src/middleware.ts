@@ -24,6 +24,7 @@ const SESSION_COOKIES = [
 // (e que não tem "." no nome, sinal de arquivo) é tratado como slug.
 const RESERVED_TOP_SEGMENTS = new Set([
   "admin",
+  "superadmin",
   "api",
   "login",
   "cadastro",
@@ -38,8 +39,9 @@ export default function middleware(req: NextRequest) {
 
   // ──── 1) AUTH GATE ────
   const isAdminPath = pathname.startsWith("/admin");
+  const isSuperAdminPath = pathname.startsWith("/superadmin");
   const isCustomerAccount = /^\/[^/]+\/conta(\/|$)/.test(pathname);
-  if (isAdminPath || isCustomerAccount) {
+  if (isAdminPath || isSuperAdminPath || isCustomerAccount) {
     const hasSession = SESSION_COOKIES.some((name) => req.cookies.has(name));
     if (!hasSession) {
       const next = encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search);

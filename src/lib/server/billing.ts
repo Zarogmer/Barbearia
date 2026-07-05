@@ -17,11 +17,12 @@ export type OrgBillingState = {
   // PBI-54: se setado, dono pediu exclusão da conta — bloqueia /admin/*
   // mesmo com billing ativo.
   deletionScheduledFor: Date | null;
+  // PBI-55: super-admin suspendeu a org (inadimplência, abuso etc). Trata
+  // como "billing inativo" — dono cai no /admin/billing?reason=suspended.
+  suspendedAt: Date | null;
 };
 
-export async function getOrgBillingState(
-  organizationId: string,
-): Promise<OrgBillingState | null> {
+export async function getOrgBillingState(organizationId: string): Promise<OrgBillingState | null> {
   const row = await prismaAdmin.organization.findUnique({
     where: { id: organizationId },
     select: {
@@ -31,6 +32,7 @@ export async function getOrgBillingState(
       stripeCustomerId: true,
       stripeSubscriptionId: true,
       deletionScheduledFor: true,
+      suspendedAt: true,
     },
   });
   if (!row) return null;
@@ -41,6 +43,7 @@ export async function getOrgBillingState(
     stripeCustomerId: row.stripeCustomerId,
     stripeSubscriptionId: row.stripeSubscriptionId,
     deletionScheduledFor: row.deletionScheduledFor,
+    suspendedAt: row.suspendedAt,
   };
 }
 
@@ -59,6 +62,8 @@ export function isOrgActive(state: OrgBillingState | null): boolean {
   // PBI-54: conta marcada pra delete bloqueia tudo (mesmo com Stripe off
   // em dev). Dono cancela a exclusão pra reativar.
   if (state.deletionScheduledFor) return false;
+  // PBI-55: super-admin suspendeu — trava tudo, mesmo em dev sem Stripe.
+  if (state.suspendedAt) return false;
   if (!isStripeConfigured()) return true;
 
   if (state.subscriptionStatus === "active") return true;
@@ -172,9 +177,7 @@ export async function createCheckoutSession(input: {
   const stripe = getStripe();
   const priceId = process.env.STRIPE_PRICE_ID;
   if (!priceId) {
-    throw new Error(
-      "STRIPE_PRICE_ID não configurado. Defina o ID do plano no .env.",
-    );
+    throw new Error("STRIPE_PRICE_ID não configurado. Defina o ID do plano no .env.");
   }
 
   // Reusa Customer se já existir

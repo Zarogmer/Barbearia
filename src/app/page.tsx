@@ -693,6 +693,9 @@ function Footer() {
             <Link href="/barbearia-demo" className="hover:text-ink">
               Demo
             </Link>
+            <Link href="/instalar" className="hover:text-ink">
+              Instalar o app
+            </Link>
             <a href="mailto:contato@lustro.app" className="hover:text-ink">
               Contato
             </a>

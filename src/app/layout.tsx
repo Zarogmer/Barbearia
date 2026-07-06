@@ -52,7 +52,13 @@ export const metadata: Metadata = {
       { url: "/icons/icon-192.svg", sizes: "192x192", type: "image/svg+xml" },
       { url: "/icons/icon-512.svg", sizes: "512x512", type: "image/svg+xml" },
     ],
-    apple: "/icons/icon-192.svg",
+    // iOS ignora SVG no apple-touch-icon — sem PNG o ícone vira screenshot
+    apple: { url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" },
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Lustro",
+    statusBarStyle: "default",
   },
   openGraph: {
     type: "website",
@@ -63,7 +69,8 @@ export const metadata: Metadata = {
     siteName: "Lustro",
     images: [
       {
-        url: "/icons/icon-512.svg",
+        // PNG: scrapers de OG não renderizam SVG
+        url: "/icons/icon-512.png",
         width: 512,
         height: 512,
         alt: "Lustro",
@@ -74,7 +81,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Lustro — Agendamento online",
     description: "Agendamento em 4 toques. Painel admin em 1 tela.",
-    images: ["/icons/icon-512.svg"],
+    images: ["/icons/icon-512.png"],
   },
   robots: {
     index: true,

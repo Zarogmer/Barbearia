@@ -14,6 +14,11 @@ import {
 } from "@/app/(public)/[orgSlug]/agendar/confirmar/state";
 import { cn } from "@/lib/utils";
 
+// Flag temporaria: quando "1", o server pula OTP e cria o Appointment
+// direto ao clicar "Confirmar". Usada enquanto a Evolution API esta fora
+// do ar. Server tambem checa a mesma env — nao pode confiar so no client.
+const OTP_DISABLED = process.env.NEXT_PUBLIC_BOOKING_OTP_DISABLED === "1";
+
 type Props = {
   ctx: {
     orgSlug: string;
@@ -29,8 +34,7 @@ const RESEND_COOLDOWN_SEC = 60;
 
 export function ConfirmForm({ ctx, defaultName }: Props) {
   const [state, dispatch] = useActionState<ConfirmBookingState, FormData>(
-    (prev, fd) =>
-      prev.step === "verify" ? verifyOtpAction(prev, fd) : requestOtpAction(prev, fd),
+    (prev, fd) => (prev.step === "verify" ? verifyOtpAction(prev, fd) : requestOtpAction(prev, fd)),
     initialConfirmBookingState,
   );
 
@@ -62,9 +66,7 @@ function RequestStep({
       <input type="hidden" name="date" value={ctx.date} />
       <input type="hidden" name="time" value={ctx.time} />
 
-      {state.error && !state.fieldErrors && (
-        <ErrorAlert message={state.error} />
-      )}
+      {state.error && !state.fieldErrors && <ErrorAlert message={state.error} />}
 
       <Field
         id="customerName"
@@ -92,11 +94,23 @@ function RequestStep({
           className="mt-0.5 h-4 w-4 rounded border-line accent-[hsl(var(--brand))]"
         />
         <span className="text-subtle">
-          Aceito receber WhatsApp com código de confirmação e concordo com os{" "}
-          <span className="text-ink underline-offset-2 hover:underline">
-            termos de cancelamento
-          </span>{" "}
-          (cancelar até 2h antes).
+          {OTP_DISABLED ? (
+            <>
+              Concordo com os{" "}
+              <span className="text-ink underline-offset-2 hover:underline">
+                termos de cancelamento
+              </span>{" "}
+              (cancelar até 2h antes).
+            </>
+          ) : (
+            <>
+              Aceito receber WhatsApp com código de confirmação e concordo com os{" "}
+              <span className="text-ink underline-offset-2 hover:underline">
+                termos de cancelamento
+              </span>{" "}
+              (cancelar até 2h antes).
+            </>
+          )}
         </span>
       </label>
       {state.fieldErrors?.acceptedTerms && (
@@ -105,7 +119,7 @@ function RequestStep({
 
       <RequestSubmit />
 
-      <p className="text-center mono text-[10px] text-subtle">
+      <p className="mono text-center text-[10px] text-subtle">
         Sem cobrança agora · pagamento na barbearia
       </p>
     </form>
@@ -129,7 +143,12 @@ function RequestSubmit() {
       {pending ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Enviando código…
+          {OTP_DISABLED ? "Confirmando…" : "Enviando código…"}
+        </>
+      ) : OTP_DISABLED ? (
+        <>
+          <Check className="h-4 w-4" />
+          Confirmar agendamento
         </>
       ) : (
         <>
@@ -196,7 +215,7 @@ function VerifyStep({
       <div>
         <label
           htmlFor="code"
-          className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+          className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
         >
           Código *
         </label>
@@ -310,7 +329,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+        className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
       >
         {label}
       </label>

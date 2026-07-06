@@ -649,6 +649,32 @@ Usuários pedem "app pra baixar". Não vamos de loja no MVP: o PWA já existe (m
 
 ---
 
+### PBI-67 — Backoff no polling do painel WhatsApp
+
+**Tags:** `[frontend]`
+**Estimativa:** 2h
+**Depende de:** PBI-51 (painel WhatsApp por org)
+
+**Contexto:**
+O `ConnectionPanel` de `/admin/whatsapp` fazia polling de status+QR a cada 3s com `setInterval` fixo e engolia falhas: com a Evolution API fora do ar, a tela ficava em "Buscando QR code..." pra sempre e disparava 100+ requests em poucos minutos (visto em prod em 2026-07-06, quando o env apontava pra URL morta no Railway). Erro persistente não pode virar tempestade de request — e o usuário precisa ficar sabendo.
+
+**AC:**
+
+- [ ] Polling com backoff exponencial em falha consecutiva: base 3s, dobra a cada erro, teto 30s.
+- [ ] Após 5 falhas consecutivas o polling PARA; UI mostra alerta com o último erro e botão "Tentar de novo" (zera o contador e volta ao intervalo base).
+- [ ] Qualquer poll com sucesso zera o backoff (volta pros 3s).
+- [ ] Erro de polling visível na UI — sem spinner infinito mudo.
+- [ ] Cálculo do backoff é função pura em `src/lib/backoff.ts` com testes unit (progressão, teto, stop, input negativo, opções customizadas).
+- [ ] Comportamento com estado `open` preservado (sem polling).
+
+**Arquivos:**
+
+- `src/lib/backoff.ts`
+- `src/app/admin/whatsapp/ConnectionPanel.tsx`
+- `tests/unit/lib/backoff.test.ts`
+
+---
+
 ## Backlog futuro (NÃO MVP — não pegar nesta semana)
 
 - Lembrete por WhatsApp (Cloud API)

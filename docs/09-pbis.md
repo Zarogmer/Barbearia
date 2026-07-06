@@ -607,6 +607,48 @@ Painel roda em `/superadmin/*` — **totalmente separado** de `/admin/*` (que é
 
 ---
 
+### PBI-66 — Página "Instalar o app" (PWA install: Android + iOS)
+
+**Tags:** `[frontend]`
+**Estimativa:** 4h
+**Depende de:** PBI-15 (PWA base)
+
+**Contexto:**
+Usuários pedem "app pra baixar". Não vamos de loja no MVP: o PWA já existe (manifest + service worker do PBI-15), falta o caminho de instalação guiado. No Android/Chrome dá pra disparar o prompt nativo de instalação via evento `beforeinstallprompt`; no iOS não existe prompt programático — a instalação é manual via Safari (Compartilhar → Adicionar à Tela de Início) e precisa de `apple-touch-icon` PNG (iOS ignora SVG; sem PNG o ícone vira screenshot da página).
+
+**AC:**
+
+- [ ] Página pública `/instalar` com detecção de plataforma via user agent:
+  - Android/Chrome: botão "Instalar agora" que dispara o prompt nativo (`beforeinstallprompt`). Se o evento não chegou (ex: já instalado, browser sem suporte), mostra instruções manuais do menu ⋮ → "Adicionar à tela inicial".
+  - iOS/Safari: passo a passo ilustrado (Compartilhar → Adicionar à Tela de Início). Sem promessa de botão.
+  - Desktop/outros: explica que é pra abrir no celular + instrução genérica.
+- [ ] Se já está rodando instalado (`display-mode: standalone`), página mostra "app já instalado" em vez do CTA.
+- [ ] Ícones PNG gerados a partir dos SVGs existentes: `icon-180.png` (apple-touch-icon), `icon-192.png`, `icon-512.png` em `public/icons/`.
+- [ ] `manifest.json` passa a listar os PNGs 192/512 (mantém SVGs como progressive enhancement).
+- [ ] Root layout: `icons.apple` aponta pro PNG 180 e `appleWebApp` configurado (`capable`, `title`, `statusBarStyle`) — gera as metas `apple-mobile-web-app-*`.
+- [ ] Imagens OG/Twitter passam a usar o PNG 512 (scrapers não renderizam SVG).
+- [ ] Link "Instalar o app" no footer da landing.
+- [ ] Detecção de plataforma é função pura em `src/lib/platform.ts` com testes unit (iPhone, iPad, iPadOS 13+ como Macintosh+touch, Android, desktop).
+- [ ] Sem dependência nova em `package.json`.
+
+**Arquivos:**
+
+- `src/app/(public)/instalar/page.tsx`
+- `src/components/features/common/InstallCta.tsx`
+- `src/lib/platform.ts`
+- `src/app/layout.tsx` (metadata)
+- `src/app/page.tsx` (link no footer)
+- `public/manifest.json`
+- `public/icons/icon-180.png`, `icon-192.png`, `icon-512.png`
+- `tests/unit/lib/platform.test.ts`
+
+**Notas para v2 (não pegar aqui):**
+
+- **Instalação por barbearia**: `start_url` do manifest é `/` (raiz Lustro). Cliente final da barbearia instalar "o app da barbearia X" exige manifest dinâmico por org (`/[orgSlug]/manifest.webmanifest` + `start_url: /[orgSlug]`) e entry point no fluxo do cliente. Fica pra PBI futura.
+- **APK na Play Store**: embrulhar o PWA via TWA (PWABuilder/Bubblewrap) e publicar. Depende desta PBI.
+
+---
+
 ## Backlog futuro (NÃO MVP — não pegar nesta semana)
 
 - Lembrete por WhatsApp (Cloud API)

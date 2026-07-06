@@ -2,7 +2,7 @@
   "name": "Lustro — Agendamento online",
   "short_name": "Lustro",
   "description": "Agendamento online para barbearias e salões. Multi-tenant, premium, sem fricção.",
-  "start_url": "/",
+  "start_url": "/admin",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",

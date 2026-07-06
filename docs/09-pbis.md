@@ -628,6 +628,7 @@ Usuários pedem "app pra baixar". Não vamos de loja no MVP: o PWA já existe (m
 - [ ] Root layout: `icons.apple` aponta pro PNG 180 e `appleWebApp` configurado (`capable`, `title`, `statusBarStyle`) — gera as metas `apple-mobile-web-app-*`.
 - [ ] Imagens OG/Twitter passam a usar o PNG 512 (scrapers não renderizam SVG).
 - [ ] Link "Instalar o app" no footer da landing.
+- [ ] `start_url` do manifest aponta pra `/admin` — logado abre direto no painel; deslogado o middleware redireciona pro `/login?next=/admin` e volta após autenticar.
 - [ ] Detecção de plataforma é função pura em `src/lib/platform.ts` com testes unit (iPhone, iPad, iPadOS 13+ como Macintosh+touch, Android, desktop).
 - [ ] Sem dependência nova em `package.json`.
 
@@ -644,7 +645,7 @@ Usuários pedem "app pra baixar". Não vamos de loja no MVP: o PWA já existe (m
 
 **Notas para v2 (não pegar aqui):**
 
-- **Instalação por barbearia**: `start_url` do manifest é `/` (raiz Lustro). Cliente final da barbearia instalar "o app da barbearia X" exige manifest dinâmico por org (`/[orgSlug]/manifest.webmanifest` + `start_url: /[orgSlug]`) e entry point no fluxo do cliente. Fica pra PBI futura.
+- **Instalação por barbearia**: `start_url` do manifest é global (`/admin`, painel do dono). Cliente final da barbearia instalar "o app da barbearia X" exige manifest dinâmico por org (`/[orgSlug]/manifest.webmanifest` + `start_url: /[orgSlug]`) e entry point no fluxo do cliente. Fica pra PBI futura.
 - **APK na Play Store**: embrulhar o PWA via TWA (PWABuilder/Bubblewrap) e publicar. Depende desta PBI.
 
 ---

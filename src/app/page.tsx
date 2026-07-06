@@ -19,8 +19,7 @@ export const metadata = {
     "Agendamento online 24/7, PDV de balcão, comissões automáticas. Tudo no mesmo lugar, sem fricção. Comece grátis.",
   openGraph: {
     title: "Lustro — Sua barbearia merece um sistema premium",
-    description:
-      "Agendamento online, PDV e comissões automáticas. Comece grátis em 5 minutos.",
+    description: "Agendamento online, PDV e comissões automáticas. Comece grátis em 5 minutos.",
     type: "website",
   },
 };
@@ -52,9 +51,7 @@ function TopNav() {
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-ink text-[hsl(var(--surface))]">
             <Scissors className="h-4 w-4" />
           </span>
-          <span className="font-display text-lg font-extrabold tracking-tight">
-            Lustro
-          </span>
+          <span className="font-display text-lg font-extrabold tracking-tight">Lustro</span>
         </Link>
         <div className="flex items-center gap-3">
           <Link
@@ -109,8 +106,8 @@ function Hero() {
             .
           </h1>
           <p className="mb-8 max-w-xl text-base leading-relaxed text-subtle md:text-lg">
-            Agendamento online 24/7, PDV de balcão e comissões automáticas.
-            Tudo no mesmo lugar — sem planilha, sem app pago caro,{" "}
+            Agendamento online 24/7, PDV de balcão e comissões automáticas. Tudo no mesmo lugar —
+            sem planilha, sem app pago caro,{" "}
             <span className="font-medium text-ink">sem fricção</span>.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -128,7 +125,7 @@ function Hero() {
               Ver demo ao vivo
             </Link>
           </div>
-          <p className="mt-4 mono text-[11px] text-subtle">
+          <p className="mono mt-4 text-[11px] text-subtle">
             ✓ Grátis pra começar · ✓ Sem cartão · ✓ Setup em 5 minutos
           </p>
         </div>
@@ -175,11 +172,9 @@ function HeroVisual() {
 
       {/* Card dashboard atrás */}
       <div className="absolute -right-6 -top-6 z-0 hidden w-64 rotate-3 rounded-xl border border-line bg-surface p-4 shadow-lg md:block">
-        <div className="mb-2 mono text-[9px] uppercase tracking-wider text-subtle">
-          Hoje
-        </div>
+        <div className="mono mb-2 text-[9px] uppercase tracking-wider text-subtle">Hoje</div>
         <div className="font-display text-2xl font-extrabold">12 agendamentos</div>
-        <div className="mt-1 mono text-xs text-brand">R$ 1.240,00 estimados</div>
+        <div className="mono mt-1 text-xs text-brand">R$ 1.240,00 estimados</div>
         <div className="mt-3 flex gap-1">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
@@ -234,25 +229,20 @@ function SocialProof() {
   return (
     <section className="border-y border-line bg-surface py-8">
       <div className="mx-auto max-w-6xl px-5">
-        <p className="mb-5 text-center mono text-[10px] uppercase tracking-[0.18em] text-subtle">
+        <p className="mono mb-5 text-center text-[10px] uppercase tracking-[0.18em] text-subtle">
           Pensado pra quem cobra premium
         </p>
         <div className="grid grid-cols-3 gap-6 sm:grid-cols-6">
-          {[
-            "Barbearias",
-            "Salões",
-            "Estúdios tattoo",
-            "Estética",
-            "Manicure",
-            "Massoterapia",
-          ].map((label) => (
-            <div
-              key={label}
-              className="flex items-center justify-center font-display text-xs font-bold tracking-tight text-subtle sm:text-sm"
-            >
-              {label}
-            </div>
-          ))}
+          {["Barbearias", "Salões", "Estúdios tattoo", "Estética", "Manicure", "Massoterapia"].map(
+            (label) => (
+              <div
+                key={label}
+                className="flex items-center justify-center font-display text-xs font-bold tracking-tight text-subtle sm:text-sm"
+              >
+                {label}
+              </div>
+            ),
+          )}
         </div>
       </div>
     </section>
@@ -271,8 +261,8 @@ function Features() {
             Da agenda ao caixa, sem trocar de app.
           </h2>
           <p className="mt-3 text-sm text-subtle md:text-base">
-            Substitui WhatsApp pra agendamento, planilha pra controle de
-            comissões e caderno pra anotações de comanda.
+            Substitui WhatsApp pra agendamento, planilha pra controle de comissões e caderno pra
+            anotações de comanda.
           </p>
         </div>
 
@@ -325,8 +315,7 @@ function HowItWorks() {
     {
       n: "01",
       title: "Cadastre serviços",
-      description:
-        "Em 2 minutos: nome, duração, preço. Quantos quiser.",
+      description: "Em 2 minutos: nome, duração, preço. Quantos quiser.",
     },
     {
       n: "02",
@@ -336,8 +325,7 @@ function HowItWorks() {
     {
       n: "03",
       title: "Compartilhe o link",
-      description:
-        "Envie sualustro.app/sua-barbearia pro WhatsApp. Clientes agendam sozinhos.",
+      description: "Envie sua lustro.app/sua-barbearia pro WhatsApp. Clientes agendam sozinhos.",
     },
   ];
   return (
@@ -354,9 +342,7 @@ function HowItWorks() {
           {steps.map((s) => (
             <div key={s.n} className="relative">
               <div className="mono mb-3 text-3xl font-extrabold text-brand">{s.n}</div>
-              <h3 className="mb-2 font-display text-lg font-bold tracking-tight">
-                {s.title}
-              </h3>
+              <h3 className="mb-2 font-display text-lg font-bold tracking-tight">{s.title}</h3>
               <p className="text-sm text-subtle">{s.description}</p>
             </div>
           ))}
@@ -378,18 +364,18 @@ function ProductPreview() {
             Um app pro cliente, um sistema pro balcão.
           </h2>
           <p className="mt-3 text-sm text-subtle md:text-base">
-            Mobile-first pro cliente final. Denso e produtivo pro dono no
-            desktop. Cada superfície otimizada pro seu uso.
+            Mobile-first pro cliente final. Denso e produtivo pro dono no desktop. Cada superfície
+            otimizada pro seu uso.
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-line bg-surface p-6">
-            <div className="mb-3 eyebrow w-fit">App cliente</div>
+            <div className="eyebrow mb-3 w-fit">App cliente</div>
             <h3 className="mb-2 font-display text-xl font-bold">Mobile nativo</h3>
             <p className="mb-5 text-sm text-subtle">
-              Bottom nav, single-screen agendamento, histórico, feed da
-              barbearia, avaliações. Parece app instalado.
+              Bottom nav, single-screen agendamento, histórico, feed da barbearia, avaliações.
+              Parece app instalado.
             </p>
             <ul className="space-y-2 text-sm">
               <FeatureBullet>Confirmação por WhatsApp sem criar conta</FeatureBullet>
@@ -399,13 +385,13 @@ function ProductPreview() {
           </div>
 
           <div className="rounded-2xl border border-line bg-ink p-6 text-[hsl(var(--surface))]">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-brand/20 px-3 py-1 mono text-[10px] font-semibold uppercase tracking-[0.12em] text-brand">
+            <div className="mono mb-3 inline-flex items-center gap-2 rounded-full bg-brand/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand">
               Painel admin
             </div>
             <h3 className="mb-2 font-display text-xl font-bold">Desktop denso</h3>
             <p className="mb-5 text-sm opacity-80">
-              Agenda diária, KPIs, comandas, clientes, comissões. Pra usar no
-              monitor do balcão durante o atendimento.
+              Agenda diária, KPIs, comandas, clientes, comissões. Pra usar no monitor do balcão
+              durante o atendimento.
             </p>
             <ul className="space-y-2 text-sm">
               <FeatureBullet inverted>Dashboard com faturamento do dia</FeatureBullet>
@@ -419,13 +405,7 @@ function ProductPreview() {
   );
 }
 
-function FeatureBullet({
-  children,
-  inverted,
-}: {
-  children: React.ReactNode;
-  inverted?: boolean;
-}) {
+function FeatureBullet({ children, inverted }: { children: React.ReactNode; inverted?: boolean }) {
   return (
     <li className="flex items-start gap-2">
       <span
@@ -489,9 +469,8 @@ function Pricing() {
           />
         </div>
 
-        <p className="mt-6 text-center mono text-[10px] text-subtle">
-          * Sistema de billing em fase final. Cobrança real só após primeira
-          confirmação por email.
+        <p className="mono mt-6 text-center text-[10px] text-subtle">
+          * Sistema de billing em fase final. Cobrança real só após primeira confirmação por email.
         </p>
       </div>
     </section>
@@ -524,7 +503,7 @@ function PriceCard({
       }
     >
       {highlight && (
-        <div className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 mono text-[10px] font-bold uppercase tracking-wider text-brand-fg">
+        <div className="mono absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-fg">
           <Sparkles className="h-2.5 w-2.5" />
           Mais escolhido
         </div>
@@ -532,12 +511,8 @@ function PriceCard({
       <div className="mb-1 font-display text-lg font-bold">{name}</div>
       <div className="mb-1 text-xs text-subtle">{tagline}</div>
       <div className="mb-5 flex items-baseline gap-1">
-        <span className="num font-display text-4xl font-extrabold tracking-tight">
-          {price}
-        </span>
-        {priceSuffix && (
-          <span className="mono text-xs text-subtle">{priceSuffix}</span>
-        )}
+        <span className="num font-display text-4xl font-extrabold tracking-tight">{price}</span>
+        {priceSuffix && <span className="mono text-xs text-subtle">{priceSuffix}</span>}
       </div>
       <ul className="mb-6 space-y-2.5 text-sm">
         {features.map((f) => (
@@ -569,8 +544,7 @@ function PriceCard({
 function Testimonials() {
   const items = [
     {
-      quote:
-        "Reduzi o tempo gasto com WhatsApp em 80%. Cliente agenda sozinho e eu só atendo.",
+      quote: "Reduzi o tempo gasto com WhatsApp em 80%. Cliente agenda sozinho e eu só atendo.",
       name: "Vinícius B.",
       role: "Barbearia Vini · São Paulo",
     },
@@ -600,16 +574,10 @@ function Testimonials() {
 
         <div className="grid gap-5 md:grid-cols-3">
           {items.map((t) => (
-            <figure
-              key={t.name}
-              className="rounded-2xl border border-line bg-surface p-6"
-            >
+            <figure key={t.name} className="rounded-2xl border border-line bg-surface p-6">
               <div className="mb-3 flex gap-0.5">
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <Star
-                    key={n}
-                    className="h-3.5 w-3.5 fill-warn text-warn"
-                  />
+                  <Star key={n} className="h-3.5 w-3.5 fill-warn text-warn" />
                 ))}
               </div>
               <blockquote className="mb-4 text-sm leading-relaxed text-ink">
@@ -623,9 +591,8 @@ function Testimonials() {
           ))}
         </div>
 
-        <p className="mt-6 text-center mono text-[10px] text-subtle">
-          * Depoimentos ilustrativos enquanto coletamos os primeiros clientes
-          reais.
+        <p className="mono mt-6 text-center text-[10px] text-subtle">
+          * Depoimentos ilustrativos enquanto coletamos os primeiros clientes reais.
         </p>
       </div>
     </section>
@@ -679,9 +646,7 @@ function Footer() {
               <Scissors className="h-3.5 w-3.5" />
             </span>
             <span className="font-display text-base font-bold">Lustro</span>
-            <span className="mono ml-2 text-[10px] text-subtle">
-              · Charcoal Premium
-            </span>
+            <span className="mono ml-2 text-[10px] text-subtle">· Charcoal Premium</span>
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-subtle">
             <Link href="/login" className="hover:text-ink">

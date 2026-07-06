@@ -10,6 +10,7 @@ import { getAppointmentColors } from "@/lib/server/appointment-colors";
 import { prismaAdmin } from "@/lib/db";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
 import { getThemeState } from "@/lib/server/theme";
+import { getPublicHost } from "@/lib/utils";
 
 import { AccountSection } from "./AccountSection";
 
@@ -91,10 +92,7 @@ export default async function SettingsPage() {
       </div>
 
       <div className="rounded-md border border-line bg-surface p-6">
-        <ReminderTemplateEditor
-          initial={org.reminderTemplate}
-          orgName={org.name}
-        />
+        <ReminderTemplateEditor initial={org.reminderTemplate} orgName={org.name} />
       </div>
 
       {/* Página de Bio (PBI-32): link copiável pra compartilhar no
@@ -104,13 +102,13 @@ export default async function SettingsPage() {
           <div className="eyebrow mb-2">Compartilhar</div>
           <h2 className="font-display text-base font-bold">Página de Bio</h2>
           <p className="text-xs text-subtle">
-            Link estilo Linktree pra colar no Instagram, WhatsApp ou imprimir
-            QR code. Mostra botões de contato + CTA pra agendar.
+            Link estilo Linktree pra colar no Instagram, WhatsApp ou imprimir QR code. Mostra botões
+            de contato + CTA pra agendar.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <code className="mono flex-1 truncate rounded-md border border-line bg-surface-2 px-3 py-2 text-xs">
-            barbearia.app/{org.slug}/bio
+            {getPublicHost()}/{org.slug}/bio
           </code>
           <Link
             href={`/${org.slug}/bio`}
@@ -126,9 +124,7 @@ export default async function SettingsPage() {
       <AccountSection
         userName={session.user.name ?? "—"}
         userEmail={session.user.email ?? "—"}
-        deletionScheduledFor={
-          userRow?.deletionScheduledFor?.toISOString() ?? null
-        }
+        deletionScheduledFor={userRow?.deletionScheduledFor?.toISOString() ?? null}
       />
 
       <div className="text-center">

@@ -44,7 +44,7 @@ export const ORGS: MockOrg[] = [
   {
     id: "org-1",
     slug: "barbearia-demo",
-    name: "Barbearia Demo",
+    name: "Lustro Demo",
     address: "Av. Paulista, 1000 — São Paulo, SP",
     rating: 4.8,
     reviewsCount: 123,

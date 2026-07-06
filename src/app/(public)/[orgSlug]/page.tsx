@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { auth } from "@/lib/auth";
+import { StickyBookingCTA } from "@/components/features/customer/StickyBookingCTA";
 import {
   WEEKDAYS,
   WEEKDAY_LABEL,
@@ -39,11 +40,7 @@ function timeAgoPt(date: Date, now = new Date()): string {
   return `há ${Math.floor(diffDays / 365)} ano(s)`;
 }
 
-export default async function OrgLandingPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>;
-}) {
+export default async function OrgLandingPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const org = await getOrgPublicProfile(orgSlug);
   if (!org) notFound();
@@ -63,15 +60,13 @@ export default async function OrgLandingPage({
   const mapsHref = org.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(org.address)}`
     : null;
-  const whatsappHref = org.whatsapp
-    ? `https://wa.me/${org.whatsapp.replace(/\D/g, "")}`
-    : null;
+  const whatsappHref = org.whatsapp ? `https://wa.me/${org.whatsapp.replace(/\D/g, "")}` : null;
   const instagramHref = org.instagram
     ? `https://instagram.com/${org.instagram.replace(/^@/, "")}`
     : null;
 
   return (
-    <main className="mx-auto max-w-md px-5 py-5 sm:max-w-2xl">
+    <main className="mx-auto max-w-md px-5 py-5 pb-24 sm:max-w-2xl sm:pb-5">
       {/* Hero — cover image OU gradient fallback */}
       <section className="relative mb-5 overflow-hidden rounded-xl">
         {org.coverImageUrl ? (
@@ -117,9 +112,7 @@ export default async function OrgLandingPage({
             <span className="line-clamp-1">{org.address.split(",")[0]}</span>
           </span>
         )}
-        <span
-          className={`inline-flex items-center gap-1.5 ${openNow ? "text-ok" : "text-subtle"}`}
-        >
+        <span className={`inline-flex items-center gap-1.5 ${openNow ? "text-ok" : "text-subtle"}`}>
           <Clock className="h-3.5 w-3.5" />
           <span className="font-medium">
             {openNow
@@ -142,9 +135,7 @@ export default async function OrgLandingPage({
         </Link>
         <Link
           href={
-            isLoggedIn
-              ? `/${orgSlug}/conta/historico`
-              : `/login?next=/${orgSlug}/conta/historico`
+            isLoggedIn ? `/${orgSlug}/conta/historico` : `/login?next=/${orgSlug}/conta/historico`
           }
           className="tap flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-sm font-medium text-subtle transition-colors hover:border-brand hover:text-ink"
         >
@@ -166,15 +157,22 @@ export default async function OrgLandingPage({
         ) : (
           <div className="space-y-2">
             {services.map((s) => (
-              <div key={s.id} className="card-i flex items-center justify-between p-4">
-                <div>
+              <Link
+                key={s.id}
+                href={`/${orgSlug}/agendar?serviceId=${s.id}`}
+                className="card-i tap group flex items-center justify-between p-4 transition-all hover:-translate-y-px hover:border-brand hover:shadow-sm"
+              >
+                <div className="min-w-0 flex-1">
                   <div className="font-semibold">{s.name}</div>
                   <div className="mono text-xs text-subtle">
                     {formatDuration(s.durationMinutes)}
                   </div>
                 </div>
-                <div className="num text-base font-semibold">{formatBRL(s.priceCents)}</div>
-              </div>
+                <div className="flex items-center gap-2 pl-3">
+                  <div className="num text-base font-semibold">{formatBRL(s.priceCents)}</div>
+                  <ArrowRight className="h-3.5 w-3.5 text-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
+                </div>
+              </Link>
             ))}
           </div>
         )}
@@ -201,9 +199,10 @@ export default async function OrgLandingPage({
                 .toUpperCase();
               const shortBio = p.bio?.slice(0, 24) ?? "";
               return (
-                <div
+                <Link
                   key={p.id}
-                  className="card-i flex flex-col items-center p-4 text-center"
+                  href={`/${orgSlug}/agendar?professionalId=${p.id}`}
+                  className="card-i tap flex flex-col items-center p-4 text-center transition-all hover:-translate-y-px hover:border-brand hover:shadow-sm"
                 >
                   <span className="avatar-ring mb-2">
                     <span className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-surface-3 text-sm font-bold">
@@ -221,10 +220,8 @@ export default async function OrgLandingPage({
                     </span>
                   </span>
                   <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
-                  {shortBio && (
-                    <div className="text-[11px] text-subtle">{shortBio}…</div>
-                  )}
-                </div>
+                  {shortBio && <div className="text-[11px] text-subtle">{shortBio}…</div>}
+                </Link>
               );
             })}
           </div>
@@ -238,7 +235,7 @@ export default async function OrgLandingPage({
             <h2 className="font-display text-sm font-bold uppercase tracking-wider text-subtle">
               Avaliações
             </h2>
-            <span className="inline-flex items-center gap-1 mono text-xs text-subtle">
+            <span className="mono inline-flex items-center gap-1 text-xs text-subtle">
               <Star className="h-3 w-3 fill-brand text-brand" />
               {reviews.average.toFixed(1)} de {reviews.count}
             </span>
@@ -258,13 +255,9 @@ export default async function OrgLandingPage({
                     </div>
                     <span className="text-sm font-semibold">{r.customerName}</span>
                   </div>
-                  <span className="mono text-[10px] text-subtle">
-                    {timeAgoPt(r.createdAt)}
-                  </span>
+                  <span className="mono text-[10px] text-subtle">{timeAgoPt(r.createdAt)}</span>
                 </div>
-                {r.comment && (
-                  <p className="text-sm text-ink/80">{r.comment}</p>
-                )}
+                {r.comment && <p className="text-sm text-ink/80">{r.comment}</p>}
               </article>
             ))}
           </div>
@@ -322,13 +315,9 @@ export default async function OrgLandingPage({
                     <span className="mono w-10 text-[11px] uppercase text-subtle">
                       {WEEKDAY_SHORT[day]}
                     </span>
-                    <span className={isToday ? "font-semibold" : ""}>
-                      {WEEKDAY_LABEL[day]}
-                    </span>
+                    <span className={isToday ? "font-semibold" : ""}>{WEEKDAY_LABEL[day]}</span>
                   </div>
-                  <span
-                    className={`mono text-xs ${block ? "text-ink" : "text-subtle"}`}
-                  >
+                  <span className={`mono text-xs ${block ? "text-ink" : "text-subtle"}`}>
                     {formatHours(block)}
                   </span>
                 </div>
@@ -367,10 +356,12 @@ export default async function OrgLandingPage({
         </section>
       )}
 
-      <p className="mt-10 flex items-center justify-center gap-1 mono text-[10px] text-subtle">
+      <p className="mono mt-10 flex items-center justify-center gap-1 text-[10px] text-subtle">
         <Sparkles className="h-3 w-3" />
         powered by <span className="text-brand">Lustro</span>
       </p>
+
+      <StickyBookingCTA orgSlug={orgSlug} minPriceCents={services[0]?.priceCents ?? null} />
     </main>
   );
 }

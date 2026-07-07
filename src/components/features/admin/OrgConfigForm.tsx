@@ -5,10 +5,7 @@ import { useFormStatus } from "react-dom";
 import { AlertCircle, AlertTriangle, Check, Loader2 } from "lucide-react";
 
 import { updateOrganizationAction } from "@/app/admin/configuracoes/actions";
-import {
-  initialOrgConfigState,
-  type OrgConfigState,
-} from "@/app/admin/configuracoes/state";
+import { initialOrgConfigState, type OrgConfigState } from "@/app/admin/configuracoes/state";
 import { BusinessHoursEditor } from "@/components/features/admin/BusinessHoursEditor";
 import { ImageUpload } from "@/components/ui/image-upload";
 import {
@@ -21,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import type { BusinessHours } from "@/lib/server/business-hours";
-import { cn } from "@/lib/utils";
+import { cn, getPublicHost } from "@/lib/utils";
 
 type Props = {
   defaults: {
@@ -53,12 +50,8 @@ export function OrgConfigForm({ defaults }: Props) {
 
   const [slug, setSlug] = useState(defaults.slug);
   const [allowGuest, setAllowGuest] = useState(defaults.allowGuestBooking);
-  const [allowMulti, setAllowMulti] = useState(
-    defaults.allowMultipleSimultaneousBookings,
-  );
-  const [allowOverbook, setAllowOverbook] = useState(
-    defaults.allowOverbookEncaixe,
-  );
+  const [allowMulti, setAllowMulti] = useState(defaults.allowMultipleSimultaneousBookings);
+  const [allowOverbook, setAllowOverbook] = useState(defaults.allowOverbookEncaixe);
   const [loyaltyEnabled, setLoyaltyEnabled] = useState(defaults.loyaltyEnabled);
   const [confirmingSlug, setConfirmingSlug] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
@@ -84,11 +77,7 @@ export function OrgConfigForm({ defaults }: Props) {
 
   return (
     <>
-      <form
-        action={dispatch}
-        onSubmit={handleSubmit}
-        className="space-y-5"
-      >
+      <form action={dispatch} onSubmit={handleSubmit} className="space-y-5">
         {state.error && !state.fieldErrors && (
           <div
             role="alert"
@@ -116,19 +105,17 @@ export function OrgConfigForm({ defaults }: Props) {
         <div>
           <label
             htmlFor="slug"
-            className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+            className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
           >
             URL (slug) *
           </label>
           <div
             className={cn(
               "flex h-11 items-center rounded-lg border bg-surface pl-3 text-sm transition-all focus-within:shadow-[0_0_0_4px_hsl(var(--brand)/0.18)]",
-              state.fieldErrors?.slug
-                ? "border-danger"
-                : "border-line focus-within:border-brand",
+              state.fieldErrors?.slug ? "border-danger" : "border-line focus-within:border-brand",
             )}
           >
-            <span className="mono text-subtle">barbearia.app/</span>
+            <span className="mono text-subtle">{getPublicHost()}/</span>
             <input
               id="slug"
               name="slug"
@@ -142,8 +129,7 @@ export function OrgConfigForm({ defaults }: Props) {
             <p className="mt-1 text-[11px] text-danger">{state.fieldErrors.slug}</p>
           ) : (
             <p className="mt-1.5 text-xs text-subtle">
-              Apenas letras minúsculas, números e hífen. Mudar quebra links
-              antigos.
+              Apenas letras minúsculas, números e hífen. Mudar quebra links antigos.
             </p>
           )}
         </div>
@@ -151,7 +137,7 @@ export function OrgConfigForm({ defaults }: Props) {
         <div>
           <label
             htmlFor="tz"
-            className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+            className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
           >
             Fuso horário
           </label>
@@ -170,31 +156,19 @@ export function OrgConfigForm({ defaults }: Props) {
             <label htmlFor="allowGuestBooking" className="cursor-pointer text-sm">
               <div className="font-semibold">Permitir agendamento sem cadastro</div>
               <div className="text-xs text-subtle">
-                Cliente fornece nome e email mas não precisa criar senha. Útil
-                para fluxo rápido.
+                Cliente fornece nome e email mas não precisa criar senha. Útil para fluxo rápido.
               </div>
             </label>
-            <Switch
-              id="allowGuestBooking"
-              checked={allowGuest}
-              onCheckedChange={setAllowGuest}
-            />
-            <input
-              type="hidden"
-              name="allowGuestBooking"
-              value={allowGuest ? "true" : "false"}
-            />
+            <Switch id="allowGuestBooking" checked={allowGuest} onCheckedChange={setAllowGuest} />
+            <input type="hidden" name="allowGuestBooking" value={allowGuest ? "true" : "false"} />
           </div>
 
           <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-surface-2 p-3">
-            <label
-              htmlFor="allowMultipleSimultaneousBookings"
-              className="cursor-pointer text-sm"
-            >
+            <label htmlFor="allowMultipleSimultaneousBookings" className="cursor-pointer text-sm">
               <div className="font-semibold">Múltiplo agendamento simultâneo</div>
               <div className="text-xs text-subtle">
-                Cliente pode marcar 2 serviços ao mesmo tempo com profissionais
-                diferentes (ex: corte + manicure paralelo).
+                Cliente pode marcar 2 serviços ao mesmo tempo com profissionais diferentes (ex:
+                corte + manicure paralelo).
               </div>
             </label>
             <Switch
@@ -210,14 +184,11 @@ export function OrgConfigForm({ defaults }: Props) {
           </div>
 
           <div className="flex items-start justify-between gap-3 rounded-lg border border-line bg-surface-2 p-3">
-            <label
-              htmlFor="allowOverbookEncaixe"
-              className="cursor-pointer text-sm"
-            >
+            <label htmlFor="allowOverbookEncaixe" className="cursor-pointer text-sm">
               <div className="font-semibold">Permitir encaixe (overbook)</div>
               <div className="text-xs text-subtle">
-                Dono pode forçar agendamento em conflito de horário pra encaixar
-                cliente urgente. Quando off, o botão &quot;Forçar&quot; some.
+                Dono pode forçar agendamento em conflito de horário pra encaixar cliente urgente.
+                Quando off, o botão &quot;Forçar&quot; some.
               </div>
             </label>
             <Switch
@@ -236,19 +207,17 @@ export function OrgConfigForm({ defaults }: Props) {
         {/* Taxas do cartão (PBI-45) */}
         <div className="space-y-3 rounded-lg border border-line bg-surface-2 p-4">
           <div>
-            <div className="mb-1 font-display text-base font-bold">
-              Taxa do cartão
-            </div>
+            <div className="mb-1 font-display text-base font-bold">Taxa do cartão</div>
             <p className="text-xs text-subtle">
-              Taxa cobrada pela maquininha. Usada pra calcular receita líquida
-              nos relatórios. Deixe 0 se não usa cartão ou não quer descontar.
+              Taxa cobrada pela maquininha. Usada pra calcular receita líquida nos relatórios. Deixe
+              0 se não usa cartão ou não quer descontar.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label
                 htmlFor="creditCardFeePercent"
-                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
               >
                 Crédito (%)
               </label>
@@ -267,7 +236,7 @@ export function OrgConfigForm({ defaults }: Props) {
             <div>
               <label
                 htmlFor="debitCardFeePercent"
-                className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
               >
                 Débito (%)
               </label>
@@ -290,12 +259,10 @@ export function OrgConfigForm({ defaults }: Props) {
         <div className="space-y-3 rounded-lg border border-line bg-surface-2 p-4">
           <div className="flex items-start justify-between gap-3">
             <label htmlFor="loyaltyEnabled" className="cursor-pointer text-sm">
-              <div className="font-display text-base font-bold">
-                Cartão fidelidade
-              </div>
+              <div className="font-display text-base font-bold">Cartão fidelidade</div>
               <div className="text-xs text-subtle">
-                A cada N atendimentos concluídos, cliente ganha a recompensa.
-                Visível na ficha do cliente quando ativo.
+                A cada N atendimentos concluídos, cliente ganha a recompensa. Visível na ficha do
+                cliente quando ativo.
               </div>
             </label>
             <Switch
@@ -303,18 +270,14 @@ export function OrgConfigForm({ defaults }: Props) {
               checked={loyaltyEnabled}
               onCheckedChange={setLoyaltyEnabled}
             />
-            <input
-              type="hidden"
-              name="loyaltyEnabled"
-              value={loyaltyEnabled ? "true" : "false"}
-            />
+            <input type="hidden" name="loyaltyEnabled" value={loyaltyEnabled ? "true" : "false"} />
           </div>
           {loyaltyEnabled && (
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="loyaltyGoal"
-                  className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                  className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
                 >
                   Meta (atendimentos)
                 </label>
@@ -331,7 +294,7 @@ export function OrgConfigForm({ defaults }: Props) {
               <div>
                 <label
                   htmlFor="loyaltyRewardLabel"
-                  className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+                  className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
                 >
                   Recompensa
                 </label>
@@ -354,8 +317,7 @@ export function OrgConfigForm({ defaults }: Props) {
           <div>
             <div className="mb-1 font-display text-base font-bold">Vitrine pública</div>
             <p className="text-xs text-subtle">
-              Estes campos aparecem no link público{" "}
-              <span className="mono text-ink">/{slug}</span>.
+              Estes campos aparecem no link público <span className="mono text-ink">/{slug}</span>.
             </p>
           </div>
 
@@ -403,7 +365,7 @@ export function OrgConfigForm({ defaults }: Props) {
           </div>
 
           <div>
-            <label className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+            <label className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle">
               Horário de funcionamento
             </label>
             <BusinessHoursEditor initial={defaults.businessHours} />
@@ -425,16 +387,12 @@ export function OrgConfigForm({ defaults }: Props) {
             <DialogDescription className="text-xs text-subtle">
               <div className="space-y-1.5">
                 <div>
-                  De{" "}
-                  <span className="mono font-semibold text-ink">
-                    /{defaults.slug}
-                  </span>{" "}
-                  para{" "}
+                  De <span className="mono font-semibold text-ink">/{defaults.slug}</span> para{" "}
                   <span className="mono font-semibold text-ink">/{slug}</span>.
                 </div>
                 <div>
-                  Quem tinha o link antigo recebe 404. Atualize qualquer
-                  divulgação (cartão, Instagram, etc.) depois de salvar.
+                  Quem tinha o link antigo recebe 404. Atualize qualquer divulgação (cartão,
+                  Instagram, etc.) depois de salvar.
                 </div>
               </div>
             </DialogDescription>
@@ -515,7 +473,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block mono text-[10px] font-semibold uppercase tracking-wider text-subtle"
+        className="mono mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-subtle"
       >
         {label}
       </label>

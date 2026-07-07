@@ -37,3 +37,22 @@ export function formatTime(date: Date): string {
 export function formatWeekday(date: Date): string {
   return new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(date);
 }
+
+/**
+ * PBI-58: retorna hostname publico pra exibir em UI (ex: prefixo do slug
+ * em /admin/configuracoes). Client-safe — le NEXT_PUBLIC_APP_URL que eh
+ * embutida no bundle. Fallback: "lustro.app" quando a var nao existe (dev
+ * sem .env ou build antes de setar), evitando exibir string vazia na UI.
+ *
+ * Retorna so o host (sem protocolo ou path final), pronto pra concatenar
+ * com "/{slug}".
+ */
+export function getPublicHost(): string {
+  const raw = process.env.NEXT_PUBLIC_APP_URL;
+  if (!raw) return "lustro.app";
+  try {
+    return new URL(raw).host;
+  } catch {
+    return raw.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  }
+}

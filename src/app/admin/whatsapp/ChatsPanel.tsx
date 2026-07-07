@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   ArrowLeft,
+  Check,
+  CheckCheck,
   ExternalLink,
   Inbox,
   Loader2,
   Search,
+  SendHorizonal,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { MediaType } from "@/lib/server/whatsapp-api";
 
-import { listMessagesAction } from "./actions";
+import { listChatsAction, listMessagesAction, sendMessageAction } from "./actions";
 
 export type ChatPreview = {
   remoteJid: string;
@@ -26,6 +30,7 @@ type Message = {
   id: string;
   fromMe: boolean;
   text: string | null;
+  mediaType: MediaType | null;
   timestamp: string | null;
   status: "sent" | "delivered" | "read" | "unknown";
 };
@@ -33,6 +38,17 @@ type Message = {
 type Props = {
   initialChats: ChatPreview[];
   connected: boolean;
+};
+
+const CHATS_POLL_MS = 20_000;
+const THREAD_POLL_MS = 12_000;
+
+const MEDIA_LABEL: Record<MediaType, string> = {
+  image: "📷 Foto",
+  video: "🎬 Vídeo",
+  audio: "🎵 Áudio",
+  sticker: "💟 Figurinha",
+  document: "📎 Documento",
 };
 
 function formatRelative(iso: string | null): string {
@@ -50,55 +66,112 @@ function formatRelative(iso: string | null): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
-function formatFullTime(iso: string | null): string {
+function formatHour(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("pt-BR", {
+  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function sameDay(aIso: string | null, bIso: string | null): boolean {
+  if (!aIso || !bIso) return false;
+  return new Date(aIso).toDateString() === new Date(bIso).toDateString();
+}
+
+/** Rótulo do separador de data na thread (Hoje | Ontem | data por extenso). */
+function daySeparatorLabel(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const today = new Date();
+  if (d.toDateString() === today.toDateString()) return "Hoje";
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Ontem";
+  const sameYear = d.getFullYear() === today.getFullYear();
+  return d.toLocaleDateString("pt-BR", {
     day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
+    month: "long",
+    ...(sameYear ? {} : { year: "numeric" }),
   });
 }
 
 export function ChatsPanel({ initialChats, connected }: Props) {
-  const [chats] = useState(initialChats);
+  const [chats, setChats] = useState(initialChats);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<ChatPreview | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const [pending, startTransition] = useTransition();
+  const threadRef = useRef<HTMLDivElement | null>(null);
 
-  const filtered = chats.filter((c) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      c.name?.toLowerCase().includes(q) || c.phone.includes(q.replace(/\D/g, ""))
+  const loadMessages = useCallback(async (remoteJid: string) => {
+    const r = await listMessagesAction(remoteJid);
+    if (!r.ok) {
+      setError(r.error);
+      return;
+    }
+    setError(null);
+    setMessages(
+      r.data.map((m) => ({
+        id: m.id,
+        fromMe: m.fromMe,
+        text: m.text,
+        mediaType: m.mediaType,
+        timestamp: m.timestamp ? m.timestamp.toISOString() : null,
+        status: m.status,
+      })),
     );
-  });
+  }, []);
 
+  // Carga inicial da thread + polling enquanto ela está aberta.
   useEffect(() => {
     if (!selected) return;
     setError(null);
     setMessages([]);
-    startTransition(async () => {
-      const r = await listMessagesAction(selected.remoteJid);
-      if (!r.ok) {
-        setError(r.error);
-        return;
-      }
-      setMessages(
-        r.data.map((m) => ({
-          id: m.id,
-          fromMe: m.fromMe,
-          text: m.text,
-          timestamp: m.timestamp ? m.timestamp.toString() : null,
-          status: m.status,
-        })),
-      );
-    });
-  }, [selected]);
+    startTransition(() => loadMessages(selected.remoteJid));
+    const t = setInterval(() => void loadMessages(selected.remoteJid), THREAD_POLL_MS);
+    return () => clearInterval(t);
+  }, [selected, loadMessages]);
+
+  // Polling da lista de conversas (novas conversas / previews).
+  useEffect(() => {
+    if (!connected) return;
+    const t = setInterval(async () => {
+      const r = await listChatsAction();
+      if (r.ok) setChats(r.data);
+    }, CHATS_POLL_MS);
+    return () => clearInterval(t);
+  }, [connected]);
+
+  // Sempre gruda no fim quando chegam mensagens (comportamento WhatsApp).
+  useEffect(() => {
+    const el = threadRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages.length, selected]);
+
+  async function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    const text = draft.trim();
+    if (!text || !selected || sending) return;
+    setSending(true);
+    const r = await sendMessageAction(selected.phone, text);
+    setSending(false);
+    if (!r.ok) {
+      setError(r.error);
+      return;
+    }
+    setDraft("");
+    await loadMessages(selected.remoteJid);
+  }
+
+  const filtered = chats.filter((c) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return c.name?.toLowerCase().includes(q) || c.phone.includes(q.replace(/\D/g, ""));
+  });
 
   if (!connected) {
     return (
@@ -132,12 +205,12 @@ export function ChatsPanel({ initialChats, connected }: Props) {
             onSelect={setSelected}
           />
         </aside>
-        <section className="rounded-md border border-line bg-surface">
+        <section className="flex h-[65vh] flex-col overflow-hidden rounded-md border border-line">
           <div className="flex items-center justify-between gap-2 border-b border-line bg-surface-2 px-3 py-2">
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="tap lg:hidden inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-semibold text-subtle hover:bg-surface-3"
+              className="tap inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-semibold text-subtle hover:bg-surface-3 lg:hidden"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Voltar
@@ -147,9 +220,7 @@ export function ChatsPanel({ initialChats, connected }: Props) {
                 {selected.name ?? `+${selected.phone}`}
               </div>
               {selected.name && (
-                <div className="mono truncate text-[10px] text-subtle">
-                  +{selected.phone}
-                </div>
+                <div className="mono truncate text-[10px] text-subtle">+{selected.phone}</div>
               )}
             </div>
             <a
@@ -164,52 +235,100 @@ export function ChatsPanel({ initialChats, connected }: Props) {
             </a>
           </div>
 
-          <div className="max-h-[60vh] space-y-2 overflow-y-auto p-3">
+          {/* Thread com a cara do WhatsApp: cores fixas (não seguem o tema). */}
+          <div
+            ref={threadRef}
+            className="flex-1 space-y-1.5 overflow-y-auto bg-[#efeae2] px-4 py-3"
+          >
             {error && (
-              <p className="text-xs text-danger">{error}</p>
+              <p className="rounded-md bg-danger/10 px-3 py-2 text-xs text-danger">{error}</p>
             )}
             {pending && messages.length === 0 ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-subtle" />
+                <Loader2 className="h-5 w-5 animate-spin text-[#667781]" />
               </div>
             ) : messages.length === 0 ? (
-              <p className="text-center text-xs text-subtle py-8">
+              <p className="py-8 text-center text-xs text-[#667781]">
                 Sem mensagens nessa conversa.
               </p>
             ) : (
-              messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={cn(
-                    "flex",
-                    m.fromMe ? "justify-end" : "justify-start",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "max-w-[75%] rounded-lg px-3 py-2 text-sm",
-                      m.fromMe
-                        ? "bg-brand text-brand-fg"
-                        : "bg-surface-2 text-ink",
+              messages.map((m, i) => {
+                const showDay =
+                  i === 0 || !sameDay(m.timestamp, messages[i - 1]?.timestamp ?? null);
+                return (
+                  <Fragment key={m.id}>
+                    {showDay && m.timestamp && (
+                      <div className="flex justify-center py-2">
+                        <span className="rounded-full bg-white/90 px-3 py-0.5 text-[11px] font-medium text-[#54656f] shadow-sm">
+                          {daySeparatorLabel(m.timestamp)}
+                        </span>
+                      </div>
                     )}
-                  >
-                    <p className="whitespace-pre-wrap break-words">
-                      {m.text ?? <em className="opacity-60">(sem texto)</em>}
-                    </p>
-                    <div
-                      className={cn(
-                        "mt-1 mono text-[9px] uppercase tracking-wider",
-                        m.fromMe ? "text-brand-fg/70" : "text-subtle",
-                      )}
-                    >
-                      {formatFullTime(m.timestamp)}
-                      {m.fromMe && m.status !== "unknown" && ` · ${m.status}`}
+                    <div className={cn("flex", m.fromMe ? "justify-end" : "justify-start")}>
+                      <div
+                        className={cn(
+                          "max-w-[78%] rounded-lg px-3 py-1.5 text-[14px] text-[#111b21] shadow-sm",
+                          m.fromMe ? "bg-[#d9fdd3]" : "bg-white",
+                        )}
+                      >
+                        {m.mediaType && (
+                          <span className="block text-[13px] text-[#54656f]">
+                            {MEDIA_LABEL[m.mediaType]}
+                          </span>
+                        )}
+                        {m.text ? (
+                          <span className="whitespace-pre-wrap break-words">{m.text}</span>
+                        ) : m.mediaType ? null : (
+                          <em className="text-[#667781]">(sem texto)</em>
+                        )}
+                        <span className="ml-2 inline-flex items-center gap-0.5 align-bottom text-[10px] text-[#667781]">
+                          {formatHour(m.timestamp)}
+                          {m.fromMe && m.status === "read" && (
+                            <CheckCheck className="h-3.5 w-3.5 text-[#53bdeb]" />
+                          )}
+                          {m.fromMe && m.status === "delivered" && (
+                            <CheckCheck className="h-3.5 w-3.5" />
+                          )}
+                          {m.fromMe && m.status === "sent" && <Check className="h-3.5 w-3.5" />}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  </Fragment>
+                );
+              })
             )}
           </div>
+
+          <form
+            onSubmit={handleSend}
+            className="flex items-end gap-2 border-t border-line bg-surface-2 px-3 py-2"
+          >
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void handleSend(e);
+                }
+              }}
+              rows={1}
+              placeholder="Escreva uma mensagem…"
+              className="max-h-28 min-h-[40px] flex-1 resize-none rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:shadow-glow"
+            />
+            <button
+              type="submit"
+              disabled={!draft.trim() || sending}
+              className="tap inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-brand-fg transition-opacity disabled:opacity-40"
+              aria-label="Enviar"
+            >
+              {sending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <SendHorizonal className="h-4 w-4" />
+              )}
+            </button>
+          </form>
         </section>
       </div>
     );
@@ -253,15 +372,10 @@ function ChatList({
       </div>
       <div className="divide-y divide-line overflow-hidden rounded-md border border-line bg-surface">
         {chats.length === 0 ? (
-          <p className="px-4 py-6 text-center text-xs text-subtle">
-            Nenhuma conversa.
-          </p>
+          <p className="px-4 py-6 text-center text-xs text-subtle">Nenhuma conversa.</p>
         ) : (
           chats.map((c) => {
-            const initials = (c.name ?? c.phone)
-              .replace(/\D/g, "")
-              .slice(-2)
-              .toUpperCase();
+            const initials = (c.name ?? c.phone).replace(/\D/g, "").slice(-2).toUpperCase();
             const isSelected = selectedJid === c.remoteJid;
             return (
               <button

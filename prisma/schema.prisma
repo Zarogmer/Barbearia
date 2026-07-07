@@ -105,6 +105,7 @@ model Organization {
   miscRevenues       MiscRevenue[]
   customerPhotos     CustomerPhoto[]
   rooms              Room[]
+  botConversations   BotConversation[]
 
   @@map("organizations")
 }
@@ -868,4 +869,34 @@ model AdminAuditLog {
   @@index([targetOrgId, createdAt(sort: Desc)])
   @@index([createdAt(sort: Desc)])
   @@map("admin_audit_log")
+}
+
+// ─── Bot WhatsApp (PBI-60) ────────────────────────────────────
+
+enum BotStep {
+  PICK_APPOINTMENT
+  RESCHEDULE_PICK
+  CANCEL_CONFIRM
+}
+
+// Estado da conversa do bot por telefone (PBI-60). Uma conversa ativa
+// por (org, phone); expira em 30min sem resposta — leitura trata
+// expirada como inexistente, cron diário limpa o resto.
+// payload: dados do passo, ex { appointmentIds: [...] } nas listas 1..N.
+model BotConversation {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  phone          String
+  appointmentId  String?  @db.Uuid
+  step           BotStep
+  payload        Json?
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, phone])
+  @@index([expiresAt])
+  @@map("bot_conversations")
 }

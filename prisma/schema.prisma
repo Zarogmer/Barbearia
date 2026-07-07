@@ -761,6 +761,23 @@ model JobRun {
   @@map("job_runs")
 }
 
+// ─── Bot WhatsApp: cooldown de auto-resposta ──────────────
+// Usado por @zarogmer/whatsapp (PrismaCooldownStore). Evita spammar e
+// absorve webhooks duplicados do Evolution. Cross-tenant, sem RLS — so o
+// webhook (server-side) escreve. Claim atomico via SQL cru.
+
+model WhatsappAutoReplyCooldown {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @db.Uuid
+  phone          String   // so digitos com DDI
+  ruleId         String   // id da regra do bot que respondeu
+  sentAt         DateTime @default(now())
+
+  @@unique([organizationId, phone, ruleId])
+  @@index([sentAt])
+  @@map("whatsapp_autoreply_cooldown")
+}
+
 // ─── SMS OTP (PBI-23) ─────────────────────────────────────
 // Confirmacao de agendamento anonimo por codigo SMS. Cross-tenant
 // (telefone e global, nao pertence a uma org). Sem RLS — controle

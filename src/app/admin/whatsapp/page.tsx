@@ -5,11 +5,7 @@ import { auth } from "@/lib/auth";
 import { prismaAdmin } from "@/lib/db";
 import { listMessageTemplates } from "@/lib/server/messages";
 import { getOrganizationForAdmin } from "@/lib/server/organizations";
-import {
-  getConnectionStatus,
-  getEvolutionBaseConfig,
-  listChats,
-} from "@/lib/server/whatsapp-api";
+import { getConnectionStatus, getEvolutionBaseConfig, listChats } from "@/lib/server/whatsapp-api";
 
 import { CreateInstancePanel } from "./CreateInstancePanel";
 import { WhatsAppDashboard } from "./WhatsAppDashboard";
@@ -53,9 +49,8 @@ export default async function WhatsAppPage({
           </div>
           <p className="text-subtle">
             Defina <span className="mono">EVOLUTION_API_URL</span> e{" "}
-            <span className="mono">EVOLUTION_API_KEY</span> no .env (dev) ou
-            Railway (prod). Setup detalhado em{" "}
-            <span className="mono">.env.example</span>.
+            <span className="mono">EVOLUTION_API_KEY</span> no .env (dev) ou Railway (prod). Setup
+            detalhado em <span className="mono">.env.example</span>.
           </p>
         </div>
       </div>
@@ -119,6 +114,7 @@ export default async function WhatsAppPage({
         lastMessageAt: c.lastMessageAt?.toISOString() ?? null,
         lastMessagePreview: c.lastMessagePreview,
         unreadCount: c.unreadCount,
+        isLid: c.isLid,
       }))}
       templates={templates.map((t) => ({
         id: t.id,

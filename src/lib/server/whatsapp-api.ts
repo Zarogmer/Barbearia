@@ -185,7 +185,19 @@ export type ChatRow = {
   lastMessagePreview: string | null;
   unreadCount: number;
   isGroup: boolean;
+  /** JID @lid (identificador anônimo do WhatsApp) — não tem telefone extraível. */
+  isLid: boolean;
 };
+
+/**
+ * Extrai o telefone (só dígitos) de um JID de contato. Conversas @lid e
+ * grupos NÃO têm telefone no JID — o número aparente de um @lid é lixo
+ * (ex: 245826848817219) e enviar pra ele falha com exists=false.
+ */
+export function phoneFromJid(jid: string): string {
+  if (!jid.endsWith("@s.whatsapp.net")) return "";
+  return jid.replace(/@.*$/, "").replace(/:.*$/, "").replace(/\D/g, "");
+}
 
 /** Conteúdo Baileys de uma mensagem (texto ou mídia com legenda). */
 type EvolutionMessageContent = {
@@ -284,7 +296,8 @@ export async function listChats(instance: string, limit = 50): Promise<Evolution
       const jid = c.remoteJid ?? c.id ?? "";
       if (!jid) return null;
       const isGroup = jid.endsWith("@g.us");
-      const phone = jid.replace(/@.*$/, "");
+      const isLid = jid.endsWith("@lid");
+      const phone = phoneFromJid(jid);
       const tsRaw =
         c.lastMessage?.messageTimestamp ??
         c.lastMessage?.timestamp ??
@@ -299,6 +312,7 @@ export async function listChats(instance: string, limit = 50): Promise<Evolution
         lastMessagePreview: extractText(c.lastMessage),
         unreadCount: c.unreadCount ?? c.unread ?? 0,
         isGroup,
+        isLid,
       } satisfies ChatRow;
     })
     .filter((c): c is ChatRow => c !== null)
@@ -311,6 +325,24 @@ export async function listChats(instance: string, limit = 50): Promise<Evolution
     .slice(0, limit);
 
   return { ok: true, data: rows };
+}
+
+/**
+ * Envia texto usando o JID da conversa como destino (a Evolution aceita
+ * JID completo no campo `number`). É o único jeito de responder conversa
+ * @lid — o telefone aparente de um LID não existe no WhatsApp.
+ */
+export async function sendTextToJid(
+  instance: string,
+  remoteJid: string,
+  text: string,
+): Promise<EvolutionResult<true>> {
+  const res = await call<unknown>(`/message/sendText/${instance}`, {
+    method: "POST",
+    body: JSON.stringify({ number: remoteJid, text }),
+  });
+  if (!res.ok) return res;
+  return { ok: true, data: true };
 }
 
 // ──── Mensagens de uma conversa ────

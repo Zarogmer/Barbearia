@@ -13,12 +13,13 @@ import {
   listMessages,
   logoutInstance,
   restartInstance,
+  sendTextToJid,
   type ConnectionStatus,
   type MessageRow,
   type NumberCheck,
   type QrCode,
 } from "@/lib/server/whatsapp-api";
-import { getWhatsAppProvider } from "@/lib/server/whatsapp";
+import { replyChatSchema } from "@/lib/validators/whatsapp-chat";
 
 type OwnerContext =
   | { ok: true; organizationId: string; instance: string | null }
@@ -143,6 +144,7 @@ export type ChatPreviewDto = {
   lastMessageAt: string | null;
   lastMessagePreview: string | null;
   unreadCount: number;
+  isLid: boolean;
 };
 
 export async function listChatsAction(): Promise<ActionResult<ChatPreviewDto[]>> {
@@ -163,8 +165,31 @@ export async function listChatsAction(): Promise<ActionResult<ChatPreviewDto[]>>
       lastMessageAt: c.lastMessageAt?.toISOString() ?? null,
       lastMessagePreview: c.lastMessagePreview,
       unreadCount: c.unreadCount,
+      isLid: c.isLid,
     })),
   };
+}
+
+/**
+ * Responde uma conversa aberta usando o JID como destino. Necessário pra
+ * conversas @lid, cujo "telefone" aparente não existe no WhatsApp.
+ */
+export async function replyChatAction(input: unknown): Promise<ActionResult> {
+  const ctx = await requireOwnerContext();
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+  if (!ctx.instance) return { ok: false, error: "WhatsApp não conectado." };
+  const parsed = replyChatSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Dados inválidos pra responder a conversa." };
+  }
+  const r = await sendTextToJid(ctx.instance, parsed.data.remoteJid, parsed.data.text);
+  if (!r.ok) {
+    if (r.reason === "NOT_CONFIGURED") {
+      return { ok: false, error: "Evolution não configurada." };
+    }
+    return { ok: false, error: r.message };
+  }
+  return { ok: true, data: undefined };
 }
 
 export async function listMessagesAction(remoteJid: string): Promise<ActionResult<MessageRow[]>> {
@@ -203,13 +228,28 @@ export async function sendMessageAction(phone: string, text: string): Promise<Ac
   }
   if (!phone.trim()) return { ok: false, error: "Telefone obrigatório." };
   if (!text.trim()) return { ok: false, error: "Mensagem vazia." };
-  try {
-    await getWhatsAppProvider().send(phone, text, ctx.instance);
-    return { ok: true, data: undefined };
-  } catch (e) {
+
+  // Resolve o JID canônico antes de enviar: conta BR registrada sem o
+  // nono dígito faz o envio pro número digitado falhar com exists=false.
+  const check = await checkWhatsAppNumber(ctx.instance, phone);
+  if (!check.ok) {
+    if (check.reason === "NOT_CONFIGURED") {
+      return { ok: false, error: "Evolution não configurada." };
+    }
+    return { ok: false, error: check.message };
+  }
+  if (!check.data.hasWhatsApp || !check.data.jid) {
     return {
       ok: false,
-      error: e instanceof Error ? e.message : "Falha ao enviar.",
+      error: `+${check.data.phone} não tem WhatsApp. Confira o DDD e o nono dígito.`,
     };
   }
+  const r = await sendTextToJid(ctx.instance, check.data.jid, text);
+  if (!r.ok) {
+    if (r.reason === "NOT_CONFIGURED") {
+      return { ok: false, error: "Evolution não configurada." };
+    }
+    return { ok: false, error: r.message };
+  }
+  return { ok: true, data: undefined };
 }

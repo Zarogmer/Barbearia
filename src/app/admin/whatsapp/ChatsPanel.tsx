@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { MediaType } from "@/lib/server/whatsapp-api";
 
-import { listChatsAction, listMessagesAction, sendMessageAction } from "./actions";
+import { listChatsAction, listMessagesAction, replyChatAction } from "./actions";
 
 export type ChatPreview = {
   remoteJid: string;
@@ -24,7 +24,14 @@ export type ChatPreview = {
   lastMessageAt: string | null;
   lastMessagePreview: string | null;
   unreadCount: number;
+  isLid: boolean;
 };
+
+/** Nome exibível: LID não tem telefone real — cai no nome ou "Contato". */
+function chatTitle(c: ChatPreview): string {
+  if (c.name) return c.name;
+  return c.isLid || !c.phone ? "Contato" : `+${c.phone}`;
+}
 
 type Message = {
   id: string;
@@ -157,7 +164,7 @@ export function ChatsPanel({ initialChats, connected }: Props) {
     const text = draft.trim();
     if (!text || !selected || sending) return;
     setSending(true);
-    const r = await sendMessageAction(selected.phone, text);
+    const r = await replyChatAction({ remoteJid: selected.remoteJid, text });
     setSending(false);
     if (!r.ok) {
       setError(r.error);
@@ -216,23 +223,23 @@ export function ChatsPanel({ initialChats, connected }: Props) {
               Voltar
             </button>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold">
-                {selected.name ?? `+${selected.phone}`}
-              </div>
-              {selected.name && (
+              <div className="truncate text-sm font-semibold">{chatTitle(selected)}</div>
+              {selected.name && !selected.isLid && selected.phone && (
                 <div className="mono truncate text-[10px] text-subtle">+{selected.phone}</div>
               )}
             </div>
-            <a
-              href={`https://web.whatsapp.com/send?phone=${selected.phone}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tap inline-flex h-8 items-center gap-1 rounded-md border border-line bg-surface px-2 text-[11px] font-semibold text-subtle hover:border-ok hover:text-ok"
-              title="Abrir no WhatsApp Web"
-            >
-              <ExternalLink className="h-3 w-3" />
-              Abrir
-            </a>
+            {!selected.isLid && selected.phone && (
+              <a
+                href={`https://web.whatsapp.com/send?phone=${selected.phone}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tap inline-flex h-8 items-center gap-1 rounded-md border border-line bg-surface px-2 text-[11px] font-semibold text-subtle hover:border-ok hover:text-ok"
+                title="Abrir no WhatsApp Web"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Abrir
+              </a>
+            )}
           </div>
 
           {/* Thread com a cara do WhatsApp: cores fixas (não seguem o tema). */}
@@ -394,9 +401,7 @@ function ChatList({
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-semibold">
-                      {c.name ?? `+${c.phone}`}
-                    </span>
+                    <span className="truncate text-sm font-semibold">{chatTitle(c)}</span>
                     <span className="mono shrink-0 text-[10px] text-subtle">
                       {formatRelative(c.lastMessageAt)}
                     </span>

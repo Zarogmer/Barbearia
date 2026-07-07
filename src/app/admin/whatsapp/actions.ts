@@ -4,14 +4,12 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/lib/auth";
 import { prismaAdmin } from "@/lib/db";
-import {
-  createInstanceForOrg,
-  deleteInstanceForOrg,
-} from "@/lib/server/evolution-admin";
+import { createInstanceForOrg, deleteInstanceForOrg } from "@/lib/server/evolution-admin";
 import {
   checkWhatsAppNumber,
   getConnectionStatus,
   getQrCode,
+  listChats,
   listMessages,
   logoutInstance,
   restartInstance,
@@ -79,9 +77,7 @@ export async function deleteOrgInstanceAction(): Promise<ActionResult> {
   return { ok: true, data: undefined };
 }
 
-export async function getConnectionStatusAction(): Promise<
-  ActionResult<ConnectionStatus | null>
-> {
+export async function getConnectionStatusAction(): Promise<ActionResult<ConnectionStatus | null>> {
   const ctx = await requireOwnerContext();
   if (!ctx.ok) return { ok: false, error: ctx.error };
   if (!ctx.instance) return { ok: true, data: null };
@@ -139,9 +135,39 @@ export async function logoutInstanceAction(): Promise<ActionResult> {
   return { ok: true, data: undefined };
 }
 
-export async function listMessagesAction(
-  remoteJid: string,
-): Promise<ActionResult<MessageRow[]>> {
+/** Preview de conversa já serializado pra client component (datas em ISO). */
+export type ChatPreviewDto = {
+  remoteJid: string;
+  phone: string;
+  name: string | null;
+  lastMessageAt: string | null;
+  lastMessagePreview: string | null;
+  unreadCount: number;
+};
+
+export async function listChatsAction(): Promise<ActionResult<ChatPreviewDto[]>> {
+  const ctx = await requireOwnerContext();
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+  if (!ctx.instance) return { ok: true, data: [] };
+  const r = await listChats(ctx.instance, 60);
+  if (!r.ok) {
+    if (r.reason === "NOT_CONFIGURED") return { ok: true, data: [] };
+    return { ok: false, error: r.message };
+  }
+  return {
+    ok: true,
+    data: r.data.map((c) => ({
+      remoteJid: c.remoteJid,
+      phone: c.phone,
+      name: c.name,
+      lastMessageAt: c.lastMessageAt?.toISOString() ?? null,
+      lastMessagePreview: c.lastMessagePreview,
+      unreadCount: c.unreadCount,
+    })),
+  };
+}
+
+export async function listMessagesAction(remoteJid: string): Promise<ActionResult<MessageRow[]>> {
   const ctx = await requireOwnerContext();
   if (!ctx.ok) return { ok: false, error: ctx.error };
   if (!ctx.instance) return { ok: true, data: [] };
@@ -153,9 +179,7 @@ export async function listMessagesAction(
   return { ok: true, data: r.data };
 }
 
-export async function checkNumberAction(
-  phone: string,
-): Promise<ActionResult<NumberCheck>> {
+export async function checkNumberAction(phone: string): Promise<ActionResult<NumberCheck>> {
   const ctx = await requireOwnerContext();
   if (!ctx.ok) return { ok: false, error: ctx.error };
   if (!ctx.instance) {
@@ -171,10 +195,7 @@ export async function checkNumberAction(
   return { ok: true, data: r.data };
 }
 
-export async function sendMessageAction(
-  phone: string,
-  text: string,
-): Promise<ActionResult> {
+export async function sendMessageAction(phone: string, text: string): Promise<ActionResult> {
   const ctx = await requireOwnerContext();
   if (!ctx.ok) return { ok: false, error: ctx.error };
   if (!ctx.instance) {

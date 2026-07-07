@@ -19,11 +19,13 @@ export type EvolutionBaseConfig = {
 };
 
 export type EvolutionUnconfigured = { ok: false; reason: "NOT_CONFIGURED" };
-export type EvolutionApiError = { ok: false; reason: "API_ERROR"; message: string; status?: number };
-export type EvolutionResult<T> =
-  | { ok: true; data: T }
-  | EvolutionUnconfigured
-  | EvolutionApiError;
+export type EvolutionApiError = {
+  ok: false;
+  reason: "API_ERROR";
+  message: string;
+  status?: number;
+};
+export type EvolutionResult<T> = { ok: true; data: T } | EvolutionUnconfigured | EvolutionApiError;
 
 export function getEvolutionBaseConfig(): EvolutionBaseConfig | null {
   const url = process.env.EVOLUTION_API_URL?.trim();
@@ -40,10 +42,7 @@ export function getFallbackInstance(): string | null {
   return process.env.EVOLUTION_INSTANCE?.trim() ?? null;
 }
 
-async function call<T>(
-  path: string,
-  init: RequestInit = {},
-): Promise<EvolutionResult<T>> {
+async function call<T>(path: string, init: RequestInit = {}): Promise<EvolutionResult<T>> {
   const cfg = getEvolutionBaseConfig();
   if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
   try {
@@ -142,9 +141,7 @@ export type QrCode = {
   pairingCode: string | null;
 };
 
-export async function getQrCode(
-  instance: string,
-): Promise<EvolutionResult<QrCode>> {
+export async function getQrCode(instance: string): Promise<EvolutionResult<QrCode>> {
   const res = await call<{
     base64?: string;
     code?: string;
@@ -162,9 +159,7 @@ export async function getQrCode(
   };
 }
 
-export async function restartInstance(
-  instance: string,
-): Promise<EvolutionResult<true>> {
+export async function restartInstance(instance: string): Promise<EvolutionResult<true>> {
   const res = await call<unknown>(`/instance/restart/${instance}`, {
     method: "POST",
   });
@@ -172,9 +167,7 @@ export async function restartInstance(
   return { ok: true, data: true };
 }
 
-export async function logoutInstance(
-  instance: string,
-): Promise<EvolutionResult<true>> {
+export async function logoutInstance(instance: string): Promise<EvolutionResult<true>> {
   const res = await call<unknown>(`/instance/logout/${instance}`, {
     method: "DELETE",
   });
@@ -194,6 +187,48 @@ export type ChatRow = {
   isGroup: boolean;
 };
 
+/** Conteúdo Baileys de uma mensagem (texto ou mídia com legenda). */
+type EvolutionMessageContent = {
+  conversation?: string;
+  extendedTextMessage?: { text?: string };
+  imageMessage?: { caption?: string };
+  videoMessage?: { caption?: string };
+  audioMessage?: { seconds?: number };
+  stickerMessage?: Record<string, unknown>;
+  documentMessage?: { fileName?: string; caption?: string };
+};
+
+export type MediaType = "image" | "video" | "audio" | "sticker" | "document";
+
+const MEDIA_LABEL: Record<MediaType, string> = {
+  image: "📷 Foto",
+  video: "🎬 Vídeo",
+  audio: "🎵 Áudio",
+  sticker: "💟 Figurinha",
+  document: "📎 Documento",
+};
+
+function detectMedia(
+  m: EvolutionMessageContent | undefined,
+): { mediaType: MediaType; caption: string | null } | null {
+  if (!m) return null;
+  if (m.imageMessage) {
+    return { mediaType: "image", caption: m.imageMessage.caption ?? null };
+  }
+  if (m.videoMessage) {
+    return { mediaType: "video", caption: m.videoMessage.caption ?? null };
+  }
+  if (m.audioMessage) return { mediaType: "audio", caption: null };
+  if (m.stickerMessage) return { mediaType: "sticker", caption: null };
+  if (m.documentMessage) {
+    return {
+      mediaType: "document",
+      caption: m.documentMessage.caption ?? m.documentMessage.fileName ?? null,
+    };
+  }
+  return null;
+}
+
 type EvolutionChat = {
   remoteJid?: string;
   id?: string;
@@ -203,10 +238,7 @@ type EvolutionChat = {
   unreadCount?: number;
   unread?: number;
   lastMessage?: {
-    message?: {
-      conversation?: string;
-      extendedTextMessage?: { text?: string };
-    };
+    message?: EvolutionMessageContent;
     messageTimestamp?: number | string;
     timestamp?: number | string;
   };
@@ -220,6 +252,12 @@ function extractText(msg: EvolutionChat["lastMessage"]): string | null {
   if (!m) return null;
   if (m.conversation) return m.conversation;
   if (m.extendedTextMessage?.text) return m.extendedTextMessage.text;
+  const media = detectMedia(m);
+  if (media) {
+    return media.caption
+      ? `${MEDIA_LABEL[media.mediaType]} · ${media.caption}`
+      : MEDIA_LABEL[media.mediaType];
+  }
   return null;
 }
 
@@ -232,19 +270,14 @@ function parseTimestamp(v: unknown): Date | null {
   return new Date(ms);
 }
 
-export async function listChats(
-  instance: string,
-  limit = 50,
-): Promise<EvolutionResult<ChatRow[]>> {
+export async function listChats(instance: string, limit = 50): Promise<EvolutionResult<ChatRow[]>> {
   const res = await call<EvolutionChat[] | { records?: EvolutionChat[] }>(
     `/chat/findChats/${instance}`,
     { method: "POST", body: JSON.stringify({}) },
   );
   if (!res.ok) return res;
 
-  const list = Array.isArray(res.data)
-    ? res.data
-    : (res.data.records ?? []);
+  const list = Array.isArray(res.data) ? res.data : (res.data.records ?? []);
 
   const rows: ChatRow[] = list
     .map((c) => {
@@ -286,6 +319,7 @@ export type MessageRow = {
   id: string;
   fromMe: boolean;
   text: string | null;
+  mediaType: MediaType | null;
   timestamp: Date | null;
   status: "sent" | "delivered" | "read" | "unknown";
 };
@@ -295,10 +329,7 @@ type EvolutionMessage = {
   id?: string;
   fromMe?: boolean;
   remoteJid?: string;
-  message?: {
-    conversation?: string;
-    extendedTextMessage?: { text?: string };
-  };
+  message?: EvolutionMessageContent;
   messageTimestamp?: number | string;
   timestamp?: number | string;
   status?: string | number;
@@ -310,7 +341,8 @@ export async function listMessages(
   limit = 50,
 ): Promise<EvolutionResult<MessageRow[]>> {
   const res = await call<
-    EvolutionMessage[] | { records?: EvolutionMessage[]; messages?: { records?: EvolutionMessage[] } }
+    | EvolutionMessage[]
+    | { records?: EvolutionMessage[]; messages?: { records?: EvolutionMessage[] } }
   >(`/chat/findMessages/${instance}`, {
     method: "POST",
     body: JSON.stringify({
@@ -339,7 +371,11 @@ export async function listMessages(
       if (!id) return null;
       const fromMe = m.key?.fromMe ?? m.fromMe ?? false;
       const ts = parseTimestamp(m.messageTimestamp ?? m.timestamp);
-      const text = extractText({ message: m.message });
+      const media = detectMedia(m.message);
+      // Na thread o texto é só o texto/legenda; o rótulo de mídia fica
+      // por conta da UI (via mediaType), diferente do preview da lista.
+      const text =
+        m.message?.conversation ?? m.message?.extendedTextMessage?.text ?? media?.caption ?? null;
       const statusStr = String(m.status ?? "").toLowerCase();
       const status: MessageRow["status"] =
         statusStr.includes("read") || statusStr === "4"
@@ -349,7 +385,14 @@ export async function listMessages(
             : statusStr.includes("sent") || statusStr === "2"
               ? "sent"
               : "unknown";
-      return { id, fromMe, text, timestamp: ts, status } satisfies MessageRow;
+      return {
+        id,
+        fromMe,
+        text,
+        mediaType: media?.mediaType ?? null,
+        timestamp: ts,
+        status,
+      } satisfies MessageRow;
     })
     .filter((m): m is MessageRow => m !== null)
     .sort((a, b) => {
@@ -382,12 +425,13 @@ export async function checkWhatsAppNumber(
     };
   }
 
-  const res = await call<
-    Array<{ exists?: boolean; jid?: string; number?: string }>
-  >(`/chat/whatsappNumbers/${instance}`, {
-    method: "POST",
-    body: JSON.stringify({ numbers: [digits] }),
-  });
+  const res = await call<Array<{ exists?: boolean; jid?: string; number?: string }>>(
+    `/chat/whatsappNumbers/${instance}`,
+    {
+      method: "POST",
+      body: JSON.stringify({ numbers: [digits] }),
+    },
+  );
   if (!res.ok) return res;
 
   const found = Array.isArray(res.data) ? res.data[0] : null;

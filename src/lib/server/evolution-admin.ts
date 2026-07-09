@@ -1,37 +1,27 @@
 import "server-only";
 
-import { isEvolutionConfigured, loadEvolutionEnv } from "@zarogmer/env";
-import { EvolutionApiError, EvolutionClient } from "@zarogmer/whatsapp";
-
 import { prismaAdmin } from "@/lib/db";
 
-import type { EvolutionResult } from "./whatsapp-api";
+import {
+  getEvolutionBaseConfig,
+  type EvolutionResult,
+} from "./whatsapp-api";
 
 /**
- * Operações administrativas na Evolution API (multi-tenant - PBI-51), sobre
- * @zarogmer/whatsapp.
+ * Operações administrativas na Evolution API (multi-tenant - PBI-51).
  *
- * Nome da instância = slug da org com prefixo `lustro-` (slug é @unique e
- * estável em produção — PBI-49). Na criação, registra o webhook de entrada
- * (MESSAGES_UPSERT) pra o bot de auto-resposta funcionar.
+ * - createInstanceForOrg: cria nova instância e grava em Organization.evolutionInstance
+ * - deleteInstance: remove instância no provider (irreversível)
+ *
+ * Nome da instância vem do slug da org com prefixo `lustro-` pra evitar
+ * colisão entre clientes diferentes da mesma Evolution. Slug nunca muda
+ * em produção (PBI-49 trava unique), então a instância é estável.
  */
 
 const INSTANCE_PREFIX = "lustro";
 
 export function buildInstanceName(orgSlug: string): string {
   return `${INSTANCE_PREFIX}-${orgSlug}`;
-}
-
-/** URL pública onde a Evolution entrega os webhooks desta instância. */
-function webhookConfig(publicBaseUrl: string | null): { url: string } | undefined {
-  const base =
-    publicBaseUrl ?? process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ?? null;
-  return base ? { url: `${base}/api/whatsapp/webhook` } : undefined;
-}
-
-function errorMessage(e: unknown): string {
-  if (e instanceof EvolutionApiError) return e.message;
-  return e instanceof Error ? e.message : "erro desconhecido";
 }
 
 type CreateInstanceData = {
@@ -42,9 +32,8 @@ type CreateInstanceData = {
 export async function createInstanceForOrg(
   organizationId: string,
 ): Promise<EvolutionResult<CreateInstanceData>> {
-  if (!isEvolutionConfigured()) return { ok: false, reason: "NOT_CONFIGURED" };
-  const env = loadEvolutionEnv();
-  const client = new EvolutionClient({ baseUrl: env.baseUrl, apiKey: env.apiKey });
+  const cfg = getEvolutionBaseConfig();
+  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
 
   const org = await prismaAdmin.organization.findUnique({
     where: { id: organizationId },
@@ -54,13 +43,8 @@ export async function createInstanceForOrg(
     return { ok: false, reason: "API_ERROR", message: "Organização não encontrada." };
   }
 
-  // Já tem instância: idempotente. Reaplica o webhook (instâncias criadas
-  // antes deste código nunca receberam MESSAGES_UPSERT) e devolve.
+  // Se já tem instância, devolve a existente (idempotente).
   if (org.evolutionInstance) {
-    const webhook = webhookConfig(env.publicBaseUrl);
-    if (webhook) {
-      await client.setWebhook(org.evolutionInstance, webhook).catch(() => undefined);
-    }
     return {
       ok: true,
       data: { instanceName: org.evolutionInstance, alreadyExists: true },
@@ -68,25 +52,45 @@ export async function createInstanceForOrg(
   }
 
   const instanceName = buildInstanceName(org.slug);
-  let alreadyExists = false;
-  try {
-    const res = await client.createInstance(instanceName, webhookConfig(env.publicBaseUrl));
-    alreadyExists = res.alreadyExists;
-  } catch (e) {
+
+  // POST /instance/create. Body conforme docs Evolution v2.
+  const res = await fetch(`${cfg.url}/instance/create`, {
+    method: "POST",
+    headers: {
+      apikey: cfg.key,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      instanceName,
+      qrcode: true,
+      integration: "WHATSAPP-BAILEYS",
+    }),
+    cache: "no-store",
+  });
+
+  // 201 cria nova, 403/409 pode ser "ja existe" (Evolution varia). Em
+  // ambos os casos seguimos: salvamos o nome no DB pra fluxo proceder.
+  if (!res.ok && res.status !== 403 && res.status !== 409) {
+    const text = await res.text();
     return {
       ok: false,
       reason: "API_ERROR",
-      message: `Evolution falhou ao criar instância: ${errorMessage(e)}`,
+      status: res.status,
+      message: `Evolution falhou ao criar instância: ${text.slice(0, 200)}`,
     };
   }
 
-  // Persiste no DB. Unique constraint impede 2 orgs na mesma instância.
+  // Persiste no DB. Unique constraint impede 2 orgs com mesma instance.
+  // Se Evolution disse "ja existe" mas DB nao tem registro, ainda assim
+  // gravamos — caso típico de retry após falha parcial.
   try {
     await prismaAdmin.organization.update({
       where: { id: organizationId },
       data: { evolutionInstance: instanceName },
     });
   } catch (e) {
+    // Unique violation: outro tenant pegou esse nome (improvavel — slug
+    // é unique). Vale logar pra investigar.
     console.error("Falha ao persistir evolutionInstance:", e);
     return {
       ok: false,
@@ -95,15 +99,17 @@ export async function createInstanceForOrg(
     };
   }
 
-  return { ok: true, data: { instanceName, alreadyExists } };
+  return {
+    ok: true,
+    data: { instanceName, alreadyExists: res.status === 403 || res.status === 409 },
+  };
 }
 
 export async function deleteInstanceForOrg(
   organizationId: string,
 ): Promise<EvolutionResult<true>> {
-  if (!isEvolutionConfigured()) return { ok: false, reason: "NOT_CONFIGURED" };
-  const env = loadEvolutionEnv();
-  const client = new EvolutionClient({ baseUrl: env.baseUrl, apiKey: env.apiKey });
+  const cfg = getEvolutionBaseConfig();
+  if (!cfg) return { ok: false, reason: "NOT_CONFIGURED" };
 
   const org = await prismaAdmin.organization.findUnique({
     where: { id: organizationId },
@@ -113,8 +119,17 @@ export async function deleteInstanceForOrg(
     return { ok: true, data: true }; // já não tinha — no-op
   }
 
-  // Best-effort no provider (pode estar offline); limpa o DB de qualquer forma.
-  await client.deleteInstance(org.evolutionInstance).catch(() => undefined);
+  // Tenta deletar no provider. Ignora falha (pode estar offline) e
+  // limpa o DB de qualquer forma — admin sempre poderá criar de novo.
+  try {
+    await fetch(`${cfg.url}/instance/delete/${org.evolutionInstance}`, {
+      method: "DELETE",
+      headers: { apikey: cfg.key },
+      cache: "no-store",
+    });
+  } catch {
+    // segue
+  }
 
   await prismaAdmin.organization.update({
     where: { id: organizationId },

@@ -8,6 +8,7 @@ import {
   Cake,
   Calendar,
   Clock,
+  Gift,
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
@@ -38,42 +39,81 @@ type NavItem = {
   Icon: IconType;
 };
 
-// PRIMARY agora tem 4 items + 1 FAB no centro (item 3, position 2):
+type NavGroup = {
+  title: string;
+  /** Cor da categoria (token de paleta em :root/.dark). Só no ícone. */
+  tint: string;
+  items: NavItem[];
+};
+
+// PRIMARY tem 4 items + 1 FAB no centro (item 3, position 2):
 // [Hoje] [Agenda] [➕ FAB] [Comandas] [Mais]
 const PRIMARY_LEFT: NavItem[] = [
   { href: "/admin/dashboard", label: "Hoje", Icon: LayoutDashboard },
   { href: "/admin/agenda", label: "Agenda", Icon: Calendar },
 ];
-const PRIMARY_RIGHT: NavItem[] = [
-  { href: "/admin/comandas", label: "Comandas", Icon: Receipt },
+const PRIMARY_RIGHT: NavItem[] = [{ href: "/admin/comandas", label: "Comandas", Icon: Receipt }];
+
+// Menu "Mais" agrupado por área — quem se usa junto fica junto. Cada grupo
+// tem um tint fixo (só no ícone) pra criar memória visual. Configurações
+// sai daqui e vai pra zona de sistema, junto do Sair.
+const GROUPS: NavGroup[] = [
+  {
+    title: "Clientes",
+    tint: "hsl(var(--cat-clientes))",
+    items: [
+      { href: "/admin/clientes", label: "Clientes", Icon: UserCircle2 },
+      { href: "/admin/clientes/sumidos", label: "Sumidos", Icon: UserX },
+      { href: "/admin/aniversariantes", label: "Aniversariantes", Icon: Cake },
+      { href: "/admin/lista-espera", label: "Lista de espera", Icon: Clock },
+    ],
+  },
+  {
+    title: "Operação",
+    tint: "hsl(var(--cat-operacao))",
+    items: [
+      { href: "/admin/servicos", label: "Serviços", Icon: Scissors },
+      { href: "/admin/profissionais", label: "Profissionais", Icon: Users },
+      { href: "/admin/pacotes", label: "Pacotes", Icon: Gift },
+      { href: "/admin/estoque", label: "Estoque", Icon: Package },
+    ],
+  },
+  {
+    title: "Financeiro",
+    tint: "hsl(var(--cat-financeiro))",
+    items: [
+      { href: "/admin/relatorios", label: "Relatórios", Icon: BarChart3 },
+      { href: "/admin/comissoes", label: "Comissões", Icon: Percent },
+      { href: "/admin/despesas", label: "Despesas", Icon: Wallet },
+    ],
+  },
+  {
+    title: "Comunicação",
+    tint: "hsl(var(--cat-comunicacao))",
+    items: [
+      { href: "/admin/whatsapp", label: "WhatsApp", Icon: MessageSquare },
+      { href: "/admin/mensagens", label: "Mensagens", Icon: MessageCircle },
+      { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
+    ],
+  },
 ];
 
-const SECONDARY: NavItem[] = [
-  { href: "/admin/clientes", label: "Clientes", Icon: UserCircle2 },
-  { href: "/admin/clientes/sumidos", label: "Sumidos", Icon: UserX },
-  { href: "/admin/aniversariantes", label: "Aniversariantes", Icon: Cake },
-  { href: "/admin/lista-espera", label: "Lista de espera", Icon: Clock },
-  { href: "/admin/servicos", label: "Serviços", Icon: Scissors },
-  { href: "/admin/estoque", label: "Estoque", Icon: Package },
-  { href: "/admin/profissionais", label: "Profissionais", Icon: Users },
-  { href: "/admin/comissoes", label: "Comissões", Icon: Percent },
-  { href: "/admin/relatorios", label: "Relatórios", Icon: BarChart3 },
-  { href: "/admin/despesas", label: "Despesas", Icon: Wallet },
-  { href: "/admin/feed", label: "Feed", Icon: ImageIcon },
-  { href: "/admin/mensagens", label: "Mensagens", Icon: MessageCircle },
-  { href: "/admin/whatsapp", label: "WhatsApp", Icon: MessageSquare },
-  { href: "/admin/pacotes", label: "Pacotes", Icon: Package },
-  { href: "/admin/configuracoes", label: "Configurações", Icon: Settings },
-];
+const SETTINGS_ITEM: NavItem = {
+  href: "/admin/configuracoes",
+  label: "Configurações",
+  Icon: Settings,
+};
+
+// Todas as rotas do menu "Mais" (grupos + configurações) — destaca a aba.
+const MORE_ROUTES = [...GROUPS.flatMap((g) => g.items.map((i) => i.href)), SETTINGS_ITEM.href];
 
 export function AdminBottomNav({ userName }: { userName: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + "/");
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
-  const moreActive = SECONDARY.some((i) => isActive(i.href));
+  const moreActive = MORE_ROUTES.some((href) => isActive(href));
 
   return (
     <>
@@ -114,9 +154,7 @@ export function AdminBottomNav({ userName }: { userName: string }) {
               >
                 <MoreHorizontal className="h-[18px] w-[18px]" />
               </span>
-              <span className={cn("font-semibold", moreActive ? "" : "font-medium")}>
-                Mais
-              </span>
+              <span className={cn("font-semibold", moreActive ? "" : "font-medium")}>Mais</span>
             </button>
           </li>
         </ul>
@@ -136,9 +174,7 @@ export function AdminBottomNav({ userName }: { userName: string }) {
                 <div className="mono text-[10px] uppercase tracking-wider text-subtle">
                   Painel admin
                 </div>
-                <div className="truncate font-display text-base font-bold">
-                  {userName}
-                </div>
+                <div className="truncate font-display text-base font-bold">{userName}</div>
               </div>
               <button
                 type="button"
@@ -150,39 +186,72 @@ export function AdminBottomNav({ userName }: { userName: string }) {
               </button>
             </div>
 
-            <ul className="grid grid-cols-3 gap-2 p-4">
-              {SECONDARY.map((item) => {
-                const active = isActive(item.href);
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className={cn(
-                        "tap flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all",
-                        active
-                          ? "border-brand bg-brand-soft text-brand"
-                          : "border-line bg-surface text-ink hover:-translate-y-px hover:border-brand hover:shadow-sm",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "inline-flex h-9 w-9 items-center justify-center rounded-md",
-                          active ? "bg-surface" : "bg-surface-2",
-                        )}
-                      >
-                        <item.Icon className="h-5 w-5" />
-                      </span>
-                      <span className="text-[11px] font-semibold leading-tight">
-                        {item.label}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="space-y-4 p-4">
+              {GROUPS.map((group) => (
+                <div key={group.title}>
+                  <div className="mb-2 flex items-center gap-2.5 px-0.5">
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ background: group.tint }}
+                    />
+                    <span className="mono text-[10px] font-semibold uppercase tracking-wider text-subtle">
+                      {group.title}
+                    </span>
+                    <span className="h-px flex-1 bg-line" />
+                  </div>
+                  <ul className="grid grid-cols-3 gap-2">
+                    {group.items.map((item) => {
+                      const active = isActive(item.href);
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setOpen(false)}
+                            className={cn(
+                              "tap flex flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all",
+                              active
+                                ? "border-brand bg-brand-soft text-brand"
+                                : "border-line bg-surface text-ink hover:-translate-y-px hover:border-brand hover:shadow-sm",
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "inline-flex h-9 w-9 items-center justify-center rounded-md",
+                                active ? "bg-surface" : "bg-surface-2",
+                              )}
+                            >
+                              <item.Icon
+                                className="h-5 w-5"
+                                style={active ? undefined : { color: group.tint }}
+                              />
+                            </span>
+                            <span className="text-[11px] font-semibold leading-tight">
+                              {item.label}
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
 
-            <div className="border-t border-line p-4">
+            {/* Zona de sistema — ações de conta, separadas das features */}
+            <div className="grid grid-cols-2 gap-2 border-t border-line p-4">
+              <Link
+                href={SETTINGS_ITEM.href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "inline-flex items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm font-semibold transition-colors",
+                  isActive(SETTINGS_ITEM.href)
+                    ? "border-brand bg-brand-soft text-brand"
+                    : "border-line bg-surface text-subtle hover:border-brand hover:text-ink",
+                )}
+              >
+                <Settings className="h-4 w-4" />
+                {SETTINGS_ITEM.label}
+              </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"
@@ -219,9 +288,7 @@ function NavTab({ item, active }: { item: NavItem; active: boolean }) {
         >
           <item.Icon className="h-[18px] w-[18px]" />
         </span>
-        <span className={cn("font-semibold", active ? "" : "font-medium")}>
-          {item.label}
-        </span>
+        <span className={cn("font-semibold", active ? "" : "font-medium")}>{item.label}</span>
       </Link>
     </li>
   );

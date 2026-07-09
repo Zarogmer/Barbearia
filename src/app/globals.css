@@ -469,10 +469,19 @@
   body {
     @apply bg-surface text-ink;
     /* "kern" garante kerning de pares (W+A, T+e); ligatures e small-caps */
-    font-feature-settings: "kern" 1, "rlig" 1, "calt" 1, "ss01" 1;
+    font-feature-settings:
+      "kern" 1,
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1;
     line-height: 1.55;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display), system-ui, sans-serif;
     /* Manrope: geometric sans moderna. Tracking levemente negativo dá
        densidade premium sem embolar. Line-height confortável. */
@@ -483,7 +492,9 @@
     letter-spacing: -0.025em;
     line-height: 1.1;
   }
-  .num, .mono, code {
+  .num,
+  .mono,
+  code {
     font-family: var(--font-mono), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
   }
@@ -510,6 +521,23 @@
     textarea {
       font-size: 16px;
     }
+  }
+
+  /* ── Tints de categoria do menu admin ──
+     Cor fixa por área (não troca com a paleta) pra criar memória visual.
+     Declarados só em :root/.dark → cascatam por cima das 6 paletas.
+     Verde alinha ao --ok; âmbar à família do --brand. */
+  :root {
+    --cat-clientes: 206 68% 44%;
+    --cat-operacao: 36 82% 44%;
+    --cat-financeiro: 152 52% 36%;
+    --cat-comunicacao: 262 52% 54%;
+  }
+  .dark {
+    --cat-clientes: 206 72% 64%;
+    --cat-operacao: 40 88% 62%;
+    --cat-financeiro: 152 48% 56%;
+    --cat-comunicacao: 262 62% 74%;
   }
 }
 
@@ -601,13 +629,24 @@
    ========================================================= */
 
 @keyframes pop-check {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
